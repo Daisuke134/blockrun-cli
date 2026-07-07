@@ -1,0 +1,7 @@
+{
+  "reviewType": "spec",
+  "artifactsToReview": ["specs/behavioral-spec.md", "specs/verification-architecture.md"],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "priorIterations": ["reviews/spec/iteration-1", "reviews/spec/iteration-2"],
+  "codexFindings": "reviews/spec/codex-review-1.json"
+}
