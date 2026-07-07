@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "features": {
+    "blockrun-cli": {
+      "status": "active",
+      "createdAt": "2026-07-07T14:15:05.132Z",
+      "mode": "strict",
+      "language": "typescript",
+      "currentPhase": "init",
+      "updatedAt": "2026-07-07T14:15:05.132Z"
+    }
+  },
+  "activeFeature": "blockrun-cli"
+}
