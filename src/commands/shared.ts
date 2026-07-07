@@ -57,13 +57,22 @@ export function gatePaidCall(
       release: () => gate.release(),
       commit: (actualUsd) => {
         recordActualSpend(budget, actualUsd, heldAmount, agentId);
-        writeLedgerAtomic(applyPersistedSpend(ledger, agentId, actualUsd, heldAmount, nowIso));
+        // REQ-019c/PROP-011: re-read the persisted ledger FRESH right before writing
+        // (read-modify-write), not the snapshot captured when the gate opened. A
+        // long-running paid call (media generation can take minutes) must not clobber
+        // a concurrent invocation's spend or a wallet delegate/revoke/budget-set change
+        // that landed on disk in the meantime with a stale in-memory copy.
+        const fresh = readLedger();
+        writeLedgerAtomic(applyPersistedSpend(fresh, agentId, actualUsd, heldAmount, nowIso));
       },
       reverify: (quotedUsd) => {
         if (typeof quotedUsd !== "number" || !Number.isFinite(quotedUsd) || quotedUsd <= heldAmount) {
           return { allowed: true };
         }
-        const persisted = checkPersistedBudget(ledger, agentId, quotedUsd);
+        // Re-read fresh here too: the quote arrives after network round-trips since
+        // the gate opened, so re-check against the latest persisted state, not the
+        // snapshot from invocation start.
+        const persisted = checkPersistedBudget(readLedger(), agentId, quotedUsd);
         if (!persisted.allowed) {
           return { allowed: false, reason: `${persisted.reason}. ${GATE_HINT}` };
         }

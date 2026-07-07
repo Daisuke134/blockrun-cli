@@ -38,6 +38,14 @@ export async function run(
       resourceDescription: "BlockRun Music Generation",
       pollIntervalMs: 5_000,
       totalBudgetMs: 240_000,
+      // REQ-220: re-validate the real 402-quoted amount against both budget
+      // caps BEFORE any signature is produced.
+      onQuote: (quotedUsd) => {
+        const check = gated.paid.reverify(quotedUsd);
+        if (!check.allowed) {
+          throw new Error(check.reason ?? "Budget cap would be exceeded by the real quoted price.");
+        }
+      },
     });
 
     const billedUsd = result.billedUsd ?? MUSIC_COST;

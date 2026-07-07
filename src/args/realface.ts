@@ -1,6 +1,6 @@
 // REQ-137–143, REQ-022. Pure buildRequest for `blockrun realface`.
 import { z } from "zod";
-import type { BuildResult } from "./shared.js";
+import { rejectBlockedUrlHost, type BuildResult } from "./shared.js";
 
 const ACTIONS = ["init", "status", "enroll", "portrait", "list"] as const;
 
@@ -37,6 +37,15 @@ export function buildRequest(flags: Record<string, unknown>): BuildResult<Realfa
   const imageUrl = typeof flags.imageUrl === "string" ? flags.imageUrl : undefined;
   if (imageUrl !== undefined && !isWellFormedUrl(imageUrl)) {
     return { ok: false, error: "--image-url must be a well-formed URL" };
+  }
+  // Defense-in-depth (codex-impl-review-1 finding #3): image_url is forwarded
+  // verbatim to BlockRun's remote enroll/portrait endpoint as a body field — the
+  // REMOTE gateway fetches it server-side, not this CLI process — but reject an
+  // obviously internal/private target before ever sending it upstream. Does NOT
+  // restrict scheme (REQ-137 still allows any URL-parseable scheme, e.g. http://).
+  if (imageUrl !== undefined) {
+    const blocked = rejectBlockedUrlHost(imageUrl, "image-url");
+    if (blocked) return { ok: false, error: blocked };
   }
 
   if (action === "init" && name === undefined) {

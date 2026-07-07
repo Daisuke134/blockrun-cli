@@ -47,8 +47,19 @@ export async function run(
       pollIntervalMs: 5_000,
       totalBudgetMs: 300_000,
       onQuote: (quotedUsd) => {
+        // REQ-135a: the user's explicit per-call ceiling, checked first (it's a
+        // deterministic cap the caller chose; the budget re-check below is the
+        // general REQ-220 rail and doesn't know about this flag).
         if (maxQuoteUsd !== undefined && quotedUsd !== null && quotedUsd > maxQuoteUsd) {
           throw new Error(`Quote $${quotedUsd.toFixed(4)} exceeds --max-quote-usd $${maxQuoteUsd.toFixed(2)} — aborting before signing.`);
+        }
+        // REQ-220: re-validate the REAL quoted amount against both the
+        // ephemeral per-invocation cap and the persisted ledger cap BEFORE any
+        // signature is produced — a token-priced Seedance/Sora render can
+        // settle for far more than the per-second estimate.
+        const check = gated.paid.reverify(quotedUsd);
+        if (!check.allowed) {
+          throw new Error(check.reason ?? "Budget cap would be exceeded by the real quoted price.");
         }
       },
     });

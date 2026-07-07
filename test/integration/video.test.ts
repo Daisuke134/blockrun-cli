@@ -7,7 +7,12 @@ import assert from "node:assert/strict";
 import type { BudgetState } from "../../src/types.js";
 
 let lastReq: any;
-let mode: "completed" | "failed" = "completed";
+let mode: "completed" | "failed" | "over-budget-quote" = "completed";
+// A quote higher than the $0.05 xai/grok-imagine-video 1s estimate, used by the
+// "over-budget-quote" mode to prove REQ-220's reverify wiring: onQuote is invoked
+// (mirroring the real shell/manual-x402.ts contract) BEFORE any signature would be
+// produced, so a cap between the estimate and this quote must abort here.
+const OVER_BUDGET_QUOTE_USD = 0.5;
 // Mutable so individual tests (e.g. REQ-133) can flip the active chain without
 // illegally reassigning a property on the (non-writable) ES module namespace object
 // returned by a later `await import(...)` — mock.module()'s namedExports functions are
@@ -18,6 +23,13 @@ mock.module("../../src/shell/manual-x402.js", {
     payAndPoll: async (req: any) => {
       lastReq = req;
       if (mode === "failed") throw new Error("Upstream generation failed: moderation. No payment taken.");
+      if (mode === "over-budget-quote") {
+        // Mirrors the real payAndPoll: onQuote is called with the REAL 402-quoted
+        // amount BEFORE any signature is produced. If the caller's onQuote throws
+        // (as REQ-220's reverify should when the quote blows the cap), that
+        // rejection propagates out of payAndPoll — no PAYMENT-SIGNATURE is ever sent.
+        req.onQuote?.(OVER_BUDGET_QUOTE_USD);
+      }
       return { data: { url: "https://blockrun.ai/media/fake.mp4", duration_seconds: 1 }, billedUsd: 0.05, txHash: "0xabc" };
     },
   },
@@ -59,6 +71,17 @@ test("REQ-022/PROP-205: --agent-id reaches per-agent budget accounting on the ma
   const res = await run({ prompt: "a spinning cube", model: "xai/grok-imagine-video", durationSeconds: 1, agentId: "research" }, { json: true }, budget);
   assert.equal(res.exitCode, 0);
   assert.equal(budget.agents.get("research")!.spent, 0.05);
+});
+
+test("REQ-220: a real quote above the per-invocation budget cap (but above the pre-call estimate) aborts BEFORE signing, no charge recorded", async () => {
+  activeChain = "base";
+  mode = "over-budget-quote";
+  // Cap sits strictly between the $0.05 pre-call estimate and the $0.50 real quote —
+  // the estimate-time gate must pass, and only the post-quote reverify must reject.
+  const budget: BudgetState = { limit: 0.1, spent: 0, calls: 0, agents: new Map() };
+  const res = await run({ prompt: "a spinning cube", model: "xai/grok-imagine-video", durationSeconds: 1 }, { json: true }, budget);
+  assert.notEqual(res.exitCode, 0, "a $0.50 real quote against a $0.10 cap must abort before signing");
+  assert.equal(budget.spent, 0, "no charge is recorded when the gate rejects the real quote before signing");
 });
 
 test("REQ-133: Solana chain rejects video with an actionable chain-switch message, before any call", async () => {

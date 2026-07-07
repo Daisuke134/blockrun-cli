@@ -10,3 +10,4 @@
 {"timestamp":"2026-07-07T15:15:29.449Z","event":"phase_transition","featureName":"blockrun-cli","from":"2a","to":"2b","iteration":1,"phase":"2b"}
 {"timestamp":"2026-07-07T16:18:56.721Z","event":"phase_transition","featureName":"blockrun-cli","from":"2b","to":"2c","iteration":1,"phase":"2c"}
 {"timestamp":"2026-07-07T16:28:22.359Z","event":"phase_transition","featureName":"blockrun-cli","from":"2c","to":"3","iteration":1,"phase":"3"}
+{"timestamp":"2026-07-07T16:42:10.549Z","event":"gate_recorded","featureName":"blockrun-cli","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}

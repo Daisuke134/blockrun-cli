@@ -3,7 +3,7 @@
 // only lists the 10 named cost/*.ts ports) — the per-second cost table + validations
 // live directly here (decisions.md).
 import { z } from "zod";
-import { resolvePositionalAlias, type BuildResult } from "./shared.js";
+import { rejectBlockedUrlHost, resolvePositionalAlias, type BuildResult } from "./shared.js";
 
 const VIDEO_MODELS = [
   "azure/sora-2",
@@ -95,6 +95,19 @@ export function buildRequest(flags: Record<string, unknown>): BuildResult<VideoR
   const realFaceAssetId = flags.realFaceAssetId as string | undefined;
   const imageUrl = flags.imageUrl as string | undefined;
   const lastFrameUrl = flags.lastFrameUrl as string | undefined;
+
+  // Defense-in-depth (codex-impl-review-1 finding #3): image_url/last_frame_url are
+  // forwarded verbatim to BlockRun's remote API as body fields — the REMOTE gateway
+  // fetches them server-side, not this CLI process — but reject an obviously
+  // internal/private target before ever sending it upstream.
+  if (imageUrl !== undefined) {
+    const blocked = rejectBlockedUrlHost(imageUrl, "image-url");
+    if (blocked) return { ok: false, error: blocked };
+  }
+  if (lastFrameUrl !== undefined) {
+    const blocked = rejectBlockedUrlHost(lastFrameUrl, "last-frame-url");
+    if (blocked) return { ok: false, error: blocked };
+  }
 
   if (realFaceAssetId !== undefined) {
     if (!/^ta_[A-Za-z0-9]+$/.test(realFaceAssetId)) {

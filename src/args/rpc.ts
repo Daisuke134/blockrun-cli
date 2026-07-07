@@ -46,8 +46,12 @@ export function buildRequest(flags: Record<string, unknown>): BuildResult<RpcReq
 
   let body = coerceBody(flags.body);
   const method = flags.method;
+  const hasMethod = typeof method === "string" && method.length > 0;
+  if (body !== undefined && hasMethod) {
+    return { ok: false, error: "--method conflicts with --body — provide exactly one of --method (with optional --params) or a full JSON-RPC --body." };
+  }
   if (body === undefined) {
-    if (typeof method !== "string" || method.length === 0) {
+    if (!hasMethod) {
       return { ok: false, error: "Provide either --method (with optional --params) or a full JSON-RPC --body." };
     }
     body = { jsonrpc: "2.0", id: 1, method, params: flags.params ?? [] };

@@ -1696,6 +1696,18 @@
     ]
   },
   "gates": {
+    "3": {
+      "verdict": "FAIL",
+      "timestamp": "2026-07-07T16:42:10.544Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 1,
+        "blocking": 3,
+        "major": 3,
+        "minor": 1,
+        "note": "FIND-001/002/007 blocking; codex round-1 concurrently found 5 (4 overlap). Money-path defects."
+      }
+    },
     "1c": {
       "verdict": "PASS",
       "timestamp": "2026-07-07T14:39:02.934Z",
@@ -1713,5 +1725,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-07-07T14:15:05.132Z",
-  "updatedAt": "2026-07-07T16:28:22.356Z"
+  "updatedAt": "2026-07-07T16:42:10.545Z"
 }

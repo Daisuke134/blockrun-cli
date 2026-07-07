@@ -1,0 +1,112 @@
+{
+  "sprintNumber": 1,
+  "feature": "blockrun-cli",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-002", "FIND-004"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "src/args/image.ts:53-84",
+          "description": "buildRequest() for `blockrun image` passes --image/--mask through as raw, unvalidated strings (no URL-scheme check, no SSRF guard, no local-file read, no data-URI conversion) despite REQ-127 mandating exactly this handling, verbatim-cited to blockrun-mcp's image.ts:34-90."
+        },
+        {
+          "type": "file",
+          "location": "src/args/rpc.ts:47-54",
+          "description": "buildRequest() only errors when BOTH --method and --body are absent; when both are supplied it silently prefers --body and drops --method, contradicting REQ-167's 'exactly one of --method ... or --body SHALL be provided' (no conflict-rejection branch, unlike the alias-conflict pattern used for search/exa/chat elsewhere in the same spec)."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "FAIL",
+      "findings": ["FIND-001", "FIND-003", "FIND-005"],
+      "evidence": [
+        {
+          "type": "test-output",
+          "location": "test/integration/video.test.ts, test/integration/music.test.ts, test/integration/speech.test.ts, test/integration/realface.test.ts",
+          "description": "grep for 'reverify' across test/ returns zero matches in these four files (only test/integration/image.test.ts has REQ-220 coverage) — confirming no test exercises 'real quote > budget cap -> abort before signing, no charge' for the four manual-x402 commands REQ-220 explicitly names."
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "FAIL",
+      "findings": ["FIND-001", "FIND-007"],
+      "evidence": [
+        {
+          "type": "test-output",
+          "location": "npm test re-run by adversary, 2026-07-08",
+          "description": "376/376 tests pass, matches evidence/sprint-1-green-phase.log (376 pass, 0 fail, 3 independent runs recorded); typecheck and build both exit 0. Test-suite greenness confirmed independently, but greenness does not cover the REQ-220 gap or the chain-resolution ordering bug since no test exercises either (see edge_case_coverage / FIND-007)."
+        },
+        {
+          "type": "file",
+          "location": "src/commands/shared.ts:29-30,62-78 vs src/commands/video.ts:49-53, src/commands/music.ts (no onQuote passed), src/commands/speech.ts (no onQuote passed), src/commands/realface.ts (no onQuote passed)",
+          "description": "gatePaidCall() returns a `reverify(quotedUsd)` method built specifically to satisfy REQ-220 (re-check ephemeral + persisted budget caps against a higher real 402 quote before signing). It is called from exactly one call site in the whole src/ tree: src/commands/image.ts:45 (Solana path). video.ts's onQuote callback only checks the CLI-only --max-quote-usd flag (REQ-135a) and never calls gated.paid.reverify; music.ts/speech.ts/realface.ts pass no onQuote callback to payOnce/payAndPoll at all, so their 402 quotes are never re-validated against either budget cap before createPaymentPayload/payment submission."
+        },
+        {
+          "type": "proof-result",
+          "location": "adversary live repro, HOME=<fresh sandbox>, src/commands/wallet.ts:89-93 (`action===\"chain\"` branch) vs src/commands/wallet.ts:102-103,129 (`status`/default branch)",
+          "description": "On a totally fresh HOME (no .chain file, no SOLANA_WALLET_KEY): `wallet --action chain --json` (view-only, no --chain flag) returns activeChain:\"solana\" purely because that branch calls ensureBothWallets() (line 90, which auto-creates .solana-session) BEFORE calling getChain() (line 92) — REQ-016's 3rd precedence check ('non-empty .solana-session exists') then fires on the file this same invocation just created. The default `status` branch avoids this by capturing `chain` (line 103) BEFORE calling ensureBothWallets() (line 129), so it correctly reports \"base\" on the same fresh state (verified live). Reproduced persistence: running plain `wallet` (status) once on a fresh HOME correctly prints activeChain:\"base\", but a SEPARATE second `wallet` invocation against the SAME HOME afterward prints activeChain:\"solana\" — the first call's ensureBothWallets() side effect permanently flips every subsequent invocation's default chain, with no .chain file ever written and no env var set. This is a 1:1 port of the identical ordering in the blockrun-mcp clone (src/tools/wallet.ts:150-155 for the chain action), so it is not a CLI-introduced regression, but it is untested (all wallet/chain tests mock getChain() directly, per test/integration/wallet.test.ts and others, so the real fs-driven ordering bug has zero coverage) and has real payment-routing consequences: a brand-new user's first-ever `wallet status` check (the natural first command to find a funding address) silently and permanently reroutes every later Base-only paid command (video/music/speech/realface enroll-portrait) to fail with a 'switch to Base' error."
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "src/ (all files)",
+          "description": "`find src -name '*.ts' | xargs wc -l | awk '$1>800'` returns no files; largest files well under the 800-line cap."
+        },
+        {
+          "type": "file",
+          "location": "src/core/",
+          "description": "grep for node:fs/node:net/undici/@blockrun imports inside src/core/ returns zero matches — purity boundary holds."
+        },
+        {
+          "type": "file",
+          "location": "src/shell/manual-x402.ts:7",
+          "description": "grep for viem/accounts across src/ shows exactly one import site (shell/manual-x402.ts), matching the security-audit hook in verification-architecture.md §5; createPaymentPayload (from @blockrun/llm) is the only thing that ever produces the actual signature (REQ-221 upheld)."
+        },
+        {
+          "type": "file",
+          "location": "src/index.ts:64",
+          "description": "process.stdout.write appears exactly once in the entire src/ tree, at the single writeOutcome() chokepoint — satisfies the REQ-006 grep-audit hook."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "proof-result",
+          "location": "adversary live run, HOME=<sandbox>, 2026-07-08",
+          "description": "`node dist/index.js dex --symbol SOL --json`, `node dist/index.js models --json`, `node dist/index.js wallet --action status --json` all ran against the real built dist/index.js and real free endpoints; each produced a single valid JSON document on stdout (verified with JSON.parse) while the SDK's own first-run onboarding banner correctly landed on stderr only (streams captured separately, not merged) — confirming REQ-006 and the §4.3 free-tier tier-3 rows are executable as specified."
+        },
+        {
+          "type": "proof-result",
+          "location": "adversary re-repro of teammate report, 3 fresh HOMEs (status/deposit/setup actions), 2026-07-08",
+          "description": "Re-tested the teammate's observation that first-run `wallet --action status --json` printed onboarding text on stdout. With stdout and stderr captured to SEPARATE files (not `2>&1`-merged) across status/deposit/setup actions on brand-new HOMEs, stdout was a single valid JSON document in every case and the SDK's onboarding banner (@blockrun/llm dist/index.js:4741, which calls console.error internally) landed entirely on stderr. Could not reproduce the stdout-impurity claim; it is very likely an artifact of the teammate's own capture merging the two streams (e.g. a terminal or `2>&1`). REQ-006/008 hold as implemented."
+        }
+      ]
+    }
+  ],
+  "overallVerdict": "FAIL",
+  "timestamp": "2026-07-08T02:20:00Z",
+  "iteration": 1,
+  "reviewContext": {
+    "reviewType": "implementation"
+  },
+  "convergenceSignals": {
+    "findingCount": 7,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": ["CRIT-001", "CRIT-002", "CRIT-003", "CRIT-004", "CRIT-005"]
+  }
+}

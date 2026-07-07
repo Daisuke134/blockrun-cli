@@ -8,6 +8,7 @@ import { estimateCost } from "../core/cost/image.js";
 import { extractErrorMessage } from "../core/errors.js";
 import { getChain, getImageClient } from "../shell/wallet.js";
 import { solanaPaidPost } from "../shell/solana-x402.js";
+import { toImageDataUri } from "../shell/image-fetch.js";
 import { ok, fail } from "../core/render.js";
 import { gatePaidCall } from "./shared.js";
 import type { BudgetState } from "../types.js";
@@ -25,6 +26,25 @@ export async function run(
   const { prompt, action, model, image, mask, size, quality, agent_id } = built.value;
   const selectedModel = model || "openai/gpt-image-2";
 
+  // REQ-127: normalize user-supplied source image(s)/mask (data URI, http(s) URL, or
+  // local file path) to data URIs BEFORE reserving budget — a malformed ref or one
+  // pointed at a private/loopback/link-local host (SSRF) fails locally with no
+  // charge, mirroring image.ts's edit-mode pre-validation. Only action=edit carries
+  // these fields; generate never supplies image/mask (buildRequest already enforces
+  // this at the args layer).
+  let normalizedImage: string | string[] | undefined;
+  let normalizedMask: string | undefined;
+  if (action === "edit") {
+    try {
+      const sourceImages = Array.isArray(image) ? image : image !== undefined ? [image] : [];
+      const dataUris = await Promise.all(sourceImages.map(toImageDataUri));
+      normalizedImage = dataUris.length === 1 ? dataUris[0] : dataUris;
+      if (mask) normalizedMask = await toImageDataUri(mask);
+    } catch (e) {
+      return fail(`Could not load source image: ${extractErrorMessage(e)}`, opts.json);
+    }
+  }
+
   const estimate = estimateCost(selectedModel, size);
   const gated = gatePaidCall(budget, agent_id, estimate, opts.json);
   if (!gated.ok) return gated.outcome;
@@ -34,7 +54,7 @@ export async function run(
     let billedUsd = estimate;
 
     if (getChain() === "solana") {
-      const { endpoint, body } = buildSolanaImageRequest(action, { model: selectedModel, prompt, size, quality, image, mask });
+      const { endpoint, body } = buildSolanaImageRequest(action, { model: selectedModel, prompt, size, quality, image: normalizedImage, mask: normalizedMask });
       const { data, paidUsd } = await solanaPaidPost(endpoint, body, SOLANA_IMAGE_TIMEOUT_MS, {
         // REQ-220: the Solana gateway's price carries a markup over the Base
         // estimate table, so the real quote can exceed what was reserved at
@@ -52,7 +72,7 @@ export async function run(
     } else {
       const client = getImageClient();
       const response = action === "edit"
-        ? await client.edit(prompt, image as never, { model: selectedModel, size, ...(mask ? { mask } : {}) })
+        ? await client.edit(prompt, normalizedImage as never, { model: selectedModel, size, ...(normalizedMask ? { mask: normalizedMask } : {}) })
         : await client.generate(prompt, { model: selectedModel, size, quality: quality as "standard" | "hd" });
       gated.paid.commit(estimate);
       imageUrl = response.data?.[0]?.url;

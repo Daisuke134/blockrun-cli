@@ -71,6 +71,13 @@ test("REQ-006: --json output is ONLY a single parseable JSON document on stdout;
   assert.doesNotThrow(() => JSON.parse(res.stdout), "stdout must be JSON.parse-able in full when --json is set");
 });
 
+test("REQ-167: rpc rejects --method + --body supplied TOGETHER (real built binary), not a silent --method drop", () => {
+  const res = runCli(["rpc", "--network", "base", "--method", "eth_blockNumber", "--body-json", '{"jsonrpc":"2.0","id":1,"method":"eth_getBalance"}', "--json"]);
+  assert.notEqual(res.status, 0, `expected --method + --body together to be rejected\nstdout: ${res.stdout}\nstderr: ${res.stderr}`);
+  const parsed = JSON.parse(res.stdout);
+  assert.equal(parsed.error, true);
+});
+
 test("REQ-007: without --json, a locally-rejected call prints human-readable text (formatError's 'Error: ' prefix) to stderr, nothing to stdout", () => {
   const res = runCli(["wallet", "--action", "self-destruct"]);
   assert.notEqual(res.status, 0);

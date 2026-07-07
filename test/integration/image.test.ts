@@ -6,9 +6,10 @@ import { test, mock } from "node:test";
 import assert from "node:assert/strict";
 import type { BudgetState } from "../../src/types.js";
 
+let editCalled = false;
 const fakeImageClient = {
   generate: async () => ({ data: [{ url: "https://blockrun.ai/media/fake.png" }] }),
-  edit: async () => ({ data: [{ url: "https://blockrun.ai/media/fake-edit.png" }] }),
+  edit: async () => { editCalled = true; return { data: [{ url: "https://blockrun.ai/media/fake-edit.png" }] }; },
 };
 // Mutable so the Solana tests below (added for REQ-220 coverage) can flip the active
 // chain without illegally reassigning a property on a (non-writable) ES module
@@ -55,6 +56,16 @@ test("REQ-126: edit without --image fails locally, no SDK call, nonzero exit", a
   const budget = newBudget();
   const res = await run({ prompt: "a red cube", action: "edit" }, { json: true }, budget);
   assert.notEqual(res.exitCode, 0);
+  assert.equal(budget.spent, 0, "no charge on a locally-rejected call");
+});
+
+test("REQ-127/REQ-220: edit with a --image URL pointed at a private/loopback host is rejected locally (SSRF guard), no SDK call, no charge", async () => {
+  activeChain = "base";
+  editCalled = false;
+  const budget = newBudget();
+  const res = await run({ prompt: "a red cube", action: "edit", model: "openai/gpt-image-2", image: "http://127.0.0.1/evil.png" }, { json: true }, budget);
+  assert.notEqual(res.exitCode, 0, "an SSRF-blocked --image URL must be rejected before any SDK call");
+  assert.equal(editCalled, false, "ImageClient.edit must never be called for a blocked-host image reference");
   assert.equal(budget.spent, 0, "no charge on a locally-rejected call");
 });
 

@@ -80,3 +80,15 @@ test("REQ-135a: --max-quote-usd is omitted from the request (no gate) when not s
   assert.equal(r.ok, true);
   if (r.ok) assert.equal(Object.prototype.hasOwnProperty.call(r.value, "maxQuoteUsd"), false);
 });
+
+test("codex-impl-review-1 #3: --image-url pointed at a private/loopback/link-local host is rejected locally", () => {
+  assert.equal(buildRequest({ prompt: "p", imageUrl: "http://127.0.0.1/x.png" }).ok, false);
+  assert.equal(buildRequest({ prompt: "p", imageUrl: "http://169.254.169.254/latest/meta-data/" }).ok, false);
+  assert.equal(buildRequest({ prompt: "p", imageUrl: "http://10.0.0.5/x.png" }).ok, false);
+  assert.equal(buildRequest({ prompt: "p", imageUrl: "https://example.com/x.png" }).ok, true, "a public host is unaffected");
+});
+
+test("codex-impl-review-1 #3: --last-frame-url pointed at a private/loopback host is rejected locally", () => {
+  const r = buildRequest({ prompt: "p", imageUrl: "https://example.com/a.png", lastFrameUrl: "http://127.0.0.1/b.png" });
+  assert.equal(r.ok, false);
+});

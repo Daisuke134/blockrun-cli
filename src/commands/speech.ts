@@ -72,7 +72,19 @@ export async function run(
   if (!gated.ok) return gated.outcome;
 
   try {
-    const result = await payOnce({ endpoint, body, resourceDescription: "BlockRun Speech" });
+    const result = await payOnce({
+      endpoint,
+      body,
+      resourceDescription: "BlockRun Speech",
+      // REQ-220: re-validate the real 402-quoted amount against both budget
+      // caps BEFORE any signature is produced.
+      onQuote: (quotedUsd) => {
+        const check = gated.paid.reverify(quotedUsd);
+        if (!check.allowed) {
+          throw new Error(check.reason ?? "Budget cap would be exceeded by the real quoted price.");
+        }
+      },
+    });
     const billedUsd = result.billedUsd ?? cost;
     gated.paid.commit(result.billedUsd);
     const clip = result.data as { url: string; format?: string; characters?: number; duration_seconds?: number };

@@ -20,6 +20,15 @@ test("REQ-167: exactly one of method or body must be provided", () => {
   assert.equal(buildRequest({ network: "base", body: { jsonrpc: "2.0", id: 1, method: "eth_blockNumber" } }).ok, true);
 });
 
+test("REQ-167: supplying BOTH --method and --body is a conflict error, not a silent --method drop", () => {
+  const r = buildRequest({
+    network: "base",
+    method: "eth_blockNumber",
+    body: { jsonrpc: "2.0", id: 1, method: "eth_getBalance" },
+  });
+  assert.equal(r.ok, false, "--method + --body together must be rejected, not silently resolved to --body");
+});
+
 test("REQ-168/REQ-201: network must be a well-formed chain slug before any network call", () => {
   assert.equal(buildRequest({ network: "../v1/modal/sandbox/create", method: "x" }).ok, false);
   assert.equal(buildRequest({ network: "eth.mainnet", method: "x" }).ok, false);
