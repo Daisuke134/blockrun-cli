@@ -1,75 +1,59 @@
-
 new-feature-tests: FAIL
 regression-baseline: PASS
-# Sprint-1 delta pass against the FINAL spec v4 (adversary iteration-3 PASS, 0 blocking).
-# regression-baseline is trivially PASS: no src/ implementation exists yet.
-# Full run: `npm test` -> summary `pass 0 / fail 157` (up from 116 in the first Red
-# pass — 41 more failing test-groups added in this delta: REQ-018 --budget-limit
-# precedence (test/unit/budget-limit.test.ts), REQ-019/019a/019b/019c persisted
-# cli-budget.json ledger (test/unit/cli-budget-schema.test.ts,
-# test/integration/budget-store.test.ts, test/integration/budget-persisted-cap.test.ts),
-# REQ-022/PROP-205 agent_id threading across 15 commands
-# (test/unit/agent-id-threading.test.ts + representative Tier-2 assertions added to
-# surf/price/video/chat integration tests), REQ-023/PROP-206 alias<->canonical
-# equivalence + conflict-rejection for chat/image/video/music/speech positional args
-# and search/exa body-shape aliases (extended test/unit/chat|image|video|music|
-# speech.test.ts + new test/unit/search-alias.test.ts, test/unit/exa-alias.test.ts +
-# Tier-2 SDK-call-shape equivalence added to search/exa integration tests), and
-# REQ-135a --max-quote-usd non-interactive quote gate, both branches, real subprocess
-# against a local node:http stub server (test/cli/video-max-quote-usd.test.ts).
-# One accidental pass caught and fixed before finalizing: a fixture-length assertion
-# with no src/ import (same class of bug as the first Red pass) — folded into the
-# per-command loop so it only passes once the referenced src/args/*.ts modules exist.
-# Full delta contract additions recorded in specs/decisions.md §8-13 (budget-limit
-# resolution, cli-budget-schema, alias/conflict builder contract, --max-quote-usd +
-# BLOCKRUN_API_BASE_URL test-only override, agent_id threading, search/exa alias
-# tables).
+# Verification pass requested by team-lead: confirmed each v4 item is covered against
+# final spec text (mapping in the reply to team-lead), and closed one remaining gap
+# found during that audit — REQ-019a's v4-new clause ("once cli-budget.json exists, a
+# later BLOCKRUN_BUDGET_LIMIT env change has NO effect on the persisted global.limit")
+# had no explicit test. Added to test/integration/budget-store.test.ts: a real-fs test
+# that seeds via env on first read, persists it, changes the env, and asserts the
+# re-read limit is unchanged; plus a companion test for the null/unset-env seed case.
+# npm test -> pass 0 / fail 159 (up from 157).
 
 > blockrun-cli@0.1.0 test
 > tsx --experimental-test-module-mocks --test test/unit/*.test.ts test/integration/*.test.ts test/cli/*.test.ts
 
-✖ REQ-001/REQ-002/PROP-001: `blockrun --help` lists exactly the 18 subcommands (94.976333ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun wallet --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (74.690708ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun chat --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (65.548667ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun models --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (68.388167ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun image --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (76.346125ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun video --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (107.508084ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun realface --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (97.331709ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun music --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (59.668834ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun speech --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (75.350792ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun search --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (72.736458ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun exa --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (64.353334ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun markets --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (70.692958ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun price --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (73.907917ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun dex --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (65.285542ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun rpc --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (68.290792ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun defi --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (103.9865ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun modal --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (45.252042ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun phone --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (44.518667ms)
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun surf --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (43.5865ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'wallet' with a locally-invalid input exits nonzero with a JSON error object, no network call (84.8935ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'chat' with a locally-invalid input exits nonzero with a JSON error object, no network call (65.874ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'models' with a locally-invalid input exits nonzero with a JSON error object, no network call (68.5475ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'image' with a locally-invalid input exits nonzero with a JSON error object, no network call (76.427834ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'video' with a locally-invalid input exits nonzero with a JSON error object, no network call (69.0265ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'realface' with a locally-invalid input exits nonzero with a JSON error object, no network call (97.215708ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'music' with a locally-invalid input exits nonzero with a JSON error object, no network call (71.874625ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'speech' with a locally-invalid input exits nonzero with a JSON error object, no network call (59.863875ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'search' with a locally-invalid input exits nonzero with a JSON error object, no network call (76.963958ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'exa' with a locally-invalid input exits nonzero with a JSON error object, no network call (78.557375ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'markets' with a locally-invalid input exits nonzero with a JSON error object, no network call (64.546167ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'price' with a locally-invalid input exits nonzero with a JSON error object, no network call (77.670792ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'dex' with a locally-invalid input exits nonzero with a JSON error object, no network call (54.560958ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'rpc' with a locally-invalid input exits nonzero with a JSON error object, no network call (74.20075ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'defi' with a locally-invalid input exits nonzero with a JSON error object, no network call (96.589583ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'modal' with a locally-invalid input exits nonzero with a JSON error object, no network call (84.853084ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'phone' with a locally-invalid input exits nonzero with a JSON error object, no network call (45.544375ms)
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'surf' with a locally-invalid input exits nonzero with a JSON error object, no network call (42.961125ms)
-✖ REQ-006: --json output is ONLY a single parseable JSON document on stdout; logs go to stderr (42.80875ms)
-✖ REQ-007: without --json, a locally-rejected call prints human-readable text (formatError's 'Error: ' prefix) to stderr, nothing to stdout (40.521792ms)
-✖ REQ-135a: quote <= --max-quote-usd signs and completes (createPaymentPayload IS called) (99.147208ms)
-✖ REQ-135a: quote > --max-quote-usd aborts BEFORE signing (createPaymentPayload is NEVER called), nonzero exit, quote in --json output (68.20575ms)
-✖ REQ-135a: quote > --max-quote-usd also surfaces the exact quote in the non-JSON human error text (79.255417ms)
+✖ REQ-001/REQ-002/PROP-001: `blockrun --help` lists exactly the 18 subcommands (89.261292ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun wallet --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (96.747583ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun chat --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (93.8575ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun models --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (66.78925ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun image --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (73.591292ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun video --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (76.505542ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun realface --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (72.53925ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun music --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (55.619959ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun speech --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (75.7235ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun search --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (63.6615ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun exa --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (62.991542ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun markets --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (76.547667ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun price --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (72.678083ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun dex --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (74.532459ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun rpc --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (83.424209ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun defi --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (75.617541ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun modal --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (64.862458ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun phone --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (47.027959ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun surf --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (43.423708ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'wallet' with a locally-invalid input exits nonzero with a JSON error object, no network call (81.664667ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'chat' with a locally-invalid input exits nonzero with a JSON error object, no network call (115.093166ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'models' with a locally-invalid input exits nonzero with a JSON error object, no network call (72.691208ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'image' with a locally-invalid input exits nonzero with a JSON error object, no network call (68.500833ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'video' with a locally-invalid input exits nonzero with a JSON error object, no network call (66.910208ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'realface' with a locally-invalid input exits nonzero with a JSON error object, no network call (72.716667ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'music' with a locally-invalid input exits nonzero with a JSON error object, no network call (77.788542ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'speech' with a locally-invalid input exits nonzero with a JSON error object, no network call (69.487375ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'search' with a locally-invalid input exits nonzero with a JSON error object, no network call (83.994834ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'exa' with a locally-invalid input exits nonzero with a JSON error object, no network call (75.451541ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'markets' with a locally-invalid input exits nonzero with a JSON error object, no network call (79.755ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'price' with a locally-invalid input exits nonzero with a JSON error object, no network call (75.566958ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'dex' with a locally-invalid input exits nonzero with a JSON error object, no network call (71.555833ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'rpc' with a locally-invalid input exits nonzero with a JSON error object, no network call (77.093917ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'defi' with a locally-invalid input exits nonzero with a JSON error object, no network call (67.999375ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'modal' with a locally-invalid input exits nonzero with a JSON error object, no network call (61.593542ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'phone' with a locally-invalid input exits nonzero with a JSON error object, no network call (62.622375ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'surf' with a locally-invalid input exits nonzero with a JSON error object, no network call (43.267916ms)
+✖ REQ-006: --json output is ONLY a single parseable JSON document on stdout; logs go to stderr (43.638458ms)
+✖ REQ-007: without --json, a locally-rejected call prints human-readable text (formatError's 'Error: ' prefix) to stderr, nothing to stdout (41.210333ms)
+✖ REQ-135a: quote <= --max-quote-usd signs and completes (createPaymentPayload IS called) (76.712541ms)
+✖ REQ-135a: quote > --max-quote-usd aborts BEFORE signing (createPaymentPayload is NEVER called), nonzero exit, quote in --json output (154.785208ms)
+✖ REQ-135a: quote > --max-quote-usd also surfaces the exact quote in the non-JSON human error text (72.360375ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -90,10 +74,12 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/budget-persisted-cap.test.ts (191.509667ms)
-✖ REQ-019b: writeLedgerAtomic creates ~/.blockrun/cli-budget.json readable via readLedger (1.263792ms)
-✖ REQ-019b: a write goes through a sibling .tmp-<pid> file, never a direct in-place write (0.303ms)
-✖ REQ-019b: a stray leftover .tmp-<pid> file (simulating a kill BEFORE rename) leaves the ORIGINAL target intact on the next read (0.748667ms)
+✖ test/integration/budget-persisted-cap.test.ts (244.9005ms)
+✖ REQ-019b: writeLedgerAtomic creates ~/.blockrun/cli-budget.json readable via readLedger (1.302042ms)
+✖ REQ-019b: a write goes through a sibling .tmp-<pid> file, never a direct in-place write (0.495541ms)
+✖ REQ-019a (v4): BLOCKRUN_BUDGET_LIMIT seeds global.limit ONLY when the ledger file does not yet exist (0.425542ms)
+✖ REQ-019a: BLOCKRUN_BUDGET_LIMIT unset or non-positive seeds global.limit:null on first read (no file yet) (0.375083ms)
+✖ REQ-019b: a stray leftover .tmp-<pid> file (simulating a kill BEFORE rename) leaves the ORIGINAL target intact on the next read (0.270708ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -114,7 +100,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/chat.test.ts (226.392042ms)
+✖ test/integration/chat.test.ts (198.484292ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -135,7 +121,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/defi.test.ts (220.490084ms)
+✖ test/integration/defi.test.ts (175.244041ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -156,7 +142,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/dex.test.ts (273.210291ms)
+✖ test/integration/dex.test.ts (225.3755ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -177,7 +163,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/exa.test.ts (225.979625ms)
+✖ test/integration/exa.test.ts (184.571167ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -198,7 +184,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/image.test.ts (184.14675ms)
+✖ test/integration/image.test.ts (188.021958ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -219,7 +205,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/markets.test.ts (176.906709ms)
+✖ test/integration/markets.test.ts (228.944917ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -240,7 +226,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/modal.test.ts (190.861791ms)
+✖ test/integration/modal.test.ts (268.597166ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -261,7 +247,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/models.test.ts (180.182625ms)
+✖ test/integration/models.test.ts (212.745334ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -282,7 +268,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/music.test.ts (179.518417ms)
+✖ test/integration/music.test.ts (277.547833ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -303,7 +289,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/phone.test.ts (176.500791ms)
+✖ test/integration/phone.test.ts (288.56925ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -324,7 +310,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/price.test.ts (189.552917ms)
+✖ test/integration/price.test.ts (258.23075ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -345,7 +331,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/realface.test.ts (193.055833ms)
+✖ test/integration/realface.test.ts (199.463666ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -366,7 +352,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/rpc.test.ts (188.19125ms)
+✖ test/integration/rpc.test.ts (199.934166ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -387,7 +373,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/search.test.ts (182.647916ms)
+✖ test/integration/search.test.ts (176.323541ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -408,7 +394,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/speech.test.ts (184.46025ms)
+✖ test/integration/speech.test.ts (195.52325ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -429,7 +415,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/surf.test.ts (189.617542ms)
+✖ test/integration/surf.test.ts (184.851042ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -450,7 +436,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/video.test.ts (181.693958ms)
+✖ test/integration/video.test.ts (186.825084ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -471,37 +457,37 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/integration/wallet.test.ts (301.616417ms)
-✖ REQ-022/PROP-205: chat threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (7.907333ms)
-✖ REQ-022/PROP-205: chat OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (4.191041ms)
-✖ REQ-022/PROP-205: image threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (1.7865ms)
-✖ REQ-022/PROP-205: image OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.214ms)
-✖ REQ-022/PROP-205: video threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.176125ms)
-✖ REQ-022/PROP-205: video OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.181208ms)
-✖ REQ-022/PROP-205: realface threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.184333ms)
-✖ REQ-022/PROP-205: realface OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.165458ms)
-✖ REQ-022/PROP-205: music threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.170834ms)
-✖ REQ-022/PROP-205: music OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.182ms)
-✖ REQ-022/PROP-205: speech threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.20075ms)
-✖ REQ-022/PROP-205: speech OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.618084ms)
-✖ REQ-022/PROP-205: search threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.34925ms)
-✖ REQ-022/PROP-205: search OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.172208ms)
-✖ REQ-022/PROP-205: exa threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.130375ms)
-✖ REQ-022/PROP-205: exa OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.232167ms)
-✖ REQ-022/PROP-205: markets threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.160334ms)
-✖ REQ-022/PROP-205: markets OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.129833ms)
-✖ REQ-022/PROP-205: price threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.126917ms)
-✖ REQ-022/PROP-205: price OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.140875ms)
-✖ REQ-022/PROP-205: rpc threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.13325ms)
-✖ REQ-022/PROP-205: rpc OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.125833ms)
-✖ REQ-022/PROP-205: defi threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.12675ms)
-✖ REQ-022/PROP-205: defi OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.110209ms)
-✖ REQ-022/PROP-205: modal threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.147125ms)
-✖ REQ-022/PROP-205: modal OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.114792ms)
-✖ REQ-022/PROP-205: phone threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.136917ms)
-✖ REQ-022/PROP-205: phone OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.122042ms)
-✖ REQ-022/PROP-205: surf threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.110125ms)
-✖ REQ-022/PROP-205: surf OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.097208ms)
+✖ test/integration/wallet.test.ts (199.923167ms)
+✖ REQ-022/PROP-205: chat threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (4.343917ms)
+✖ REQ-022/PROP-205: chat OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.957459ms)
+✖ REQ-022/PROP-205: image threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.627084ms)
+✖ REQ-022/PROP-205: image OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.686834ms)
+✖ REQ-022/PROP-205: video threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.488875ms)
+✖ REQ-022/PROP-205: video OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (1.000083ms)
+✖ REQ-022/PROP-205: realface threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.349041ms)
+✖ REQ-022/PROP-205: realface OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.697792ms)
+✖ REQ-022/PROP-205: music threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.221292ms)
+✖ REQ-022/PROP-205: music OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.20325ms)
+✖ REQ-022/PROP-205: speech threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.177417ms)
+✖ REQ-022/PROP-205: speech OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.142791ms)
+✖ REQ-022/PROP-205: search threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.121958ms)
+✖ REQ-022/PROP-205: search OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.126166ms)
+✖ REQ-022/PROP-205: exa threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.138583ms)
+✖ REQ-022/PROP-205: exa OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.131833ms)
+✖ REQ-022/PROP-205: markets threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.1235ms)
+✖ REQ-022/PROP-205: markets OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.116458ms)
+✖ REQ-022/PROP-205: price threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.118291ms)
+✖ REQ-022/PROP-205: price OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.122916ms)
+✖ REQ-022/PROP-205: rpc threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.116542ms)
+✖ REQ-022/PROP-205: rpc OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.289833ms)
+✖ REQ-022/PROP-205: defi threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.351333ms)
+✖ REQ-022/PROP-205: defi OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.122958ms)
+✖ REQ-022/PROP-205: modal threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.1775ms)
+✖ REQ-022/PROP-205: modal OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.120041ms)
+✖ REQ-022/PROP-205: phone threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.119167ms)
+✖ REQ-022/PROP-205: phone OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.122084ms)
+✖ REQ-022/PROP-205: surf threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.112625ms)
+✖ REQ-022/PROP-205: surf OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (1.320083ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -522,7 +508,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/body.test.ts (269.871084ms)
+✖ test/unit/body.test.ts (194.438208ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -543,7 +529,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/budget-limit.test.ts (249.013667ms)
+✖ test/unit/budget-limit.test.ts (192.635291ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -564,7 +550,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/budget.test.ts (248.135458ms)
+✖ test/unit/budget.test.ts (205.346459ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -585,7 +571,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/chat.test.ts (236.381708ms)
+✖ test/unit/chat.test.ts (190.543041ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -606,7 +592,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/cli-budget-schema.test.ts (231.419ms)
+✖ test/unit/cli-budget-schema.test.ts (165.78ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -627,7 +613,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/defi.test.ts (191.898875ms)
+✖ test/unit/defi.test.ts (185.700125ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -648,7 +634,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/dex.test.ts (173.135ms)
+✖ test/unit/dex.test.ts (167.414083ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -669,7 +655,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/errors.test.ts (175.317833ms)
+✖ test/unit/errors.test.ts (160.075333ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -690,7 +676,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/exa-alias.test.ts (168.455291ms)
+✖ test/unit/exa-alias.test.ts (179.75125ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -711,7 +697,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/exa.test.ts (157.138875ms)
+✖ test/unit/exa.test.ts (178.456958ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -732,7 +718,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/image.test.ts (153.38425ms)
+✖ test/unit/image.test.ts (166.067334ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -753,7 +739,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/json-flag.test.ts (156.83875ms)
+✖ test/unit/json-flag.test.ts (166.168292ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -774,7 +760,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/markets.test.ts (177.952542ms)
+✖ test/unit/markets.test.ts (173.454916ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -795,7 +781,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/modal.test.ts (172.802708ms)
+✖ test/unit/modal.test.ts (158.165666ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -816,7 +802,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/models.test.ts (161.25ms)
+✖ test/unit/models.test.ts (177.810584ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -837,7 +823,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/music.test.ts (169.755459ms)
+✖ test/unit/music.test.ts (239.43925ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -858,7 +844,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/path-safety.test.ts (165.655875ms)
+✖ test/unit/path-safety.test.ts (211.601666ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -879,7 +865,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/phone.test.ts (182.76925ms)
+✖ test/unit/phone.test.ts (219.757708ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -900,7 +886,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/price.test.ts (195.094084ms)
+✖ test/unit/price.test.ts (194.741333ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -921,7 +907,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/realface.test.ts (186.24525ms)
+✖ test/unit/realface.test.ts (182.040084ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -942,43 +928,43 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/rpc.test.ts (169.083375ms)
-✖ PROP-002: wallet schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (1.305625ms)
-✖ PROP-002: wallet schema.safeParse() rejects the documented invalid example (0.23975ms)
-✖ PROP-002: chat schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.17075ms)
-✖ PROP-002: chat schema.safeParse() rejects the documented invalid example (0.160333ms)
-✖ PROP-002: models schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.158792ms)
-✖ PROP-002: models schema.safeParse() rejects the documented invalid example (0.174208ms)
-✖ PROP-002: image schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.204208ms)
-✖ PROP-002: image schema.safeParse() rejects the documented invalid example (0.144959ms)
-✖ PROP-002: video schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.993125ms)
-✖ PROP-002: video schema.safeParse() rejects the documented invalid example (0.906459ms)
-✖ PROP-002: realface schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.534375ms)
-✖ PROP-002: realface schema.safeParse() rejects the documented invalid example (0.507417ms)
-✖ PROP-002: music schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.200917ms)
-✖ PROP-002: music schema.safeParse() rejects the documented invalid example (0.135666ms)
-✖ PROP-002: speech schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.139375ms)
-✖ PROP-002: speech schema.safeParse() rejects the documented invalid example (0.11525ms)
-✖ PROP-002: search schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.11625ms)
-✖ PROP-002: search schema.safeParse() rejects the documented invalid example (0.2915ms)
-✖ PROP-002: exa schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.510333ms)
-✖ PROP-002: exa schema.safeParse() rejects the documented invalid example (0.363875ms)
-✖ PROP-002: markets schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.286291ms)
-✖ PROP-002: markets schema.safeParse() rejects the documented invalid example (0.130875ms)
-✖ PROP-002: price schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.128166ms)
-✖ PROP-002: price schema.safeParse() rejects the documented invalid example (0.121917ms)
-✖ PROP-002: dex schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.125542ms)
-✖ PROP-002: dex schema.safeParse() rejects the documented invalid example (0.128542ms)
-✖ PROP-002: rpc schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.114666ms)
-✖ PROP-002: rpc schema.safeParse() rejects the documented invalid example (0.110333ms)
-✖ PROP-002: defi schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.942209ms)
-✖ PROP-002: defi schema.safeParse() rejects the documented invalid example (0.500667ms)
-✖ PROP-002: modal schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.352166ms)
-✖ PROP-002: modal schema.safeParse() rejects the documented invalid example (0.2875ms)
-✖ PROP-002: phone schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.28125ms)
-✖ PROP-002: phone schema.safeParse() rejects the documented invalid example (0.297458ms)
-✖ PROP-002: surf schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.282167ms)
-✖ PROP-002: surf schema.safeParse() rejects the documented invalid example (0.282584ms)
+✖ test/unit/rpc.test.ts (177.627833ms)
+✖ PROP-002: wallet schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (1.360125ms)
+✖ PROP-002: wallet schema.safeParse() rejects the documented invalid example (0.226667ms)
+✖ PROP-002: chat schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.174959ms)
+✖ PROP-002: chat schema.safeParse() rejects the documented invalid example (0.173083ms)
+✖ PROP-002: models schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.159042ms)
+✖ PROP-002: models schema.safeParse() rejects the documented invalid example (0.162541ms)
+✖ PROP-002: image schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.169083ms)
+✖ PROP-002: image schema.safeParse() rejects the documented invalid example (0.162541ms)
+✖ PROP-002: video schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.153958ms)
+✖ PROP-002: video schema.safeParse() rejects the documented invalid example (0.189125ms)
+✖ PROP-002: realface schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.150416ms)
+✖ PROP-002: realface schema.safeParse() rejects the documented invalid example (0.148333ms)
+✖ PROP-002: music schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.11775ms)
+✖ PROP-002: music schema.safeParse() rejects the documented invalid example (0.727708ms)
+✖ PROP-002: speech schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.192458ms)
+✖ PROP-002: speech schema.safeParse() rejects the documented invalid example (0.134166ms)
+✖ PROP-002: search schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.144417ms)
+✖ PROP-002: search schema.safeParse() rejects the documented invalid example (0.116833ms)
+✖ PROP-002: exa schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.118416ms)
+✖ PROP-002: exa schema.safeParse() rejects the documented invalid example (0.115542ms)
+✖ PROP-002: markets schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.121458ms)
+✖ PROP-002: markets schema.safeParse() rejects the documented invalid example (0.116208ms)
+✖ PROP-002: price schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.117166ms)
+✖ PROP-002: price schema.safeParse() rejects the documented invalid example (0.109084ms)
+✖ PROP-002: dex schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.115ms)
+✖ PROP-002: dex schema.safeParse() rejects the documented invalid example (0.1225ms)
+✖ PROP-002: rpc schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.122584ms)
+✖ PROP-002: rpc schema.safeParse() rejects the documented invalid example (0.11075ms)
+✖ PROP-002: defi schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.112209ms)
+✖ PROP-002: defi schema.safeParse() rejects the documented invalid example (0.101917ms)
+✖ PROP-002: modal schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (2.969125ms)
+✖ PROP-002: modal schema.safeParse() rejects the documented invalid example (0.498875ms)
+✖ PROP-002: phone schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.610542ms)
+✖ PROP-002: phone schema.safeParse() rejects the documented invalid example (0.8645ms)
+✖ PROP-002: surf schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.454875ms)
+✖ PROP-002: surf schema.safeParse() rejects the documented invalid example (0.211917ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -999,7 +985,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/search-alias.test.ts (161.245833ms)
+✖ test/unit/search-alias.test.ts (156.678541ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -1020,7 +1006,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/search.test.ts (167.823791ms)
+✖ test/unit/search.test.ts (166.655666ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -1041,7 +1027,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/speech.test.ts (166.203708ms)
+✖ test/unit/speech.test.ts (162.076ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -1062,7 +1048,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/surf.test.ts (177.093542ms)
+✖ test/unit/surf.test.ts (146.880125ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -1083,7 +1069,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/video.test.ts (111.476042ms)
+✖ test/unit/video.test.ts (146.889792ms)
 node:internal/modules/esm/resolve:275
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -1104,20 +1090,20 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src
 }
 
 Node.js v25.6.1
-✖ test/unit/wallet.test.ts (114.778959ms)
-ℹ tests 157
+✖ test/unit/wallet.test.ts (141.18125ms)
+ℹ tests 159
 ℹ suites 0
 ℹ pass 0
-ℹ fail 157
+ℹ fail 159
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 1566.284792
+ℹ duration_ms 1587.434333
 
 ✖ failing tests:
 
 test at test/cli/help.test.ts:1:631
-✖ REQ-001/REQ-002/PROP-001: `blockrun --help` lists exactly the 18 subcommands (94.976333ms)
+✖ REQ-001/REQ-002/PROP-001: `blockrun --help` lists exactly the 18 subcommands (89.261292ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1153,7 +1139,7 @@ test at test/cli/help.test.ts:1:631
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun wallet --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (74.690708ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun wallet --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (96.747583ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1191,7 +1177,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun chat --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (65.548667ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun chat --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (93.8575ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1229,7 +1215,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun models --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (68.388167ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun models --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (66.78925ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1267,7 +1253,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun image --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (76.346125ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun image --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (73.591292ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1305,7 +1291,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun video --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (107.508084ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun video --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (76.505542ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1343,7 +1329,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun realface --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (97.331709ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun realface --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (72.53925ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1381,7 +1367,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun music --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (59.668834ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun music --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (55.619959ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1419,7 +1405,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun speech --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (75.350792ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun speech --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (75.7235ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1457,7 +1443,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun search --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (72.736458ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun search --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (63.6615ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1495,7 +1481,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun exa --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (64.353334ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun exa --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (62.991542ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1533,7 +1519,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun markets --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (70.692958ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun markets --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (76.547667ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1571,7 +1557,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun price --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (73.907917ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun price --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (72.678083ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1609,7 +1595,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun dex --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (65.285542ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun dex --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (74.532459ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1647,7 +1633,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun rpc --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (68.290792ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun rpc --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (83.424209ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1685,7 +1671,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun defi --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (103.9865ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun defi --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (75.617541ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1723,7 +1709,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun modal --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (45.252042ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun modal --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (64.862458ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1761,7 +1747,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun phone --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (44.518667ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun phone --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (47.027959ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1799,7 +1785,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/help.test.ts:1:930
-✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun surf --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (43.5865ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun surf --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (43.423708ms)
   AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
     throw err;
     ^
@@ -1837,7 +1823,7 @@ test at test/cli/help.test.ts:1:930
   }
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'wallet' with a locally-invalid input exits nonzero with a JSON error object, no network call (84.8935ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'wallet' with a locally-invalid input exits nonzero with a JSON error object, no network call (81.664667ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -1847,7 +1833,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'chat' with a locally-invalid input exits nonzero with a JSON error object, no network call (65.874ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'chat' with a locally-invalid input exits nonzero with a JSON error object, no network call (115.093166ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -1859,7 +1845,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'models' with a locally-invalid input exits nonzero with a JSON error object, no network call (68.5475ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'models' with a locally-invalid input exits nonzero with a JSON error object, no network call (72.691208ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -1871,7 +1857,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'image' with a locally-invalid input exits nonzero with a JSON error object, no network call (76.427834ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'image' with a locally-invalid input exits nonzero with a JSON error object, no network call (68.500833ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -1883,7 +1869,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'video' with a locally-invalid input exits nonzero with a JSON error object, no network call (69.0265ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'video' with a locally-invalid input exits nonzero with a JSON error object, no network call (66.910208ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -1895,7 +1881,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'realface' with a locally-invalid input exits nonzero with a JSON error object, no network call (97.215708ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'realface' with a locally-invalid input exits nonzero with a JSON error object, no network call (72.716667ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -1907,7 +1893,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'music' with a locally-invalid input exits nonzero with a JSON error object, no network call (71.874625ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'music' with a locally-invalid input exits nonzero with a JSON error object, no network call (77.788542ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -1919,7 +1905,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'speech' with a locally-invalid input exits nonzero with a JSON error object, no network call (59.863875ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'speech' with a locally-invalid input exits nonzero with a JSON error object, no network call (69.487375ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -1931,7 +1917,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'search' with a locally-invalid input exits nonzero with a JSON error object, no network call (76.963958ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'search' with a locally-invalid input exits nonzero with a JSON error object, no network call (83.994834ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -1943,7 +1929,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'exa' with a locally-invalid input exits nonzero with a JSON error object, no network call (78.557375ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'exa' with a locally-invalid input exits nonzero with a JSON error object, no network call (75.451541ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -1955,7 +1941,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'markets' with a locally-invalid input exits nonzero with a JSON error object, no network call (64.546167ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'markets' with a locally-invalid input exits nonzero with a JSON error object, no network call (79.755ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -1967,7 +1953,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'price' with a locally-invalid input exits nonzero with a JSON error object, no network call (77.670792ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'price' with a locally-invalid input exits nonzero with a JSON error object, no network call (75.566958ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -1979,7 +1965,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'dex' with a locally-invalid input exits nonzero with a JSON error object, no network call (54.560958ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'dex' with a locally-invalid input exits nonzero with a JSON error object, no network call (71.555833ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -1991,7 +1977,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'rpc' with a locally-invalid input exits nonzero with a JSON error object, no network call (74.20075ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'rpc' with a locally-invalid input exits nonzero with a JSON error object, no network call (77.093917ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -2003,7 +1989,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'defi' with a locally-invalid input exits nonzero with a JSON error object, no network call (96.589583ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'defi' with a locally-invalid input exits nonzero with a JSON error object, no network call (67.999375ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -2015,7 +2001,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'modal' with a locally-invalid input exits nonzero with a JSON error object, no network call (84.853084ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'modal' with a locally-invalid input exits nonzero with a JSON error object, no network call (61.593542ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -2027,7 +2013,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'phone' with a locally-invalid input exits nonzero with a JSON error object, no network call (45.544375ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'phone' with a locally-invalid input exits nonzero with a JSON error object, no network call (62.622375ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -2039,7 +2025,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:1:1910
-✖ REQ-009/REQ-010/PROP-005/PROP-006: 'surf' with a locally-invalid input exits nonzero with a JSON error object, no network call (42.961125ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'surf' with a locally-invalid input exits nonzero with a JSON error object, no network call (43.267916ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
@@ -2051,7 +2037,7 @@ test at test/cli/subprocess.test.ts:1:1910
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/subprocess.test.ts:3:140
-✖ REQ-006: --json output is ONLY a single parseable JSON document on stdout; logs go to stderr (42.80875ms)
+✖ REQ-006: --json output is ONLY a single parseable JSON document on stdout; logs go to stderr (43.638458ms)
   AssertionError [ERR_ASSERTION]: Got unwanted exception: stdout must be JSON.parse-able in full when --json is set
   Actual message: "Unexpected end of JSON input"
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:71:10)
@@ -2080,7 +2066,7 @@ test at test/cli/subprocess.test.ts:3:140
   }
 
 test at test/cli/subprocess.test.ts:3:420
-✖ REQ-007: without --json, a locally-rejected call prints human-readable text (formatError's 'Error: ' prefix) to stderr, nothing to stdout (40.521792ms)
+✖ REQ-007: without --json, a locally-rejected call prints human-readable text (formatError's 'Error: ' prefix) to stderr, nothing to stdout (41.210333ms)
   AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^Error: /. Input:
   
   'node:internal/modules/cjs/loader:1458\n' +
@@ -2117,7 +2103,7 @@ test at test/cli/subprocess.test.ts:3:420
   }
 
 test at test/cli/video-max-quote-usd.test.ts:1:2208
-✖ REQ-135a: quote <= --max-quote-usd signs and completes (createPaymentPayload IS called) (99.147208ms)
+✖ REQ-135a: quote <= --max-quote-usd signs and completes (createPaymentPayload IS called) (76.712541ms)
   AssertionError [ERR_ASSERTION]: expected success when quote <= cap
   stdout:
   stderr:node:internal/modules/cjs/loader:1458
@@ -2154,7 +2140,7 @@ test at test/cli/video-max-quote-usd.test.ts:1:2208
   }
 
 test at test/cli/video-max-quote-usd.test.ts:3:127
-✖ REQ-135a: quote > --max-quote-usd aborts BEFORE signing (createPaymentPayload is NEVER called), nonzero exit, quote in --json output (68.20575ms)
+✖ REQ-135a: quote > --max-quote-usd aborts BEFORE signing (createPaymentPayload is NEVER called), nonzero exit, quote in --json output (154.785208ms)
   SyntaxError: Unexpected end of JSON input
       at JSON.parse (<anonymous>)
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/video-max-quote-usd.test.ts:106:25)
@@ -2163,7 +2149,7 @@ test at test/cli/video-max-quote-usd.test.ts:3:127
       at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
 
 test at test/cli/video-max-quote-usd.test.ts:3:1009
-✖ REQ-135a: quote > --max-quote-usd also surfaces the exact quote in the non-JSON human error text (79.255417ms)
+✖ REQ-135a: quote > --max-quote-usd also surfaces the exact quote in the non-JSON human error text (72.360375ms)
   AssertionError [ERR_ASSERTION]: the exact quoted amount must appear in the human-readable stderr message
       at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/video-max-quote-usd.test.ts:124:12)
       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
@@ -2178,11 +2164,11 @@ test at test/cli/video-max-quote-usd.test.ts:3:1009
   }
 
 test at test/integration/budget-persisted-cap.test.ts:1:1
-✖ test/integration/budget-persisted-cap.test.ts (191.509667ms)
+✖ test/integration/budget-persisted-cap.test.ts (244.9005ms)
   'test failed'
 
 test at test/integration/budget-store.test.ts:1:441
-✖ REQ-019b: writeLedgerAtomic creates ~/.blockrun/cli-budget.json readable via readLedger (1.263792ms)
+✖ REQ-019b: writeLedgerAtomic creates ~/.blockrun/cli-budget.json readable via readLedger (1.302042ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/budget-store.js' imported from /Users/anicca/blockrun-cli/test/integration/budget-store.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2199,7 +2185,7 @@ test at test/integration/budget-store.test.ts:1:441
   }
 
 test at test/integration/budget-store.test.ts:1:1159
-✖ REQ-019b: a write goes through a sibling .tmp-<pid> file, never a direct in-place write (0.303ms)
+✖ REQ-019b: a write goes through a sibling .tmp-<pid> file, never a direct in-place write (0.495541ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/budget-store.js' imported from /Users/anicca/blockrun-cli/test/integration/budget-store.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2216,7 +2202,41 @@ test at test/integration/budget-store.test.ts:1:1159
   }
 
 test at test/integration/budget-store.test.ts:1:2096
-✖ REQ-019b: a stray leftover .tmp-<pid> file (simulating a kill BEFORE rename) leaves the ORIGINAL target intact on the next read (0.748667ms)
+✖ REQ-019a (v4): BLOCKRUN_BUDGET_LIMIT seeds global.limit ONLY when the ledger file does not yet exist (0.425542ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/budget-store.js' imported from /Users/anicca/blockrun-cli/test/integration/budget-store.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/shell/budget-store.js'
+  }
+
+test at test/integration/budget-store.test.ts:1:3003
+✖ REQ-019a: BLOCKRUN_BUDGET_LIMIT unset or non-positive seeds global.limit:null on first read (no file yet) (0.375083ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/budget-store.js' imported from /Users/anicca/blockrun-cli/test/integration/budget-store.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/shell/budget-store.js'
+  }
+
+test at test/integration/budget-store.test.ts:1:3681
+✖ REQ-019b: a stray leftover .tmp-<pid> file (simulating a kill BEFORE rename) leaves the ORIGINAL target intact on the next read (0.270708ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/budget-store.js' imported from /Users/anicca/blockrun-cli/test/integration/budget-store.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2233,79 +2253,79 @@ test at test/integration/budget-store.test.ts:1:2096
   }
 
 test at test/integration/chat.test.ts:1:1
-✖ test/integration/chat.test.ts (226.392042ms)
+✖ test/integration/chat.test.ts (198.484292ms)
   'test failed'
 
 test at test/integration/defi.test.ts:1:1
-✖ test/integration/defi.test.ts (220.490084ms)
+✖ test/integration/defi.test.ts (175.244041ms)
   'test failed'
 
 test at test/integration/dex.test.ts:1:1
-✖ test/integration/dex.test.ts (273.210291ms)
+✖ test/integration/dex.test.ts (225.3755ms)
   'test failed'
 
 test at test/integration/exa.test.ts:1:1
-✖ test/integration/exa.test.ts (225.979625ms)
+✖ test/integration/exa.test.ts (184.571167ms)
   'test failed'
 
 test at test/integration/image.test.ts:1:1
-✖ test/integration/image.test.ts (184.14675ms)
+✖ test/integration/image.test.ts (188.021958ms)
   'test failed'
 
 test at test/integration/markets.test.ts:1:1
-✖ test/integration/markets.test.ts (176.906709ms)
+✖ test/integration/markets.test.ts (228.944917ms)
   'test failed'
 
 test at test/integration/modal.test.ts:1:1
-✖ test/integration/modal.test.ts (190.861791ms)
+✖ test/integration/modal.test.ts (268.597166ms)
   'test failed'
 
 test at test/integration/models.test.ts:1:1
-✖ test/integration/models.test.ts (180.182625ms)
+✖ test/integration/models.test.ts (212.745334ms)
   'test failed'
 
 test at test/integration/music.test.ts:1:1
-✖ test/integration/music.test.ts (179.518417ms)
+✖ test/integration/music.test.ts (277.547833ms)
   'test failed'
 
 test at test/integration/phone.test.ts:1:1
-✖ test/integration/phone.test.ts (176.500791ms)
+✖ test/integration/phone.test.ts (288.56925ms)
   'test failed'
 
 test at test/integration/price.test.ts:1:1
-✖ test/integration/price.test.ts (189.552917ms)
+✖ test/integration/price.test.ts (258.23075ms)
   'test failed'
 
 test at test/integration/realface.test.ts:1:1
-✖ test/integration/realface.test.ts (193.055833ms)
+✖ test/integration/realface.test.ts (199.463666ms)
   'test failed'
 
 test at test/integration/rpc.test.ts:1:1
-✖ test/integration/rpc.test.ts (188.19125ms)
+✖ test/integration/rpc.test.ts (199.934166ms)
   'test failed'
 
 test at test/integration/search.test.ts:1:1
-✖ test/integration/search.test.ts (182.647916ms)
+✖ test/integration/search.test.ts (176.323541ms)
   'test failed'
 
 test at test/integration/speech.test.ts:1:1
-✖ test/integration/speech.test.ts (184.46025ms)
+✖ test/integration/speech.test.ts (195.52325ms)
   'test failed'
 
 test at test/integration/surf.test.ts:1:1
-✖ test/integration/surf.test.ts (189.617542ms)
+✖ test/integration/surf.test.ts (184.851042ms)
   'test failed'
 
 test at test/integration/video.test.ts:1:1
-✖ test/integration/video.test.ts (181.693958ms)
+✖ test/integration/video.test.ts (186.825084ms)
   'test failed'
 
 test at test/integration/wallet.test.ts:1:1
-✖ test/integration/wallet.test.ts (301.616417ms)
+✖ test/integration/wallet.test.ts (199.923167ms)
   'test failed'
 
 test at test/unit/agent-id-threading.test.ts:1:1065
-✖ REQ-022/PROP-205: chat threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (7.907333ms)
+✖ REQ-022/PROP-205: chat threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (4.343917ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/chat.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2322,7 +2342,7 @@ test at test/unit/agent-id-threading.test.ts:1:1065
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1540
-✖ REQ-022/PROP-205: chat OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (4.191041ms)
+✖ REQ-022/PROP-205: chat OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.957459ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/chat.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2339,7 +2359,7 @@ test at test/unit/agent-id-threading.test.ts:1:1540
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1065
-✖ REQ-022/PROP-205: image threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (1.7865ms)
+✖ REQ-022/PROP-205: image threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.627084ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/image.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2356,7 +2376,7 @@ test at test/unit/agent-id-threading.test.ts:1:1065
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1540
-✖ REQ-022/PROP-205: image OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.214ms)
+✖ REQ-022/PROP-205: image OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.686834ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/image.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2373,7 +2393,7 @@ test at test/unit/agent-id-threading.test.ts:1:1540
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1065
-✖ REQ-022/PROP-205: video threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.176125ms)
+✖ REQ-022/PROP-205: video threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.488875ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/video.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2390,7 +2410,7 @@ test at test/unit/agent-id-threading.test.ts:1:1065
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1540
-✖ REQ-022/PROP-205: video OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.181208ms)
+✖ REQ-022/PROP-205: video OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (1.000083ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/video.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2407,7 +2427,7 @@ test at test/unit/agent-id-threading.test.ts:1:1540
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1065
-✖ REQ-022/PROP-205: realface threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.184333ms)
+✖ REQ-022/PROP-205: realface threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.349041ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/realface.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2424,7 +2444,7 @@ test at test/unit/agent-id-threading.test.ts:1:1065
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1540
-✖ REQ-022/PROP-205: realface OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.165458ms)
+✖ REQ-022/PROP-205: realface OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.697792ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/realface.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2441,7 +2461,7 @@ test at test/unit/agent-id-threading.test.ts:1:1540
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1065
-✖ REQ-022/PROP-205: music threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.170834ms)
+✖ REQ-022/PROP-205: music threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.221292ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/music.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2458,7 +2478,7 @@ test at test/unit/agent-id-threading.test.ts:1:1065
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1540
-✖ REQ-022/PROP-205: music OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.182ms)
+✖ REQ-022/PROP-205: music OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.20325ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/music.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2475,7 +2495,7 @@ test at test/unit/agent-id-threading.test.ts:1:1540
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1065
-✖ REQ-022/PROP-205: speech threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.20075ms)
+✖ REQ-022/PROP-205: speech threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.177417ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/speech.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2492,7 +2512,7 @@ test at test/unit/agent-id-threading.test.ts:1:1065
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1540
-✖ REQ-022/PROP-205: speech OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.618084ms)
+✖ REQ-022/PROP-205: speech OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.142791ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/speech.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2509,7 +2529,7 @@ test at test/unit/agent-id-threading.test.ts:1:1540
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1065
-✖ REQ-022/PROP-205: search threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.34925ms)
+✖ REQ-022/PROP-205: search threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.121958ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/search.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2526,7 +2546,7 @@ test at test/unit/agent-id-threading.test.ts:1:1065
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1540
-✖ REQ-022/PROP-205: search OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.172208ms)
+✖ REQ-022/PROP-205: search OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.126166ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/search.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2543,7 +2563,7 @@ test at test/unit/agent-id-threading.test.ts:1:1540
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1065
-✖ REQ-022/PROP-205: exa threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.130375ms)
+✖ REQ-022/PROP-205: exa threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.138583ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/exa.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2560,7 +2580,7 @@ test at test/unit/agent-id-threading.test.ts:1:1065
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1540
-✖ REQ-022/PROP-205: exa OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.232167ms)
+✖ REQ-022/PROP-205: exa OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.131833ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/exa.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2577,7 +2597,7 @@ test at test/unit/agent-id-threading.test.ts:1:1540
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1065
-✖ REQ-022/PROP-205: markets threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.160334ms)
+✖ REQ-022/PROP-205: markets threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.1235ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/markets.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2594,7 +2614,7 @@ test at test/unit/agent-id-threading.test.ts:1:1065
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1540
-✖ REQ-022/PROP-205: markets OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.129833ms)
+✖ REQ-022/PROP-205: markets OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.116458ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/markets.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2611,7 +2631,7 @@ test at test/unit/agent-id-threading.test.ts:1:1540
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1065
-✖ REQ-022/PROP-205: price threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.126917ms)
+✖ REQ-022/PROP-205: price threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.118291ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/price.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2628,7 +2648,7 @@ test at test/unit/agent-id-threading.test.ts:1:1065
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1540
-✖ REQ-022/PROP-205: price OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.140875ms)
+✖ REQ-022/PROP-205: price OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.122916ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/price.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2645,7 +2665,7 @@ test at test/unit/agent-id-threading.test.ts:1:1540
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1065
-✖ REQ-022/PROP-205: rpc threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.13325ms)
+✖ REQ-022/PROP-205: rpc threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.116542ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/rpc.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2662,7 +2682,7 @@ test at test/unit/agent-id-threading.test.ts:1:1065
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1540
-✖ REQ-022/PROP-205: rpc OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.125833ms)
+✖ REQ-022/PROP-205: rpc OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.289833ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/rpc.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2679,7 +2699,7 @@ test at test/unit/agent-id-threading.test.ts:1:1540
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1065
-✖ REQ-022/PROP-205: defi threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.12675ms)
+✖ REQ-022/PROP-205: defi threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.351333ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/defi.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2696,7 +2716,7 @@ test at test/unit/agent-id-threading.test.ts:1:1065
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1540
-✖ REQ-022/PROP-205: defi OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.110209ms)
+✖ REQ-022/PROP-205: defi OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.122958ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/defi.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2713,7 +2733,7 @@ test at test/unit/agent-id-threading.test.ts:1:1540
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1065
-✖ REQ-022/PROP-205: modal threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.147125ms)
+✖ REQ-022/PROP-205: modal threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.1775ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/modal.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2730,7 +2750,7 @@ test at test/unit/agent-id-threading.test.ts:1:1065
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1540
-✖ REQ-022/PROP-205: modal OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.114792ms)
+✖ REQ-022/PROP-205: modal OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.120041ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/modal.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2747,7 +2767,7 @@ test at test/unit/agent-id-threading.test.ts:1:1540
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1065
-✖ REQ-022/PROP-205: phone threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.136917ms)
+✖ REQ-022/PROP-205: phone threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.119167ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/phone.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2764,7 +2784,7 @@ test at test/unit/agent-id-threading.test.ts:1:1065
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1540
-✖ REQ-022/PROP-205: phone OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.122042ms)
+✖ REQ-022/PROP-205: phone OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.122084ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/phone.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2781,7 +2801,7 @@ test at test/unit/agent-id-threading.test.ts:1:1540
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1065
-✖ REQ-022/PROP-205: surf threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.110125ms)
+✖ REQ-022/PROP-205: surf threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.112625ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/surf.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2798,7 +2818,7 @@ test at test/unit/agent-id-threading.test.ts:1:1065
   }
 
 test at test/unit/agent-id-threading.test.ts:1:1540
-✖ REQ-022/PROP-205: surf OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.097208ms)
+✖ REQ-022/PROP-205: surf OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (1.320083ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/surf.js' imported from /Users/anicca/blockrun-cli/test/unit/agent-id-threading.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2815,91 +2835,91 @@ test at test/unit/agent-id-threading.test.ts:1:1540
   }
 
 test at test/unit/body.test.ts:1:1
-✖ test/unit/body.test.ts (269.871084ms)
+✖ test/unit/body.test.ts (194.438208ms)
   'test failed'
 
 test at test/unit/budget-limit.test.ts:1:1
-✖ test/unit/budget-limit.test.ts (249.013667ms)
+✖ test/unit/budget-limit.test.ts (192.635291ms)
   'test failed'
 
 test at test/unit/budget.test.ts:1:1
-✖ test/unit/budget.test.ts (248.135458ms)
+✖ test/unit/budget.test.ts (205.346459ms)
   'test failed'
 
 test at test/unit/chat.test.ts:1:1
-✖ test/unit/chat.test.ts (236.381708ms)
+✖ test/unit/chat.test.ts (190.543041ms)
   'test failed'
 
 test at test/unit/cli-budget-schema.test.ts:1:1
-✖ test/unit/cli-budget-schema.test.ts (231.419ms)
+✖ test/unit/cli-budget-schema.test.ts (165.78ms)
   'test failed'
 
 test at test/unit/defi.test.ts:1:1
-✖ test/unit/defi.test.ts (191.898875ms)
+✖ test/unit/defi.test.ts (185.700125ms)
   'test failed'
 
 test at test/unit/dex.test.ts:1:1
-✖ test/unit/dex.test.ts (173.135ms)
+✖ test/unit/dex.test.ts (167.414083ms)
   'test failed'
 
 test at test/unit/errors.test.ts:1:1
-✖ test/unit/errors.test.ts (175.317833ms)
+✖ test/unit/errors.test.ts (160.075333ms)
   'test failed'
 
 test at test/unit/exa-alias.test.ts:1:1
-✖ test/unit/exa-alias.test.ts (168.455291ms)
+✖ test/unit/exa-alias.test.ts (179.75125ms)
   'test failed'
 
 test at test/unit/exa.test.ts:1:1
-✖ test/unit/exa.test.ts (157.138875ms)
+✖ test/unit/exa.test.ts (178.456958ms)
   'test failed'
 
 test at test/unit/image.test.ts:1:1
-✖ test/unit/image.test.ts (153.38425ms)
+✖ test/unit/image.test.ts (166.067334ms)
   'test failed'
 
 test at test/unit/json-flag.test.ts:1:1
-✖ test/unit/json-flag.test.ts (156.83875ms)
+✖ test/unit/json-flag.test.ts (166.168292ms)
   'test failed'
 
 test at test/unit/markets.test.ts:1:1
-✖ test/unit/markets.test.ts (177.952542ms)
+✖ test/unit/markets.test.ts (173.454916ms)
   'test failed'
 
 test at test/unit/modal.test.ts:1:1
-✖ test/unit/modal.test.ts (172.802708ms)
+✖ test/unit/modal.test.ts (158.165666ms)
   'test failed'
 
 test at test/unit/models.test.ts:1:1
-✖ test/unit/models.test.ts (161.25ms)
+✖ test/unit/models.test.ts (177.810584ms)
   'test failed'
 
 test at test/unit/music.test.ts:1:1
-✖ test/unit/music.test.ts (169.755459ms)
+✖ test/unit/music.test.ts (239.43925ms)
   'test failed'
 
 test at test/unit/path-safety.test.ts:1:1
-✖ test/unit/path-safety.test.ts (165.655875ms)
+✖ test/unit/path-safety.test.ts (211.601666ms)
   'test failed'
 
 test at test/unit/phone.test.ts:1:1
-✖ test/unit/phone.test.ts (182.76925ms)
+✖ test/unit/phone.test.ts (219.757708ms)
   'test failed'
 
 test at test/unit/price.test.ts:1:1
-✖ test/unit/price.test.ts (195.094084ms)
+✖ test/unit/price.test.ts (194.741333ms)
   'test failed'
 
 test at test/unit/realface.test.ts:1:1
-✖ test/unit/realface.test.ts (186.24525ms)
+✖ test/unit/realface.test.ts (182.040084ms)
   'test failed'
 
 test at test/unit/rpc.test.ts:1:1
-✖ test/unit/rpc.test.ts (169.083375ms)
+✖ test/unit/rpc.test.ts (177.627833ms)
   'test failed'
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: wallet schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (1.305625ms)
+✖ PROP-002: wallet schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (1.360125ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/wallet.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2916,7 +2936,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: wallet schema.safeParse() rejects the documented invalid example (0.23975ms)
+✖ PROP-002: wallet schema.safeParse() rejects the documented invalid example (0.226667ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/wallet.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2933,7 +2953,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: chat schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.17075ms)
+✖ PROP-002: chat schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.174959ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/chat.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2950,7 +2970,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: chat schema.safeParse() rejects the documented invalid example (0.160333ms)
+✖ PROP-002: chat schema.safeParse() rejects the documented invalid example (0.173083ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/chat.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2967,7 +2987,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: models schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.158792ms)
+✖ PROP-002: models schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.159042ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/models.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -2984,7 +3004,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: models schema.safeParse() rejects the documented invalid example (0.174208ms)
+✖ PROP-002: models schema.safeParse() rejects the documented invalid example (0.162541ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/models.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3001,7 +3021,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: image schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.204208ms)
+✖ PROP-002: image schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.169083ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/image.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3018,7 +3038,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: image schema.safeParse() rejects the documented invalid example (0.144959ms)
+✖ PROP-002: image schema.safeParse() rejects the documented invalid example (0.162541ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/image.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3035,7 +3055,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: video schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.993125ms)
+✖ PROP-002: video schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.153958ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/video.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3052,7 +3072,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: video schema.safeParse() rejects the documented invalid example (0.906459ms)
+✖ PROP-002: video schema.safeParse() rejects the documented invalid example (0.189125ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/video.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3069,7 +3089,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: realface schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.534375ms)
+✖ PROP-002: realface schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.150416ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/realface.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3086,7 +3106,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: realface schema.safeParse() rejects the documented invalid example (0.507417ms)
+✖ PROP-002: realface schema.safeParse() rejects the documented invalid example (0.148333ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/realface.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3103,7 +3123,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: music schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.200917ms)
+✖ PROP-002: music schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.11775ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/music.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3120,7 +3140,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: music schema.safeParse() rejects the documented invalid example (0.135666ms)
+✖ PROP-002: music schema.safeParse() rejects the documented invalid example (0.727708ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/music.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3137,7 +3157,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: speech schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.139375ms)
+✖ PROP-002: speech schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.192458ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/speech.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3154,7 +3174,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: speech schema.safeParse() rejects the documented invalid example (0.11525ms)
+✖ PROP-002: speech schema.safeParse() rejects the documented invalid example (0.134166ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/speech.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3171,7 +3191,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: search schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.11625ms)
+✖ PROP-002: search schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.144417ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/search.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3188,7 +3208,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: search schema.safeParse() rejects the documented invalid example (0.2915ms)
+✖ PROP-002: search schema.safeParse() rejects the documented invalid example (0.116833ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/search.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3205,7 +3225,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: exa schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.510333ms)
+✖ PROP-002: exa schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.118416ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/exa.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3222,7 +3242,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: exa schema.safeParse() rejects the documented invalid example (0.363875ms)
+✖ PROP-002: exa schema.safeParse() rejects the documented invalid example (0.115542ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/exa.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3239,7 +3259,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: markets schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.286291ms)
+✖ PROP-002: markets schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.121458ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/markets.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3256,7 +3276,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: markets schema.safeParse() rejects the documented invalid example (0.130875ms)
+✖ PROP-002: markets schema.safeParse() rejects the documented invalid example (0.116208ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/markets.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3273,7 +3293,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: price schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.128166ms)
+✖ PROP-002: price schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.117166ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/price.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3290,7 +3310,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: price schema.safeParse() rejects the documented invalid example (0.121917ms)
+✖ PROP-002: price schema.safeParse() rejects the documented invalid example (0.109084ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/price.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3307,7 +3327,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: dex schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.125542ms)
+✖ PROP-002: dex schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.115ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/dex.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3324,7 +3344,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: dex schema.safeParse() rejects the documented invalid example (0.128542ms)
+✖ PROP-002: dex schema.safeParse() rejects the documented invalid example (0.1225ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/dex.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3341,7 +3361,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: rpc schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.114666ms)
+✖ PROP-002: rpc schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.122584ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/rpc.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3358,7 +3378,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: rpc schema.safeParse() rejects the documented invalid example (0.110333ms)
+✖ PROP-002: rpc schema.safeParse() rejects the documented invalid example (0.11075ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/rpc.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3375,7 +3395,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: defi schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.942209ms)
+✖ PROP-002: defi schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.112209ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/defi.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3392,7 +3412,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: defi schema.safeParse() rejects the documented invalid example (0.500667ms)
+✖ PROP-002: defi schema.safeParse() rejects the documented invalid example (0.101917ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/defi.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3409,7 +3429,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: modal schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.352166ms)
+✖ PROP-002: modal schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (2.969125ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/modal.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3426,7 +3446,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: modal schema.safeParse() rejects the documented invalid example (0.2875ms)
+✖ PROP-002: modal schema.safeParse() rejects the documented invalid example (0.498875ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/modal.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3443,7 +3463,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: phone schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.28125ms)
+✖ PROP-002: phone schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.610542ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/phone.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3460,7 +3480,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: phone schema.safeParse() rejects the documented invalid example (0.297458ms)
+✖ PROP-002: phone schema.safeParse() rejects the documented invalid example (0.8645ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/phone.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3477,7 +3497,7 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/schema-parity.test.ts:1:354
-✖ PROP-002: surf schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.282167ms)
+✖ PROP-002: surf schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.454875ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/surf.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3494,7 +3514,7 @@ test at test/unit/schema-parity.test.ts:1:354
   }
 
 test at test/unit/schema-parity.test.ts:1:905
-✖ PROP-002: surf schema.safeParse() rejects the documented invalid example (0.282584ms)
+✖ PROP-002: surf schema.safeParse() rejects the documented invalid example (0.211917ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/surf.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
       at finalizeResolution (node:internal/modules/esm/resolve:275:11)
       at moduleResolve (node:internal/modules/esm/resolve:865:10)
@@ -3511,25 +3531,25 @@ test at test/unit/schema-parity.test.ts:1:905
   }
 
 test at test/unit/search-alias.test.ts:1:1
-✖ test/unit/search-alias.test.ts (161.245833ms)
+✖ test/unit/search-alias.test.ts (156.678541ms)
   'test failed'
 
 test at test/unit/search.test.ts:1:1
-✖ test/unit/search.test.ts (167.823791ms)
+✖ test/unit/search.test.ts (166.655666ms)
   'test failed'
 
 test at test/unit/speech.test.ts:1:1
-✖ test/unit/speech.test.ts (166.203708ms)
+✖ test/unit/speech.test.ts (162.076ms)
   'test failed'
 
 test at test/unit/surf.test.ts:1:1
-✖ test/unit/surf.test.ts (177.093542ms)
+✖ test/unit/surf.test.ts (146.880125ms)
   'test failed'
 
 test at test/unit/video.test.ts:1:1
-✖ test/unit/video.test.ts (111.476042ms)
+✖ test/unit/video.test.ts (146.889792ms)
   'test failed'
 
 test at test/unit/wallet.test.ts:1:1
-✖ test/unit/wallet.test.ts (114.778959ms)
+✖ test/unit/wallet.test.ts (141.18125ms)
   'test failed'
