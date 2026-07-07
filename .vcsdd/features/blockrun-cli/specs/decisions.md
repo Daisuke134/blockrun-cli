@@ -242,9 +242,11 @@ The impure shell, `src/shell/budget-store.ts` (per verification-architecture.md 
 owns the actual file I/O around these pure functions:
 
 ```ts
-export function readLedger(): CliBudgetLedger;                 // reads ~/.blockrun/cli-budget.json, or emptyLedger() if absent
+export function readLedger(): CliBudgetLedger;                 // reads ~/.blockrun/cli-budget.json, or emptyLedger(seed) if absent
 export function writeLedgerAtomic(ledger: CliBudgetLedger): void; // write to cli-budget.json.tmp-<pid> in the SAME dir, then fs.renameSync over the target (REQ-019b)
 ```
+
+`readLedger()` is the ONLY place that reads `process.env.BLOCKRUN_BUDGET_LIMIT`, and ONLY when the file does not yet exist (`emptyLedger(parseBudgetLimitEnv(process.env.BLOCKRUN_BUDGET_LIMIT), () => new Date().toISOString())`) — per REQ-019a's v4 addition, once the file exists on disk, `readLedger()` decodes it as-is and never re-consults the env var again, so a later change to `BLOCKRUN_BUDGET_LIMIT` has zero effect on an already-persisted `global.limit` (tested in `test/integration/budget-store.test.ts`, not in the pure `cli-budget-schema.test.ts`, since "does the file exist yet" is inherently an fs/impure-shell question).
 
 Test-only seam: `readLedger`/`writeLedgerAtomic` resolve the file path via
 `path.join(os.homedir(), ".blockrun", "cli-budget.json")` — same `os.homedir()`/`HOME`

@@ -46,6 +46,48 @@ test("REQ-019b: a write goes through a sibling .tmp-<pid> file, never a direct i
   }
 });
 
+test("REQ-019a (v4): BLOCKRUN_BUDGET_LIMIT seeds global.limit ONLY when the ledger file does not yet exist", async () => {
+  const home = freshHome();
+  const prevHome = process.env.HOME;
+  const prevEnvLimit = process.env.BLOCKRUN_BUDGET_LIMIT;
+  process.env.HOME = home;
+  try {
+    process.env.BLOCKRUN_BUDGET_LIMIT = "5";
+    const { readLedger, writeLedgerAtomic } = await import(`../../src/shell/budget-store.js?home=${home}-noreseed`);
+    // First read: no file yet -> seeded from the env var.
+    const first = readLedger();
+    assert.equal(first.global.limit, 5);
+    writeLedgerAtomic(first); // persist it, so the file now exists on disk
+
+    // The env var changes AFTER the file exists — REQ-019a (v4): this must have NO
+    // effect on the already-persisted global.limit; only `wallet budget set/clear`
+    // may change it thereafter.
+    process.env.BLOCKRUN_BUDGET_LIMIT = "20";
+    const second = readLedger();
+    assert.equal(second.global.limit, 5, "an existing ledger file's limit must NOT be re-seeded by a later env change");
+  } finally {
+    process.env.HOME = prevHome;
+    if (prevEnvLimit === undefined) delete process.env.BLOCKRUN_BUDGET_LIMIT;
+    else process.env.BLOCKRUN_BUDGET_LIMIT = prevEnvLimit;
+  }
+});
+
+test("REQ-019a: BLOCKRUN_BUDGET_LIMIT unset or non-positive seeds global.limit:null on first read (no file yet)", async () => {
+  const home = freshHome();
+  const prevHome = process.env.HOME;
+  const prevEnvLimit = process.env.BLOCKRUN_BUDGET_LIMIT;
+  process.env.HOME = home;
+  try {
+    delete process.env.BLOCKRUN_BUDGET_LIMIT;
+    const { readLedger } = await import(`../../src/shell/budget-store.js?home=${home}-nullseed`);
+    assert.equal(readLedger().global.limit, null);
+  } finally {
+    process.env.HOME = prevHome;
+    if (prevEnvLimit === undefined) delete process.env.BLOCKRUN_BUDGET_LIMIT;
+    else process.env.BLOCKRUN_BUDGET_LIMIT = prevEnvLimit;
+  }
+});
+
 test("REQ-019b: a stray leftover .tmp-<pid> file (simulating a kill BEFORE rename) leaves the ORIGINAL target intact on the next read", async () => {
   const home = freshHome();
   const prevHome = process.env.HOME;
