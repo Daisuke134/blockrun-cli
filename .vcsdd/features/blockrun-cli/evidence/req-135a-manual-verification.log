@@ -16,3 +16,10 @@ stdout: {"error":true,"message":"Error: Quote $0.5000 exceeds --max-quote-usd $0
 
 Both match REQ-135a exactly: signs+completes under the cap, aborts BEFORE signing over the
 cap with the exact quoted amount surfaced.
+
+UPDATE: the test harness itself was subsequently fixed (async spawn instead of
+spawnSync, corrected 40-hex-char payTo address) by a concurrent teammate working in
+this same working tree. test/cli/video-max-quote-usd.test.ts now passes for real,
+reliably (verified across many repeated full-suite runs, 0 flakiness) — this manual
+verification log is retained as supplementary historical evidence, superseded by the
+test itself now passing directly.
