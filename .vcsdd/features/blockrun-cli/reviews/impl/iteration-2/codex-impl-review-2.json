@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "blocking": [],
+  "advisory": [
+    "npm test could not run in this read-only sandbox because tsx failed to create its IPC pipe under /tmp (EPERM). npm run typecheck passed.",
+    "SSRF protection covers literal blocked hosts on each local fetch redirect hop via redirect:\"manual\" and rechecking Location targets. It intentionally does not protect against DNS rebinding/public hostnames resolving to private IPs.",
+    "Solana payment path still has a valid creation route via wallet --action chain --chain solana. The solana-x402 error text still says wallet --action setup provisions Solana, but setup is Base-default unless Solana is already active."
+  ],
+  "summary": "Round-2 fixes are real: quote reverify is wired before signing on video/music/speech/realface plus Solana image; commit re-reads and preserves fresh per-agent ledger entries; image local fetch SSRF checks redirect hops; rpc now rejects method+body; the quote getter test is non-vacuous; and view-only wallet status/chain no longer creates Solana while explicit Solana chain switching still does."
+}
