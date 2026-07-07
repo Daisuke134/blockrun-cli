@@ -54,6 +54,21 @@ test("REQ-016a: REPEATED view-only `wallet --action chain` calls on the SAME HOM
   }
 });
 
+test("REQ-016a: REPEATED `wallet` (default status action) calls on the SAME HOME all report 'base' — status must not create a Solana wallet either", () => {
+  // Regression for the exact scenario the reviewer caught live: `status` also calls
+  // ensureBothWallets() unconditionally before this fix, so a first `wallet` call
+  // would create ~/.blockrun/.solana-session, permanently flipping every SUBSEQUENT
+  // invocation (of ANY command, not just wallet) to Solana via REQ-016 rule 3.
+  const home = mkdtempSync(join(tmpdir(), "blockrun-cli-status-ordering-repeat-"));
+  for (let i = 0; i < 3; i++) {
+    const res = runCli(["wallet", "--json"], home);
+    assert.equal(res.status, 0, `call #${i + 1} — stdout: ${res.stdout}\nstderr: ${res.stderr}`);
+    const parsed = JSON.parse(res.stdout);
+    assert.equal(parsed.activeChain, "base", `call #${i + 1} must still report base`);
+    assert.equal(parsed.solana, null, `call #${i + 1}: no Solana wallet should exist yet`);
+  }
+});
+
 test("FIND-007 follow-up: an EXPLICIT --chain base switch still wins over rule-3 auto-detection once a Solana wallet exists", () => {
   const home = mkdtempSync(join(tmpdir(), "blockrun-cli-chain-ordering-explicit-"));
   const first = runCli(["wallet", "--action", "chain", "--json"], home);

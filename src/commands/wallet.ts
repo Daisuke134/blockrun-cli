@@ -141,20 +141,25 @@ export async function run(
       );
     }
 
-    // Default: status — show BOTH wallets, mark the active one.
-    const both = await ensureBothWallets();
+    // Default: status — show BOTH wallets, mark the active one. REQ-016a: this is
+    // a Base-default/view-only operation, so it must NOT create a Solana wallet as
+    // a side effect (ensureBothWallets() would) — peek only, same as the `chain`
+    // action above. When no Solana wallet exists yet, its address/balance are
+    // reported as null rather than fabricated by creating one just to display it.
+    const base = ensureBaseWallet();
+    const solanaPeek = await peekSolanaWallet();
     const [baseBal, solBal] = await Promise.all([
-      getChainBalance("base", both.base.address),
-      getChainBalance("solana", both.solana.address),
+      getChainBalance("base", base.address),
+      solanaPeek ? getChainBalance("solana", solanaPeek.address) : Promise.resolve(null),
     ]);
     return ok(
       {
         activeChain: chain,
-        base: { address: both.base.address, balance: baseBal },
-        solana: { address: both.solana.address, balance: solBal },
+        base: { address: base.address, balance: baseBal },
+        solana: solanaPeek ? { address: solanaPeek.address, balance: solBal } : null,
       },
       opts.json,
-      `Active chain: ${chain.toUpperCase()}\nBase:   ${both.base.address} (${baseBal !== null ? `$${baseBal.toFixed(6)} USDC` : "unavailable"})\nSolana: ${both.solana.address} (${solBal !== null ? `$${solBal.toFixed(6)} USDC` : "unavailable"})`,
+      `Active chain: ${chain.toUpperCase()}\nBase:   ${base.address} (${baseBal !== null ? `$${baseBal.toFixed(6)} USDC` : "unavailable"})\nSolana: ${solanaPeek ? `${solanaPeek.address} (${solBal !== null ? `$${solBal.toFixed(6)} USDC` : "unavailable"})` : "(not yet created — run: blockrun wallet --action chain --chain solana)"}`,
     );
   } catch (err) {
     return fail(extractErrorMessage(err), opts.json, { chain: getChain() });

@@ -40,13 +40,26 @@ function newBudget(): BudgetState {
   return { limit: null, spent: 0, calls: 0, agents: new Map() };
 }
 
-test("REQ-105/REQ-006: `wallet status --json` prints one parseable JSON document with both chain addresses", async () => {
+test("REQ-105/REQ-006: `wallet status --json` prints one parseable JSON document with both chain addresses (when a Solana wallet already exists)", async () => {
+  peekSolanaResult = { address: "SoLTEST" }; // simulates a Solana wallet already on disk
   const budget = newBudget();
   const res = await run({ action: "status" }, { json: true }, budget);
   assert.equal(res.exitCode, 0);
   const parsed = JSON.parse(res.stdout);
   assert.equal(parsed.base.address, "0xBASE");
   assert.equal(parsed.solana.address, "SoLTEST");
+});
+
+test("REQ-016a: `wallet status` PEEKS for an existing Solana wallet, never creates one — reports null when none exists yet", async () => {
+  peekSolanaResult = null;
+  ensureBothCalled = false;
+  const budget = newBudget();
+  const res = await run({ action: "status" }, { json: true }, budget);
+  assert.equal(res.exitCode, 0);
+  assert.equal(ensureBothCalled, false, "status (a Base-default/view-only operation) must never call ensureBothWallets(), which would create the Solana wallet as a side effect");
+  const parsed = JSON.parse(res.stdout);
+  assert.equal(parsed.base.address, "0xBASE");
+  assert.equal(parsed.solana, null, "no Solana wallet exists yet, so its address must be reported as null, not fabricated by creating one");
 });
 
 test("REQ-107: wallet actions never reserve or spend against the budget ledger", async () => {

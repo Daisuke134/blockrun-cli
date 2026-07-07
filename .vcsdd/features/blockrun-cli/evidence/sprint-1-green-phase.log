@@ -1,4 +1,4 @@
-REQ-016a proper implementation (on-demand Solana wallet creation) — full suite green: 404/404.
+FIND-007 actually complete now: fixed the SAME bug in the status action (missed in the prior round). Full suite green: 406/406.
 ==================================================================
 npm run typecheck
 
@@ -17,91 +17,56 @@ CLI tsup v8.5.1
 CLI Target: es2022
 CLI Cleaning output folder
 ESM Build start
-ESM dist/index.js 142.05 KB
-ESM ⚡️ Build success in 62ms
+ESM dist/index.js 142.23 KB
+ESM ⚡️ Build success in 72ms
 ==================================================================
 npm test — run 1/3
-✔ REQ-106: revoke requires agent_id (0.033167ms)
-✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.038916ms)
-✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.03575ms)
-✔ schema.safeParse rejects a non-numeric agent_limit (0.664792ms)
-ℹ tests 404
+✔ REQ-106: revoke requires agent_id (0.031291ms)
+✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.039042ms)
+✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.035417ms)
+✔ schema.safeParse rejects a non-numeric agent_limit (0.6855ms)
+ℹ tests 406
 ℹ suites 0
-ℹ pass 404
+ℹ pass 406
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 6392.996792
+ℹ duration_ms 7774.31475
 ==================================================================
 npm test — run 2/3 (stability)
-✔ REQ-106: revoke requires agent_id (0.04775ms)
-✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.056375ms)
-✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.043708ms)
-✔ schema.safeParse rejects a non-numeric agent_limit (0.856833ms)
-ℹ tests 404
+✔ REQ-106: revoke requires agent_id (0.034166ms)
+✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.045958ms)
+✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.0375ms)
+✔ schema.safeParse rejects a non-numeric agent_limit (0.673167ms)
+ℹ tests 406
 ℹ suites 0
-ℹ pass 404
+ℹ pass 406
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 6574.627542
+ℹ duration_ms 9276.074167
 ==================================================================
 npm test — run 3/3
-✔ REQ-106: revoke requires agent_id (0.037166ms)
-✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.046958ms)
-✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.042167ms)
-✔ schema.safeParse rejects a non-numeric agent_limit (1.842083ms)
-ℹ tests 404
+✔ REQ-106: revoke requires agent_id (0.03425ms)
+✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.047792ms)
+✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.03925ms)
+✔ schema.safeParse rejects a non-numeric agent_limit (0.729917ms)
+ℹ tests 406
 ℹ suites 0
-ℹ pass 404
+ℹ pass 406
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 8406.675833
-
+ℹ duration_ms 11063.411625
 ==================================================================
-REQ-016a full implementation (beyond the initial FIND-007 ordering fix)
-==================================================================
-
-The initially-committed FIND-007 fix (capture getChain() before ensureBothWallets()
-in the `chain` action) only corrected THAT SINGLE invocation's own displayed value —
-it did NOT stop ensureBothWallets() from unconditionally creating
-~/.blockrun/.solana-session on every `wallet chain` call, including view-only ones.
-Per REQ-016a's literal text ("SHALL create the Solana wallet file ONLY when Solana
-is the explicitly-selected or required chain ... SHALL NOT create it as an
-unconditional side-effect of view-only ... operations"), that residual gap meant a
-fresh user's FIRST `wallet chain` call would still permanently create the file,
-flipping ALL FUTURE invocations (of any command) to Solana via REQ-016's rule 3 —
-exactly the "permanently rerouting" harm the finding described.
-
-Fixed properly this round:
-- src/shell/wallet.ts: added ensureBaseWallet() (Base is always safe to
-  create/ensure — REQ-016 rule 4's own default) and peekSolanaWallet() (READ-ONLY —
-  checks for an existing ~/.blockrun/.solana-session via the SDK's loadSolanaWallet(),
-  never creates one).
-- src/commands/wallet.ts's `chain` action: now calls ensureBothWallets() (which
-  creates the Solana wallet) ONLY when the caller explicitly requests --chain
-  solana. A view-only call (no --chain flag) or an explicit switch to --chain base
-  now uses ensureBaseWallet() + peekSolanaWallet() instead — never creating a
-  Solana wallet as a side effect. When no Solana wallet exists yet, `solana` is
-  reported as `null` (with a human-readable "not yet created" hint), not
-  fabricated.
-
-New regression tests:
-- test/integration/wallet.test.ts: 3 new mocked tests proving ensureBothWallets()
-  is called ONLY on an explicit --chain solana switch, never for view-only calls,
-  and that peekSolanaWallet()'s null/existing result is surfaced correctly.
-- test/cli/wallet-chain-ordering.test.ts: strengthened to prove, against the REAL
-  built binary and a REAL fresh HOME, that REPEATED view-only `wallet chain` calls
-  ALL report "base" indefinitely (no cross-invocation flip at all now, not just a
-  single-call ordering fix), and that an explicit switch to solana-then-back-to-base
-  still correctly persists base via the REQ-016 rule-1 preference file even once a
-  real Solana wallet exists on disk.
-
-Full suite: 404/404 pass (was 400 before this round; +4 new tests: 3 mocked
-integration + 1 additional real-fs/real-binary case). typecheck clean, build
-clean, 3 consecutive full-suite runs all 404/404 (no flakiness, including the
-real-network/real-fs wallet tests).
+Manual live verification (exactly what team-lead tested manually):
+--- fresh HOME, wallet --action chain --json ---
+{"activeChain":"base","base":"0xaB55d4B1A42CEC77ebaEC51c7cB23dD796fd177f","solana":null,"activeBalance":0}
+--- fresh HOME, wallet --json run twice ---
+run 1:
+{"activeChain":"base","base":{"address":"0x7Ae32C2940d335dEcD7D579A0289C06021438869","balance":0},"solana":null}
+run 2:
+{"activeChain":"base","base":{"address":"0x7Ae32C2940d335dEcD7D579A0289C06021438869","balance":0},"solana":null}
