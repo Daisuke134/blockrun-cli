@@ -1,0 +1,8 @@
+{
+  "ok": true,
+  "blocking": [],
+  "advisory": [
+    "verification-architecture.md still names explicit alias-equivalence test files only for search/exa, while behavioral-spec.md now requires alias equivalence/conflict coverage for chat thinking and positional aliases too. This is not a contradiction because args-<command>.test.ts plus REQ-023 can cover them, but adding named test-file comments for chat/image/video/music/speech aliases would reduce verifier ambiguity."
+  ],
+  "summary": "All 3 round-2 blockers are fixed: section 6.2 no longer contradicts persistent ledger rules; chat now exposes canonical --thinking with --thinking-budget-tokens as an alias plus conflict rejection; image/video/music/speech now document canonical --prompt/--input flags with positional aliases and conflict rejection. Section 4.3 examples use canonical flags, including video --prompt, and REQ-019a includes the env no-reseed clause. No new blocking contradiction found."
+}
