@@ -51,7 +51,7 @@ export async function run(
         // deterministic cap the caller chose; the budget re-check below is the
         // general REQ-220 rail and doesn't know about this flag).
         if (maxQuoteUsd !== undefined && quotedUsd !== null && quotedUsd > maxQuoteUsd) {
-          throw new Error(`Quote $${quotedUsd.toFixed(4)} exceeds --max-quote-usd $${maxQuoteUsd.toFixed(2)} — aborting before signing.`);
+          throw new Error(`Quote $${quotedUsd.toFixed(4)} exceeds --max-quote-usd $${maxQuoteUsd.toFixed(4)} — aborting before signing.`);
         }
         // REQ-220: re-validate the REAL quoted amount against both the
         // ephemeral per-invocation cap and the persisted ledger cap BEFORE any

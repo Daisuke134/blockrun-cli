@@ -149,6 +149,30 @@ test("REQ-135a: quote > --max-quote-usd aborts BEFORE signing (createPaymentPayl
   }
 });
 
+test("REQ-135a display fix: a sub-cent --max-quote-usd cap (0.001) is shown with enough precision, not rounded to a self-contradictory $0.00", async () => {
+  // Regression for the bug team-lead caught during E2E: --max-quote-usd was
+  // formatted with .toFixed(2), so a cap of 0.001 rendered as "$0.00" — making
+  // "Quote $0.0525 exceeds --max-quote-usd $0.00" read as if ANY quote exceeds
+  // a zero cap, when the actual configured cap was $0.001. Fixed by formatting
+  // the cap with the same .toFixed(4) precision already used for the quote.
+  const stub = await startStubServer("expensive-must-not-sign");
+  const { server, url } = stub;
+  const home = mkdtempSync(join(tmpdir(), "blockrun-cli-quote-gate-subcent-"));
+  try {
+    const res = await runCli(
+      ["video", "a red cube spinning", "--model", "xai/grok-imagine-video", "--duration-seconds", "1", "--max-quote-usd", "0.001", "--json"],
+      url, home,
+    );
+    assert.notEqual(res.status, 0, "must abort when the real quote exceeds --max-quote-usd");
+    assert.equal(stub.signedSubmit, false, "no signature is ever produced over the cap");
+    const parsed = JSON.parse(res.stdout);
+    assert.match(parsed.message, /max-quote-usd \$0\.0010\b/, "the configured sub-cent cap must be shown as 0.001, not rounded away to 0.00");
+    assert.doesNotMatch(parsed.message, /max-quote-usd \$0\.00\b/, "must never render the sub-cent cap as a self-contradictory $0.00");
+  } finally {
+    server.close();
+  }
+});
+
 test("REQ-135a: quote > --max-quote-usd also surfaces the exact quote in the non-JSON human error text", async () => {
   const stub = await startStubServer("expensive-must-not-sign");
   const { server, url } = stub;
