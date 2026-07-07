@@ -87,9 +87,22 @@ export async function run(
     }
 
     if (action === "chain") {
+      // REQ-016/impl-review FIND-007: capture the CURRENT chain BEFORE
+      // ensureBothWallets() — that call auto-creates ~/.blockrun/.solana-session on
+      // first run, and getChain()'s rule 3 ("non-empty .solana-session exists ->
+      // solana") would then fire on the file THIS invocation just created,
+      // permanently flipping a fresh user's default chain to Solana on their very
+      // first `wallet --action chain` call (even a view-only one with no --chain
+      // flag), breaking Base-only paid commands (video/music/speech/realface)
+      // afterward. Mirrors the status fallback branch below, which already reads
+      // getChain() before its own ensureBothWallets() call. Deliberate divergence
+      // from blockrun-mcp's wallet.ts:150-155, which has this same ordering bug —
+      // NOT inherited here since it causes real payment-routing harm, not a
+      // cosmetic quirk.
+      const currentChain = getChain();
       const both = await ensureBothWallets();
-      if (targetChain && targetChain !== getChain()) setChain(targetChain);
-      const active = getChain();
+      if (targetChain && targetChain !== currentChain) setChain(targetChain);
+      const active = targetChain ?? currentChain;
       const activeWallet = active === "solana" ? both.solana : both.base;
       const activeBalance = await getChainBalance(active, activeWallet.address);
       return ok(
