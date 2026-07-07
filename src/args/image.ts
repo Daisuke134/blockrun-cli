@@ -83,3 +83,39 @@ export function buildRequest(flags: Record<string, unknown>): BuildResult<ImageR
   if (typeof flags.agentId === "string") value.agent_id = flags.agentId;
   return { ok: true, value };
 }
+
+/**
+ * REQ-127/REQ-220: endpoint + body for a Solana-gateway image call. Pure —
+ * ported from blockrun-mcp's image.ts buildSolanaImageRequest. The Solana
+ * gateway's schema takes quality as low|medium|high|auto (the OpenAI latency
+ * knob), not this tool's standard|hd — map hd→high and drop standard (the
+ * gateway default) so the request isn't rejected with a 400.
+ */
+export function buildSolanaImageRequest(
+  action: "generate" | "edit",
+  params: { model: string; prompt: string; size: string; quality?: string; image?: string | string[]; mask?: string },
+): { endpoint: string; body: Record<string, unknown> } {
+  if (action === "edit") {
+    return {
+      endpoint: "/v1/images/image2image",
+      body: {
+        model: params.model,
+        prompt: params.prompt,
+        image: params.image,
+        size: params.size,
+        n: 1,
+        ...(params.mask ? { mask: params.mask } : {}),
+      },
+    };
+  }
+  return {
+    endpoint: "/v1/images/generations",
+    body: {
+      model: params.model,
+      prompt: params.prompt,
+      size: params.size,
+      n: 1,
+      ...(params.quality === "hd" ? { quality: "high" } : {}),
+    },
+  };
+}

@@ -6,9 +6,18 @@
 // user-facing feature). Two branches: (a) quote <= --max-quote-usd -> signs and
 // completes; (b) quote > --max-quote-usd -> aborts BEFORE any payment signature is
 // produced, nonzero exit, exact quote surfaced in both human and --json output.
+//
+// IMPORTANT (fixed per Green-phase escalation, sprint-1-green-phase.log): this MUST use
+// async `spawn` + awaiting the child's exit, NOT `spawnSync`. `spawnSync` blocks the
+// parent process's event loop synchronously until the child exits — since the stub
+// HTTP server above runs IN-PROCESS (same event loop) via `node:http`, a `spawnSync`
+// call would freeze the very server the spawned child needs to talk to, deadlocking
+// every run until the child's own fetch timeout fires. Confirmed via a minimal repro
+// with the same architecture (in-process http.createServer + spawnSync child fetching
+// it): the server's request handler never runs while spawnSync blocks.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { createServer, type Server } from "node:http";
 import { fileURLToPath } from "node:url";
 import { mkdtempSync } from "node:fs";
@@ -26,7 +35,12 @@ function paymentRequiredHeader(amountAtomicUsdc: string): string {
       asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // Base USDC
       amount: amountAtomicUsdc,
       maxAmountRequired: amountAtomicUsdc,
-      payTo: "0x0000000000000000000000000000000000dEaD",
+      // The well-known "dead address", 40 hex chars (20 bytes) — MUST be a valid EIP-55
+      // address or the SDK's own createPaymentPayload()/getAddress() rejects it before
+      // ever reaching the network, which would falsely look like this test's gate
+      // working. (A prior draft of this fixture had only 38 hex chars — one byte short
+      // — which viem's getAddress() correctly rejects; fixed here.)
+      payTo: "0x000000000000000000000000000000000000dEaD",
       maxTimeoutSeconds: 600,
     }],
     resource: { url: "https://blockrun.ai/api/v1/videos/generations", description: "BlockRun Video Generation" },
@@ -69,11 +83,28 @@ function startStubServer(mode: "cheap-completes" | "expensive-must-not-sign"): P
   });
 }
 
-function runCli(args: string[], apiBaseUrl: string, home: string) {
-  return spawnSync(process.execPath, [CLI_ENTRY, ...args], {
-    encoding: "utf8",
-    timeout: 20_000,
-    env: { ...process.env, HOME: home, BLOCKRUN_API_BASE_URL: apiBaseUrl },
+interface CliResult { status: number | null; stdout: string; stderr: string }
+
+// Async spawn + await, so the in-process stub server's event loop keeps running while
+// the child is alive (see file-header note — this is the actual fix for the deadlock).
+function runCli(args: string[], apiBaseUrl: string, home: string): Promise<CliResult> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [CLI_ENTRY, ...args], {
+      env: { ...process.env, HOME: home, BLOCKRUN_API_BASE_URL: apiBaseUrl },
+    });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (d) => { stdout += d; });
+    child.stderr.on("data", (d) => { stderr += d; });
+    const timeout = setTimeout(() => {
+      child.kill();
+      reject(new Error(`CLI did not exit within 20s\nstdout:${stdout}\nstderr:${stderr}`));
+    }, 20_000);
+    child.on("error", (err) => { clearTimeout(timeout); reject(err); });
+    child.on("close", (status) => {
+      clearTimeout(timeout);
+      resolve({ status, stdout, stderr });
+    });
   });
 }
 
@@ -81,7 +112,7 @@ test("REQ-135a: quote <= --max-quote-usd signs and completes (createPaymentPaylo
   const { server, url } = await startStubServer("cheap-completes");
   const home = mkdtempSync(join(tmpdir(), "blockrun-cli-quote-gate-cheap-"));
   try {
-    const res = runCli(
+    const res = await runCli(
       ["video", "a red cube spinning", "--model", "xai/grok-imagine-video", "--duration-seconds", "1", "--max-quote-usd", "0.10", "--json"],
       url, home,
     );
@@ -97,7 +128,7 @@ test("REQ-135a: quote > --max-quote-usd aborts BEFORE signing (createPaymentPayl
   const { server, url, signedSubmit } = await startStubServer("expensive-must-not-sign");
   const home = mkdtempSync(join(tmpdir(), "blockrun-cli-quote-gate-expensive-"));
   try {
-    const res = runCli(
+    const res = await runCli(
       ["video", "a red cube spinning", "--model", "xai/grok-imagine-video", "--duration-seconds", "1", "--max-quote-usd", "0.10", "--json"],
       url, home,
     );
@@ -115,7 +146,7 @@ test("REQ-135a: quote > --max-quote-usd also surfaces the exact quote in the non
   const { server, url, signedSubmit } = await startStubServer("expensive-must-not-sign");
   const home = mkdtempSync(join(tmpdir(), "blockrun-cli-quote-gate-human-"));
   try {
-    const res = runCli(
+    const res = await runCli(
       ["video", "a red cube spinning", "--model", "xai/grok-imagine-video", "--duration-seconds", "1", "--max-quote-usd", "0.10"],
       url, home,
     );
