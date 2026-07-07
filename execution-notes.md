@@ -23,6 +23,11 @@ Source of truth: /goal (session)。VCSDD state = .vcsdd/。
 - spec iteration-2: adversary(Opus) PASS (0 findings)
 - codex-review-1 (gpt系独立視点): ok:false, blocking 5 (BLOCKRUN_HOME矛盾 / search非1:1 / budgetフラグ未定義 / wallet delegate永続性 / video quote-gate機構欠如) → spec v3 修正中。Opus adversary が見逃したものを別モデルが検出 = 多視点レビューの実証
 
+## E2E 準備 (Phase 5 用)
+- sandbox HOME = /Users/anicca/blockrun-cli-e2e-home、wallet Base=0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804 / Sol=HxeDzzgrMjZFnqqrEj6iZyiqx3XbeQ2Ke4ZcgdSshLZm
+- 資金: $0.59 USDC 送金済 tx 0xccbaf5adeb67e2e144be9dd091b9533a951eb7c2ea5189dff0a02e0d33f4bbe3 (from 0x810f)。予備=POL 7.1 bridge
+- 実機観測の異常2件（--json初回のonboarding漏れ / fresh環境でactiveChain=solana）→ impl-adversary に検証依頼済み
+
 ## Evidence log
 - ~/.blockrun/.session EVM addr = 0xAaD274758048A133C78b7Ac518aD2e46912e262c (Base USDC 0)
 - 0x810f6d61f7606deee2657d3083e150a222bc29c5 Base USDC = $0.2797, ETH 1.37e13 wei
