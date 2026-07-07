@@ -1,0 +1,35 @@
+{
+  "ok": false,
+  "blocking": [
+    {
+      "file": "src/commands/video.ts:49",
+      "issue": "REQ-220 is not implemented for Base manual x402 quote flows. video only checks --max-quote-usd in onQuote, while music/speech/realface pass no onQuote at all, so a real 402 quote above the estimate can be signed without rechecking the ephemeral budget or persisted ledger caps.",
+      "fix": "Pass an onQuote callback for video/music/speech/realface that calls gated.paid.reverify(quotedUsd) before signing; video should also apply --max-quote-usd in the same pre-sign callback. Add tests where quote > estimate and budget cap is between estimate and quote, asserting no PAYMENT-SIGNATURE is produced."
+    },
+    {
+      "file": "src/commands/shared.ts:42",
+      "issue": "Persisted budget commits use the ledger snapshot read before the network call. Long-running paid calls can overwrite newer spends or budget/delegate changes made by another invocation, violating REQ-019c's requirement to read the current persisted ledger when real spend settles.",
+      "fix": "On commit, re-read ~/.blockrun/cli-budget.json, re-check the actual spend against current global/agent limits, then atomically write the updated ledger. Prefer an update helper in shell/budget-store that performs read-modify-write; document/handle concurrent write limitations."
+    },
+    {
+      "file": "src/args/video.ts:96",
+      "issue": "User-supplied fetchable URLs are only checked as syntactically valid URLs. --image-url/--last-frame-url and realface --image-url accept loopback/private/link-local URLs such as http://127.0.0.1/ or http://169.254.169.254/, contrary to the SSRF guard requirement called out for user-supplied URLs.",
+      "fix": "Port the upstream isBlockedFetchHost guard and reject blocked hosts after URL parsing for video and realface URL fields; apply equivalent validation anywhere image/chat URL inputs may cause a server-side fetch. Keep http:// public URLs allowed where the schema requires generic z.string().url()."
+    },
+    {
+      "file": "src/args/rpc.ts:47",
+      "issue": "REQ-167 says exactly one of --method or --body must be provided, but buildRequest silently accepts both and ignores --method/--params when --body is present.",
+      "fix": "Add a local validation branch rejecting body !== undefined && method is present, and add unit/subprocess coverage for the conflict."
+    },
+    {
+      "file": "test/cli/video-max-quote-usd.test.ts:128",
+      "issue": "The over-quote test's no-signature assertion is vacuous. Destructuring signedSubmit invokes the getter immediately, so later assert.equal(signedSubmit, false) always checks the initial false value even if a PAYMENT-SIGNATURE request arrived.",
+      "fix": "Keep the returned stub object and assert stub.signedSubmit after runCli completes, or expose a function/getter reference. Also assert the cheap path did receive a signed submit."
+    }
+  ],
+  "advisory": [
+    "Several mocked-SDK tests still verify success/cost more than full received argument shape, especially music/speech/realface manual-x402 bodies. Tighten them to assert endpoint, body, quote callback presence, and agent_id/budget threading where applicable.",
+    "I did not run npm test/build because the workspace is read-only; this review is static."
+  ],
+  "summary": "The implementation is close structurally, but money-touching correctness is not yet acceptable: Base x402 quote gates do not recheck real quoted prices against budgets before signing, persisted ledger updates can lose concurrent spends, SSRF guards are missing on user URL inputs, and the key quote-gate test can pass even if signing happens."
+}
