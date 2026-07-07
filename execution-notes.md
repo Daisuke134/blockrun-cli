@@ -16,6 +16,11 @@ Source of truth: /goal (session)。VCSDD state = .vcsdd/。
 - npm publish しない（repo 公開まで）
 - 参照 clone: blockrun-mcp = scratchpad/blockrun-mcp (v0.28.0)
 
+## Review trail
+- spec iteration-1: adversary(Opus) FAIL (1 blocking: video E2E矛盾) → fixed
+- spec iteration-2: adversary(Opus) PASS (0 findings)
+- codex-review-1 (gpt系独立視点): ok:false, blocking 5 (BLOCKRUN_HOME矛盾 / search非1:1 / budgetフラグ未定義 / wallet delegate永続性 / video quote-gate機構欠如) → spec v3 修正中。Opus adversary が見逃したものを別モデルが検出 = 多視点レビューの実証
+
 ## Evidence log
 - ~/.blockrun/.session EVM addr = 0xAaD274758048A133C78b7Ac518aD2e46912e262c (Base USDC 0)
 - 0x810f6d61f7606deee2657d3083e150a222bc29c5 Base USDC = $0.2797, ETH 1.37e13 wei

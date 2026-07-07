@@ -1,0 +1,47 @@
+{
+  "name": "blockrun-cli",
+  "version": "0.1.0",
+  "description": "CLI wrapper exposing all 18 blockrun-mcp tools as blockrun subcommands, backed by @blockrun/llm (x402 micropayments on Base/Solana).",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "blockrun": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --experimental-test-module-mocks --test test/unit/*.test.ts test/integration/*.test.ts test/cli/*.test.ts",
+    "test:e2e": "tsx test/e2e/run-e2e.ts"
+  },
+  "keywords": [
+    "cli",
+    "blockrun",
+    "x402",
+    "micropayments",
+    "ai"
+  ],
+  "author": "BlockRun",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "dependencies": {
+    "@blockrun/llm": "2.13.0",
+    "commander": "^15.0.0",
+    "viem": "^2.21.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.0",
+    "typescript": "^6.0.3"
+  }
+}

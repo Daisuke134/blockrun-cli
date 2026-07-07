@@ -1,0 +1,37 @@
+{
+  "ok": false,
+  "blocking": [
+    {
+      "file": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+      "issue": "REQ-017 is internally contradictory: it says the CLI SHALL support BLOCKRUN_HOME, then says not to invent BLOCKRUN_HOME and to use HOME because the SDK only reads os.homedir().",
+      "fix": "Replace REQ-017 with a single rule: no BLOCKRUN_HOME support; hermetic config is achieved by spawning with HOME set. Update all config/help/test references accordingly."
+    },
+    {
+      "file": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+      "issue": "Schema fidelity is not 1:1 in several command specs. The clearest mismatch is search: source schema is path/body/agent_id, but the spec defines --query/--sources/--max-results/etc. Many paid commands also omit source agent_id from the documented flags.",
+      "fix": "For every command, list the canonical source schema fields exactly, including agent_id where present. If CLI-friendly aliases like search --query are desired, mark them explicitly as aliases that compile into the canonical body, and test both canonical and alias forms."
+    },
+    {
+      "file": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+      "issue": "Budget controls are underspecified and inconsistent: REQ-018 defines BLOCKRUN_BUDGET_LIMIT, REQ-020/REQ-220 refer to a --budget-limit flag that is never specified as a global option, and REQ-019 admits wallet budget/delegate state does not survive the one-shot CLI process model.",
+      "fix": "Add a global --budget-limit requirement with precedence relative to BLOCKRUN_BUDGET_LIMIT, or remove flag references. For wallet budget/delegate/report, either persist budget state under HOME or explicitly narrow/remove those actions for CLI v1; then align Tier 3 tests with the chosen behavior."
+    },
+    {
+      "file": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+      "issue": "The Tier 3 wallet delegate+report roundtrip is not executable if the CLI remains a fresh single-command process and budget/agent state is in-memory only; delegate state will disappear before report runs.",
+      "fix": "Either require persistent budget/agent storage and verify it across subprocesses, or change Tier 3 to only test wallet actions whose state is actually persistent, such as status/setup/chain."
+    },
+    {
+      "file": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+      "issue": "The quote-gated video E2E plan says to inspect the 402 quote before signing and decide whether to proceed, but the behavioral spec defines a non-interactive single invocation and no quote-only/max-quote mechanism. Printing the quote before immediately signing is not an executable gate.",
+      "fix": "Define a non-interactive gate, e.g. --max-quote-usd 0.10 or use a fully specified --budget-limit 0.10 for the primary video E2E. If the quote exceeds the cap, the command must abort before createPaymentPayload; if within cap, it may sign and continue."
+    }
+  ],
+  "advisory": [
+    "Tier 0 schema parity based on a manually transcribed JSON fixture is auditable but drift-prone; add a generator or snapshot script that extracts field names/enums/defaults from the MCP clone during spec verification and commits the resulting fixture.",
+    "PROP-003 places @file.json parsing in Tier 1 even though Tier 1 forbids fs; test pure JSON coercion in Tier 1 and move actual @file reading to Tier 2, or inject file contents into a pure parser.",
+    "The specs should standardize snake_case versus kebab-case flag naming. Source schemas use fields like duration_seconds, routing_profile, response_format, agent_id; the CLI examples use kebab-case. Accepting both is fine, but it must be stated and tested.",
+    "Evidence ledger columns should include the active chain and HOME path/wallet address for each Tier 3 run so real-money audit rows are reproducible and attributable."
+  ],
+  "summary": "The documents are strong on tool coverage and pricing detail, and they do enumerate all 18 MCP tools. They are not ready to execute because config, budget persistence, schema fidelity, and the video quote gate contain contradictions that would let implementation and verification diverge."
+}
