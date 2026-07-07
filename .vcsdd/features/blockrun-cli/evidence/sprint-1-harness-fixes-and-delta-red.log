@@ -1,0 +1,67 @@
+blockrun-cli — harness fixes + delta RED coverage (post-Green escalation)
+==========================================================================
+
+Context: impl-builder's Green phase landed 363/367 passing and escalated 4 failures as
+TEST-FILE defects (not implementation bugs), per .vcsdd/features/blockrun-cli/evidence/
+sprint-1-green-phase.log and req-135a-manual-verification.log. Fixed both below, then
+added the requested delta RED coverage for three implemented-but-previously-untested
+areas (Solana image, chat native anthropic, chat routing:smart).
+
+1) HARNESS FIXES (assertions unchanged, only the test mechanics were broken):
+
+   a. test/cli/video-max-quote-usd.test.ts — switched spawnSync -> async spawn + await.
+      spawnSync blocks the parent process's event loop synchronously until the child
+      exits; since the stub node:http server runs IN-PROCESS (same event loop), the
+      server's request handler could never fire while spawnSync was blocking — the
+      child's own fetch timed out waiting for a response that would never come. Also
+      fixed the stub's fixture payTo address, which was 38 hex chars (one byte short of
+      a valid 20-byte address) -> corrected to the real 40-hex-char "dead address"
+      (0x000000000000000000000000000000000000dEaD) so viem's getAddress() (used inside
+      the SDK's real createPaymentPayload, REQ-221/222) accepts it.
+      Result: all 3 sub-tests now pass (previously deadlocked -> 15s timeout failures).
+
+   b. test/integration/video.test.ts "REQ-133" — `(chainModule as any).getChain = ...`
+      illegally reassigned a property on a non-writable ES module namespace object.
+      Replaced with the file's own established pattern: a mutable `activeChain`
+      variable read by the mock.module()'d getChain(), flipped per-test instead of
+      mutating the imported namespace after the fact.
+      Result: passes (previously threw TypeError: Cannot assign to read only property).
+
+2) NEW RED/GREEN coverage for three previously-untested areas:
+
+   a. Solana image payment (REQ-220) — test/integration/image.test.ts, 2 new tests.
+      The impl for this landed on the shared working tree WHILE this fix round was in
+      progress (src/commands/image.ts + src/shell/solana-x402.ts, mirroring
+      blockrun-mcp's solana-402.ts and using the SDK's real createSolanaPaymentPayload).
+      Both new tests PASS against the real implementation:
+        - a quote within the budget cap signs and reports the REAL 402-quoted cost
+          (not the Base catalog estimate).
+        - a quote that exceeds the cap ($15 real quote vs a $0.02 cap) aborts BEFORE
+          any charge is recorded, proving the onQuote/reverify gate fires before
+          createSolanaPaymentPayload is ever reached (REQ-220's core requirement).
+
+   b. chat routing:"smart" (REQ-111/112/118) — test/integration/chat.test.ts, 3 new
+      tests. All PASS: smartChat(message, options) dispatch with routing_profile
+      threaded through; routing_profile:"free" maps to undefined (SDK dropped the free
+      profile) rather than a literal string; Solana is rejected before any network call.
+
+   c. chat native anthropic/claude-* passthrough (REQ-117, REQ-114/114a) —
+      test/integration/chat.test.ts, 4 new tests. 3 PASS: native routing to
+      messages.create (not llm.chat) on an anthropic/claude-* model; Base-only guard
+      (Solana rejected, messages.create never called); --thinking-budget-tokens compiles
+      into the native thinking object correctly.
+
+      1 FAILS — a REAL implementation gap, not a test-authoring bug: "the native
+      response's thinking block AND its signature are preserved verbatim in the CLI's
+      output". src/commands/chat.ts's native-anthropic branch does
+      `content?.find(b => b.type === "text")?.text` and returns ONLY that extracted
+      text as `{model_used, response}` — it silently discards any `type:"thinking"`
+      content block (and its `signature` field) from the response entirely. REQ-117
+      requires "route natively (verbatim thinking blocks/signatures)" — the routing
+      IS native and correct, but the response is not verbatim; the thinking block is
+      dropped, not passed through. Reported to team-lead as a genuine Green-phase gap,
+      not weakened/skipped per the project's testing rule.
+
+Full suite: `npm test` -> 375 pass / 1 fail (up from 363/367 pre-fix; the 4 escalated
+failures are now 0, plus 9 new passing tests and 1 new legitimately-failing test for the
+REQ-117 gap above).
