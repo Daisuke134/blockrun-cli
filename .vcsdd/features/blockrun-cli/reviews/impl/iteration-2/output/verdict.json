@@ -1,0 +1,113 @@
+{
+  "sprintNumber": 1,
+  "feature": "blockrun-cli",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "src/args/rpc.ts:47-58",
+          "description": "FIND-004 fixed: buildRequest() now returns { ok:false, error:\"--method conflicts with --body ...\" } when BOTH body!==undefined AND hasMethod are true, matching REQ-167's 'exactly one of' rule. Confirmed by a dedicated test (test/unit/rpc.test.ts:23, 'supplying BOTH --method and --body is a conflict error, not a silent one-wins')."
+        },
+        {
+          "type": "file",
+          "location": "src/args/image.ts:53-84 (buildRequest still delegates raw strings) + src/commands/image.ts:37-46 (toImageDataUri normalization happens in the command layer before gatePaidCall)",
+          "description": "FIND-002 fixed at the correct layer: --image/--mask are normalized via toImageDataUri (src/shell/image-fetch.ts), which routes http(s) refs through isBlockedFetchHost (src/core/ssrf.ts) before ever fetching, and local file paths through a safe extension-allowlisted readFile. This satisfies REQ-127 even though args/image.ts itself stays a raw pass-through by design (normalization is impure and belongs in the command, per the pure/impure boundary in verification-architecture.md)."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "test-output",
+          "location": "src/commands/video.ts:60-62, music.ts:44-46, speech.ts:82-84, realface.ts:98-100 (all call gated.paid.reverify(quotedUsd) inside onQuote, throwing pre-signing) + src/shell/manual-x402.ts:66-68 (onQuote fires before createPaymentPayload)",
+          "description": "FIND-001 fixed: grep for 'reverify' across src/ now shows all 5 paid commands (image, video, music, speech, realface) wired to gatePaidCall().paid.reverify(). manual-x402.ts:68 comment + code order confirm onQuote runs strictly before createPaymentPayload at line 70 — the same chokepoint used by both payOnce and payAndPoll."
+        },
+        {
+          "type": "test-output",
+          "location": "test/cli/video-max-quote-usd.test.ts:118-138 ('quote > --max-quote-usd aborts BEFORE signing')",
+          "description": "FIND-005 fixed: the stub server's signedSubmit is read via `stub.signedSubmit` (a getter) AFTER runCli() resolves, not destructured at test start — re-verified by reading the file; the destructuring only happens for { server, url }, leaving `stub.signedSubmit` accessed live at the two assertion sites (lines ~130, ~152). Confirmed non-vacuous by design: the getter reads `state.signedSubmit` which the stub server handler flips to true only on a signed submit arriving."
+        },
+        {
+          "type": "test-output",
+          "location": "test/integration/budget-persisted-cap.test.ts:88-110 ('codex-impl-review-1 #2: commit re-reads the ledger FRESH')",
+          "description": "FIND-003 fixed and covered by a dedicated regression test: simulates a concurrent write landing between gate-open and settle (readLedger returns a different snapshot on its 2nd call within one run()); asserts the final written ledger's global.spent is 0.501 (0.5 concurrent baseline + 0.001 this call's spend), NOT 0.001 (which a stale-snapshot commit would have produced). Re-ran this test file directly: PASS."
+        },
+        {
+          "type": "test-output",
+          "location": "test/cli/wallet-chain-ordering.test.ts (5 real-subprocess tests, fresh mktemp HOME each)",
+          "description": "FIND-007 fixed and covered by 5 dedicated real-fs subprocess tests (not mocked) covering: fresh-HOME `chain` view-only reports base; 3x repeated `chain` calls stay base; 3x repeated `status` (default action) calls stay base; explicit --chain solana/base switching still works and a later view-only call still reports base; qr/deposit never create .solana-session. All pass in the full suite re-run."
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "test-output",
+          "location": "npm run typecheck && npm run build && npm test — re-run by this adversary, 2026-07-08",
+          "description": "typecheck: 0 errors. build: tsup ESM build success, 142.23 KB. test: 407/407 pass, 0 fail (up from 376/376 at iteration-1, reflecting the new regression tests for FIND-001/002/003/004/005/007). No flake across the run."
+        },
+        {
+          "type": "proof-result",
+          "location": "live repro, HOME=<fresh mktemp>, node dist/index.js, 2026-07-08",
+          "description": "Reproduced the exact FIND-007 scenario live against the built binary (not mocked): on a totally fresh HOME, `wallet --action chain --json` returns activeChain:\"base\", solana:null, and creates ONLY .session (not .solana-session). A second and third `wallet --json` / `wallet --action chain --json` call on the SAME HOME still report \"base\" — no permanent flip. Separately verified explicit `--chain solana` still correctly creates a real Solana wallet (.chain, .session, .solana-session all written) and that a later view-only chain call still honors the explicit .chain preference (base) over rule-3 auto-detection, per REQ-016's precedence order — the fix does not break real Solana usage."
+        },
+        {
+          "type": "file",
+          "location": "src/commands/shared.ts:58-66 (commit) and src/core/cli-budget-schema.ts:104-114 (applyPersistedSpend) and src/shell/budget-store.ts:43-50 (writeLedgerAtomic)",
+          "description": "Adversarial re-check for a NEW issue introduced by the FIND-003 fix: commit() re-reads readLedger() fresh, converts to BudgetState, applies the actual spend delta via recordActualSpend (which increments existing spent/calls, not overwrite), converts back, and writes atomically (tmp-file + rename, no partial writes). This correctly resolves the multi-minute-stale-snapshot bug FIND-003 was raised for. A narrower race remains under TRUE simultaneous concurrent invocations (no file lock / no compare-and-swap between the fresh read and the atomic write, so two writes landing in the same few-millisecond window could still lose one update) — this is a pre-existing characteristic of the ledger design (not introduced or worsened by this fix, the window is now milliseconds instead of minutes) and is not required by contract CRIT-002's passThreshold (tests for budget cap interactions/SSRF/402-requote/no-charge paths, not distributed-lock concurrency); not filed as a blocking finding."
+        },
+        {
+          "type": "file",
+          "location": "src/shell/wallet.ts:114-119 (peekSolanaWallet) vs node_modules/@blockrun/llm/dist/index.js:4868-4876 (loadSolanaWallet)",
+          "description": "Adversarial re-check of the FIND-007 fix's correctness: peekSolanaWallet() calls loadSolanaWallet() (SDK-level), confirmed by reading the SDK source to be a pure read (fs.existsSync/readFileSync only, no write) — as opposed to getOrCreateSolanaWallet() which is the only function that calls createSolanaWallet()+saveSolanaWallet(). Also confirmed getChain()'s three precedence rules (.chain file, SOLANA_WALLET_KEY env, non-empty SOLANA_WALLET_FILE_PATH) can only report \"solana\" in states where a resolvable private key already exists (the only path that sets .chain=solana is the explicit switch, which calls ensureBothWallets() BEFORE persisting the preference) — so real Solana payment commands (image.ts's Solana x402 path, chat.ts's smart-routing) are unaffected by the ordering fix and still resolve a real signing key via loadSolanaWallet()/SOLANA_WALLET_KEY."
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "src/ (all files)",
+          "description": "Re-ran `find src -name '*.ts' | xargs wc -l | awk '$1>800'`: no files exceed the 800-line cap. No new core-purity violations: grep for node:fs/node:net/undici/@blockrun inside src/core/ still returns zero matches."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "proof-result",
+          "location": "live spot-run, 3 fresh mktemp HOMEs, node dist/index.js, 2026-07-08",
+          "description": "`models --json`, `dex --symbol SOL --json`, and `wallet --json` all ran against the real built dist/index.js with no paid calls; each produced a single valid JSON document on stdout (verified visually — well-formed JSON with expected shape: models count=74, dex pairs array with SOL/USDC pair data, wallet activeChain=base). Confirms the tier-3 free-command rows remain executable as specified after all 7 fixes."
+        }
+      ]
+    }
+  ],
+  "overallVerdict": "PASS",
+  "timestamp": "2026-07-08T00:00:00Z",
+  "iteration": 2,
+  "reviewContext": {
+    "reviewType": "implementation"
+  },
+  "convergenceSignals": {
+    "findingCount": 0,
+    "previousFindingCount": 7,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": ["CRIT-001", "CRIT-002", "CRIT-003", "CRIT-004", "CRIT-005"]
+  }
+}

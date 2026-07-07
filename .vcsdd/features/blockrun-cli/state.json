@@ -1697,15 +1697,15 @@
   },
   "gates": {
     "3": {
-      "verdict": "FAIL",
-      "timestamp": "2026-07-07T16:42:10.544Z",
+      "verdict": "PASS",
+      "timestamp": "2026-07-07T17:14:23.797Z",
       "reviewedBy": "adversary",
       "details": {
-        "iteration": 1,
-        "blocking": 3,
-        "major": 3,
-        "minor": 1,
-        "note": "FIND-001/002/007 blocking; codex round-1 concurrently found 5 (4 overlap). Money-path defects."
+        "iteration": 2,
+        "blocking": 0,
+        "findingsResolved": 7,
+        "codexRound2": "ok:true",
+        "note": "Opus adversary iter-2 5/5 PASS + codex round-2 ok:true; all 7 money-path findings fixed & live-verified"
       }
     },
     "1c": {
@@ -1725,5 +1725,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-07-07T14:15:05.132Z",
-  "updatedAt": "2026-07-07T16:42:10.545Z"
+  "updatedAt": "2026-07-07T17:14:23.803Z"
 }

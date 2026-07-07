@@ -6,8 +6,8 @@ Source of truth: /goal (session)。VCSDD state = .vcsdd/。
 ## State
 - [x] repo 作成 + push (github.com/Daisuke134/blockrun-cli)
 - [x] VCSDD init(strict) / spec v4 (REQ131/PROP74) / spec-review PASS (adversary Opus it-3: 0 blocking + codex r3 ok:true 収束済) / tdd RED (157 fail / 0 pass, evidence log有)
-- [>] impl (Phase 2b Green) — impl-builder 実行中
-- [ ] adversary (Phase 3) → harden (Phase 5) → converge (Phase 6)
+- [x] impl (Green) 407/407 + Phase 3 adversary review PASS (Opus iter-2 5/5 + codex round-2 ok:true、money-path blocking 7件 fix済)
+- [>] harden (Phase 5) → E2E 18/18 → converge (Phase 6)
 - [~] E2E 資金: Aave v3 Base withdraw 実行 (tx 0xb18b779759beda51a4d8397cfc098a0f12985339d1176e8a5383893396cd3489, status 0x1) → 0x810f Base USDC = $0.595。E2E最小 ≈$0.30 (video 1s $0.05 + music $0.1575 + search max_results=1 $0.025 + image $0.015 + 他 ≈$0.05) の2倍。不足時のみ POL 7.1 (Polygon) を bridge（予備）。Polymarket $19.26 は未証明経路のため不使用
 - [ ] E2E 18/18 + VERIFICATION.md
 
