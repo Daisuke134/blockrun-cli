@@ -1,0 +1,6 @@
+{
+  "reviewType": "implementation",
+  "artifactsToReview": ["src/", "test/", "package.json", "tsconfig.json"],
+  "reviewDimensions": ["spec_conformance", "convention_fidelity", "payment_safety", "test_integrity"],
+  "greenEvidence": "evidence/sprint-1-green-phase.log"
+}
