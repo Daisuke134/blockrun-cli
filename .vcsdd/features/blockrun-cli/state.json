@@ -2,7 +2,7 @@
   "featureName": "blockrun-cli",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2b",
+  "currentPhase": "2c",
   "phaseHistory": [
     {
       "from": "init",
@@ -35,6 +35,13 @@
       "timestamp": "2026-07-07T15:15:29.446Z",
       "reason": "red phase verified: 157 failing / 0 passing, evidence at evidence/sprint-1-red-phase.log",
       "sprint": 1
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-07-07T16:18:56.716Z",
+      "reason": "green verified by orchestrator own run: 376/376 pass, typecheck+build clean",
+      "sprint": 1
     }
   ],
   "iterations": {
@@ -42,7 +49,8 @@
     "1b": 1,
     "1c": 1,
     "2a": 1,
-    "2b": 1
+    "2b": 1,
+    "2c": 1
   },
   "proofObligations": [],
   "traceability": {
@@ -1697,5 +1705,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-07-07T14:15:05.132Z",
-  "updatedAt": "2026-07-07T15:15:29.447Z"
+  "updatedAt": "2026-07-07T16:18:56.717Z"
 }
