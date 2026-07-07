@@ -328,3 +328,48 @@ equivalent `--body '{...}'` canonical form produce an IDENTICAL `CommandRequest.
 and that supplying BOTH the alias and a `--body` that also sets the same field is
 rejected (same conflict rule as §10, applied per-field to the resolved body object
 rather than to a single top-level scalar).
+
+## 14. SSRF guard fetch-boundary split (impl-review FIND-002/codex-impl-review-1 #3, REQ-127)
+
+The reviewer asked which user-supplied URL fields this CLI actually fetches ITSELF
+(where an SSRF guard is load-bearing) versus which are forwarded verbatim to
+BlockRun's remote API as body fields (where the REMOTE gateway does the fetching,
+server-side, not this process). Determined per field, by inspecting each command's
+actual call site:
+
+- **`image --image` / `--mask` (REQ-127) — THIS PROCESS fetches locally.** The SDK's
+  `ImageClient.edit(prompt, image, options)` only accepts `data:image/...` base64 URIs
+  (confirmed from the installed `@blockrun/llm` v2.13.0 `.d.ts`: `image: string |
+  string[]` documented as "A base64 `data:image/...` URI, or an array of 2–4 such
+  URIs" — no URL/local-path form is accepted by the SDK itself). So this CLI must
+  convert a caller-supplied URL or local file path to a data URI BEFORE calling the
+  SDK, exactly like blockrun-mcp's own `image.ts:34-90` `toImageDataUri`. That
+  conversion is the ONE place in this CLI that performs a real local `fetch()` of a
+  user-supplied URL — ported to `src/shell/image-fetch.ts`, with
+  `src/core/ssrf.ts`'s `isBlockedFetchHost()` as the LOAD-BEARING guard (checked
+  before every fetch, including each redirect hop). This was also a genuine
+  functional gap closed in the same pass: prior to this fix, `commands/image.ts`
+  passed the raw `--image`/`--mask` string straight to `ImageClient.edit()`, which
+  would have sent a malformed request for any non-data-URI input.
+- **`video --image-url` / `--last-frame-url`, `realface --image-url` — the REMOTE
+  BlockRun gateway fetches, not this process.** These fields are placed verbatim into
+  the JSON body POSTed to `/v1/videos/generations` / `/v1/realface/enroll` /
+  `/v1/portrait/enroll` (see `commands/video.ts`'s `body.image_url = imageUrl` and
+  `commands/realface.ts`'s `{ name, image_url: imageUrl, ... }`) — this CLI process
+  never calls `fetch()` on them. BlockRun's server fetches the image server-side to
+  seed the video/face model. Since this process never touches the network for these
+  fields, `src/shell/image-fetch.ts`'s guard is not applicable here. Added a
+  DEFENSE-IN-DEPTH check instead (`src/args/shared.ts`'s `rejectBlockedUrlHost()`,
+  used by `args/video.ts` and `args/realface.ts`) that rejects an obviously
+  internal/private hostname before the CLI ever sends it upstream — not because this
+  process is at SSRF risk from these fields, but so the CLI never becomes a vector
+  for probing BlockRun's own internal network topology via its remote fetch, and so
+  a caller gets an immediate local error instead of an opaque upstream failure.
+- **`chat --messages` image_url content parts (native Anthropic path) — NEITHER
+  fetches.** `commands/chat.ts`'s native-Anthropic branch converts an `image_url`
+  content part to an Anthropic `image` content block with `source: { type: "url",
+  url }` (for a non-`data:` URL) — this is handed to Anthropic's own SDK as a
+  reference for Anthropic's servers to fetch, exactly the same "remote fetches, we
+  don't" shape as video/realface above. No additional guard was added here in this
+  round (out of scope for the codex/impl-review batch, which did not flag it); if a
+  future review flags it, apply the same `rejectBlockedUrlHost()` pre-flight there.

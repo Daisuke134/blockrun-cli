@@ -6,11 +6,18 @@ import { test, mock } from "node:test";
 import assert from "node:assert/strict";
 import type { BudgetState } from "../../src/types.js";
 
+// Mutable so the REQ-016a "chain" tests below can vary whether a Solana wallet
+// already exists, without illegally reassigning a property on a (non-writable) ES
+// module namespace object — same pattern used elsewhere in this suite.
+let peekSolanaResult: { address: string } | null = null;
+let ensureBothCalled = false;
 mock.module("../../src/shell/wallet.js", {
   namedExports: {
     getChain: () => "base",
     getWalletInfo: async () => ({ address: "0xTEST", explorerUrl: "https://basescan.org/address/0xTEST", network: "base-mainnet", chainId: 8453, isNew: false }),
-    ensureBothWallets: async () => ({ base: { address: "0xBASE" }, solana: { address: "SoLTEST" } }),
+    ensureBothWallets: async () => { ensureBothCalled = true; return { base: { address: "0xBASE" }, solana: { address: "SoLTEST" } }; },
+    ensureBaseWallet: () => ({ address: "0xBASE", isNew: false }),
+    peekSolanaWallet: async () => peekSolanaResult,
     getChainBalance: async () => 1.23,
     setChain: () => {},
   },
@@ -69,4 +76,36 @@ test("REQ-107a/REQ-019: `delegate` in one invocation persists, and `report` in a
   assert.equal(invocationB.exitCode, 0);
   const parsed = JSON.parse(invocationB.stdout);
   assert.equal(parsed.agents.research.limit, 2);
+});
+
+test("REQ-016a: `wallet --action chain` (view-only, no --chain flag) PEEKS for an existing Solana wallet, never creates one", async () => {
+  peekSolanaResult = null; // no Solana wallet exists yet
+  ensureBothCalled = false;
+  const res = await run({ action: "chain" }, { json: true }, newBudget());
+  assert.equal(res.exitCode, 0);
+  assert.equal(ensureBothCalled, false, "a view-only chain call must never call ensureBothWallets() (which would create the Solana wallet)");
+  const parsed = JSON.parse(res.stdout);
+  assert.equal(parsed.activeChain, "base");
+  assert.equal(parsed.solana, null, "no Solana wallet exists yet, so its address must be reported as null, not fabricated");
+});
+
+test("REQ-016a: `wallet --action chain` (view-only) reports the Solana address WHEN one already exists, still without creating it", async () => {
+  peekSolanaResult = { address: "SoLEXISTING" };
+  ensureBothCalled = false;
+  const res = await run({ action: "chain" }, { json: true }, newBudget());
+  assert.equal(res.exitCode, 0);
+  assert.equal(ensureBothCalled, false);
+  const parsed = JSON.parse(res.stdout);
+  assert.equal(parsed.solana, "SoLEXISTING");
+});
+
+test("REQ-016a: `wallet --action chain --chain solana` (explicit switch) DOES create the Solana wallet via ensureBothWallets()", async () => {
+  peekSolanaResult = null;
+  ensureBothCalled = false;
+  const res = await run({ action: "chain", chain: "solana" }, { json: true }, newBudget());
+  assert.equal(res.exitCode, 0);
+  assert.equal(ensureBothCalled, true, "an explicit --chain solana switch legitimately requires creating the Solana wallet");
+  const parsed = JSON.parse(res.stdout);
+  assert.equal(parsed.activeChain, "solana");
+  assert.equal(parsed.solana, "SoLTEST");
 });

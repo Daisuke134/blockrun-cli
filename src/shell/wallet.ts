@@ -14,6 +14,7 @@ import {
   getOrCreateWallet,
   getOrCreateSolanaWallet,
   loadSolanaWallet,
+  solanaPublicKey,
   getPaymentLinks,
   formatWalletCreatedMessage,
   SOLANA_WALLET_FILE_PATH,
@@ -96,6 +97,25 @@ export async function ensureBothWallets(): Promise<{
     base: { address: evm.address, isNew: evm.isNew },
     solana: { address: sol.address, isNew: sol.isNew },
   };
+}
+
+/** Base wallet only — always safe to ensure (Base is REQ-016 rule 4's "else" default). */
+export function ensureBaseWallet(): { address: string; isNew: boolean } {
+  const info = ensureEvmWallet();
+  return { address: info.address, isNew: info.isNew };
+}
+
+/**
+ * REQ-016a: read-only check for an EXISTING Solana wallet — NEVER creates one.
+ * Used by view-only operations (e.g. `wallet chain` with no --chain flag) so they
+ * don't trigger REQ-016 rule 3's own auto-detection by creating the very
+ * ~/.blockrun/.solana-session file that rule checks for.
+ */
+export async function peekSolanaWallet(): Promise<{ address: string } | null> {
+  const key = process.env.SOLANA_WALLET_KEY || loadSolanaWallet();
+  if (!key) return null;
+  const address = await solanaPublicKey(key);
+  return { address };
 }
 
 function ensureEvmWallet() {

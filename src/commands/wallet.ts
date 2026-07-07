@@ -2,7 +2,7 @@
 // budget/delegate/revoke/report read/write the PERSISTED ledger
 // (~/.blockrun/cli-budget.json), not the ephemeral in-memory BudgetState.
 import { buildRequest } from "../args/wallet.js";
-import { ensureBothWallets, getChain, getChainBalance, getWalletInfo, setChain } from "../shell/wallet.js";
+import { ensureBaseWallet, ensureBothWallets, getChain, getChainBalance, getWalletInfo, peekSolanaWallet, setChain } from "../shell/wallet.js";
 import { generateQrPng, openQrInViewer } from "../shell/qr.js";
 import { readLedger, writeLedgerAtomic } from "../shell/budget-store.js";
 import { extractErrorMessage } from "../core/errors.js";
@@ -87,28 +87,31 @@ export async function run(
     }
 
     if (action === "chain") {
-      // REQ-016/impl-review FIND-007: capture the CURRENT chain BEFORE
-      // ensureBothWallets() — that call auto-creates ~/.blockrun/.solana-session on
-      // first run, and getChain()'s rule 3 ("non-empty .solana-session exists ->
-      // solana") would then fire on the file THIS invocation just created,
-      // permanently flipping a fresh user's default chain to Solana on their very
-      // first `wallet --action chain` call (even a view-only one with no --chain
-      // flag), breaking Base-only paid commands (video/music/speech/realface)
-      // afterward. Mirrors the status fallback branch below, which already reads
-      // getChain() before its own ensureBothWallets() call. Deliberate divergence
-      // from blockrun-mcp's wallet.ts:150-155, which has this same ordering bug —
-      // NOT inherited here since it causes real payment-routing harm, not a
-      // cosmetic quirk.
+      // REQ-016a/impl-review FIND-007: capture the CURRENT chain BEFORE touching
+      // any Solana wallet state, and only CREATE a Solana wallet when the caller
+      // explicitly requests it (--chain solana). blockrun-mcp's wallet.ts:150-155
+      // unconditionally calls ensureBothWallets() (which auto-creates
+      // ~/.blockrun/.solana-session) before getChain() runs — under the CLI's
+      // one-shot-process model that would make REQ-016's own rule 3 ("non-empty
+      // .solana-session exists -> solana") self-trigger on a fresh user's very
+      // first invocation (even a view-only one with no --chain flag), permanently
+      // rerouting their default chain to Solana and breaking every Base-only paid
+      // command (video/music/speech/realface) afterward. Deliberately NOT
+      // inherited here — this is real payment-routing harm, not a cosmetic quirk.
       const currentChain = getChain();
-      const both = await ensureBothWallets();
+      const wantsSolana = targetChain === "solana";
+      const base = ensureBaseWallet();
+      const solana = wantsSolana
+        ? (await ensureBothWallets()).solana
+        : await peekSolanaWallet();
       if (targetChain && targetChain !== currentChain) setChain(targetChain);
       const active = targetChain ?? currentChain;
-      const activeWallet = active === "solana" ? both.solana : both.base;
-      const activeBalance = await getChainBalance(active, activeWallet.address);
+      const activeAddress = active === "solana" ? solana?.address : base.address;
+      const activeBalance = activeAddress ? await getChainBalance(active, activeAddress) : null;
       return ok(
-        { activeChain: active, base: both.base.address, solana: both.solana.address, activeBalance },
+        { activeChain: active, base: base.address, solana: solana?.address ?? null, activeBalance },
         opts.json,
-        `Active chain: ${active.toUpperCase()}\nBase: ${both.base.address}\nSolana: ${both.solana.address}`,
+        `Active chain: ${active.toUpperCase()}\nBase: ${base.address}\nSolana: ${solana?.address ?? "(not yet created — run: blockrun wallet --action chain --chain solana)"}`,
       );
     }
 
