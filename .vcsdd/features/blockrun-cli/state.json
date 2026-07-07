@@ -2,16 +2,1481 @@
   "featureName": "blockrun-cli",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "init",
-  "phaseHistory": [],
-  "iterations": {},
+  "currentPhase": "1b",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-07-07T14:25:45.843Z",
+      "reason": "behavioral-spec.md written: 116 EARS REQs covering global CLI + 18 commands + cross-cutting"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-07-07T14:25:45.846Z",
+      "reason": "verification-architecture.md written: 71 PROPs, tiers 0-3, purity boundary, E2E ledger design"
+    }
+  ],
+  "iterations": {
+    "1a": 1,
+    "1b": 1
+  },
   "proofObligations": [],
   "traceability": {
     "epicId": "VCSDD-blockrun-cli-1783433705134",
-    "beads": []
+    "beads": [
+      {
+        "beadId": "bead-req-001",
+        "externalId": "REQ-001",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-002",
+        "externalId": "REQ-002",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-003",
+        "externalId": "REQ-003",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-004",
+        "externalId": "REQ-004",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-005",
+        "externalId": "REQ-005",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-006",
+        "externalId": "REQ-006",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-007",
+        "externalId": "REQ-007",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-008",
+        "externalId": "REQ-008",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-009",
+        "externalId": "REQ-009",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-010",
+        "externalId": "REQ-010",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-011",
+        "externalId": "REQ-011",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-012",
+        "externalId": "REQ-012",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-013",
+        "externalId": "REQ-013",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-014",
+        "externalId": "REQ-014",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-015",
+        "externalId": "REQ-015",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-016",
+        "externalId": "REQ-016",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-017",
+        "externalId": "REQ-017",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-018",
+        "externalId": "REQ-018",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-019",
+        "externalId": "REQ-019",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-020",
+        "externalId": "REQ-020",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-021",
+        "externalId": "REQ-021",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-101",
+        "externalId": "REQ-101",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-102",
+        "externalId": "REQ-102",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-103",
+        "externalId": "REQ-103",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-104",
+        "externalId": "REQ-104",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-105",
+        "externalId": "REQ-105",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-106",
+        "externalId": "REQ-106",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-107",
+        "externalId": "REQ-107",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-108",
+        "externalId": "REQ-108",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-109",
+        "externalId": "REQ-109",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-110",
+        "externalId": "REQ-110",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-111",
+        "externalId": "REQ-111",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-112",
+        "externalId": "REQ-112",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-113",
+        "externalId": "REQ-113",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-114",
+        "externalId": "REQ-114",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-115",
+        "externalId": "REQ-115",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-116",
+        "externalId": "REQ-116",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-117",
+        "externalId": "REQ-117",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-118",
+        "externalId": "REQ-118",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-119",
+        "externalId": "REQ-119",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-120",
+        "externalId": "REQ-120",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-121",
+        "externalId": "REQ-121",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-122",
+        "externalId": "REQ-122",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-123",
+        "externalId": "REQ-123",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-124",
+        "externalId": "REQ-124",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-125",
+        "externalId": "REQ-125",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-126",
+        "externalId": "REQ-126",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-127",
+        "externalId": "REQ-127",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-128",
+        "externalId": "REQ-128",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-129",
+        "externalId": "REQ-129",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-130",
+        "externalId": "REQ-130",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-131",
+        "externalId": "REQ-131",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-132",
+        "externalId": "REQ-132",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-133",
+        "externalId": "REQ-133",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-134",
+        "externalId": "REQ-134",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-135",
+        "externalId": "REQ-135",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-136",
+        "externalId": "REQ-136",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-137",
+        "externalId": "REQ-137",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-138",
+        "externalId": "REQ-138",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-139",
+        "externalId": "REQ-139",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-140",
+        "externalId": "REQ-140",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-141",
+        "externalId": "REQ-141",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-142",
+        "externalId": "REQ-142",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-143",
+        "externalId": "REQ-143",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-144",
+        "externalId": "REQ-144",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-145",
+        "externalId": "REQ-145",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-146",
+        "externalId": "REQ-146",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-147",
+        "externalId": "REQ-147",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-148",
+        "externalId": "REQ-148",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-149",
+        "externalId": "REQ-149",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-150",
+        "externalId": "REQ-150",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-151",
+        "externalId": "REQ-151",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-152",
+        "externalId": "REQ-152",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-153",
+        "externalId": "REQ-153",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-154",
+        "externalId": "REQ-154",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-155",
+        "externalId": "REQ-155",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-156",
+        "externalId": "REQ-156",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-157",
+        "externalId": "REQ-157",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-158",
+        "externalId": "REQ-158",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-159",
+        "externalId": "REQ-159",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-160",
+        "externalId": "REQ-160",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-161",
+        "externalId": "REQ-161",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-162",
+        "externalId": "REQ-162",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-163",
+        "externalId": "REQ-163",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-164",
+        "externalId": "REQ-164",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-165",
+        "externalId": "REQ-165",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-166",
+        "externalId": "REQ-166",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-167",
+        "externalId": "REQ-167",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-168",
+        "externalId": "REQ-168",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-169",
+        "externalId": "REQ-169",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-170",
+        "externalId": "REQ-170",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-171",
+        "externalId": "REQ-171",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-172",
+        "externalId": "REQ-172",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-173",
+        "externalId": "REQ-173",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-174",
+        "externalId": "REQ-174",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-175",
+        "externalId": "REQ-175",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-176",
+        "externalId": "REQ-176",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-177",
+        "externalId": "REQ-177",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-178",
+        "externalId": "REQ-178",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-179",
+        "externalId": "REQ-179",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-180",
+        "externalId": "REQ-180",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-181",
+        "externalId": "REQ-181",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-200",
+        "externalId": "REQ-200",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-201",
+        "externalId": "REQ-201",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-210",
+        "externalId": "REQ-210",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-211",
+        "externalId": "REQ-211",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-220",
+        "externalId": "REQ-220",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-221",
+        "externalId": "REQ-221",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-222",
+        "externalId": "REQ-222",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-req-1",
+        "externalId": "REQ-1",
+        "type": "requirement",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-001",
+        "externalId": "PROP-001",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-002",
+        "externalId": "PROP-002",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-003",
+        "externalId": "PROP-003",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-004",
+        "externalId": "PROP-004",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-005",
+        "externalId": "PROP-005",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-006",
+        "externalId": "PROP-006",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-007",
+        "externalId": "PROP-007",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-008",
+        "externalId": "PROP-008",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-009",
+        "externalId": "PROP-009",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-010",
+        "externalId": "PROP-010",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-011",
+        "externalId": "PROP-011",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-012",
+        "externalId": "PROP-012",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-101",
+        "externalId": "PROP-101",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-102",
+        "externalId": "PROP-102",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-103",
+        "externalId": "PROP-103",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-104",
+        "externalId": "PROP-104",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-105",
+        "externalId": "PROP-105",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-106",
+        "externalId": "PROP-106",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-107",
+        "externalId": "PROP-107",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-108",
+        "externalId": "PROP-108",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-109",
+        "externalId": "PROP-109",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-110",
+        "externalId": "PROP-110",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-111",
+        "externalId": "PROP-111",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-112",
+        "externalId": "PROP-112",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-113",
+        "externalId": "PROP-113",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-114",
+        "externalId": "PROP-114",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-115",
+        "externalId": "PROP-115",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-116",
+        "externalId": "PROP-116",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-117",
+        "externalId": "PROP-117",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-118",
+        "externalId": "PROP-118",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-119",
+        "externalId": "PROP-119",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-120",
+        "externalId": "PROP-120",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-121",
+        "externalId": "PROP-121",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-122",
+        "externalId": "PROP-122",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-123",
+        "externalId": "PROP-123",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-124",
+        "externalId": "PROP-124",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-125",
+        "externalId": "PROP-125",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-126",
+        "externalId": "PROP-126",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-127",
+        "externalId": "PROP-127",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-128",
+        "externalId": "PROP-128",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-129",
+        "externalId": "PROP-129",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-130",
+        "externalId": "PROP-130",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-131",
+        "externalId": "PROP-131",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-132",
+        "externalId": "PROP-132",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-133",
+        "externalId": "PROP-133",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-134",
+        "externalId": "PROP-134",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-135",
+        "externalId": "PROP-135",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-136",
+        "externalId": "PROP-136",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-137",
+        "externalId": "PROP-137",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-138",
+        "externalId": "PROP-138",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-139",
+        "externalId": "PROP-139",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-140",
+        "externalId": "PROP-140",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-141",
+        "externalId": "PROP-141",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-142",
+        "externalId": "PROP-142",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-143",
+        "externalId": "PROP-143",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-144",
+        "externalId": "PROP-144",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-145",
+        "externalId": "PROP-145",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-146",
+        "externalId": "PROP-146",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-147",
+        "externalId": "PROP-147",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-148",
+        "externalId": "PROP-148",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-149",
+        "externalId": "PROP-149",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-150",
+        "externalId": "PROP-150",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-151",
+        "externalId": "PROP-151",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-152",
+        "externalId": "PROP-152",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-153",
+        "externalId": "PROP-153",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-154",
+        "externalId": "PROP-154",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-200",
+        "externalId": "PROP-200",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-201",
+        "externalId": "PROP-201",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-202",
+        "externalId": "PROP-202",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-203",
+        "externalId": "PROP-203",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      },
+      {
+        "beadId": "bead-prop-204",
+        "externalId": "PROP-204",
+        "type": "proof-obligation",
+        "status": "open",
+        "artifactPath": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+        "createdAt": "2026-07-07T14:25:45.847Z"
+      }
+    ]
   },
   "gates": {},
   "sprintCount": 0,
   "createdAt": "2026-07-07T14:15:05.132Z",
-  "updatedAt": "2026-07-07T14:15:05.132Z"
+  "updatedAt": "2026-07-07T14:25:45.847Z"
 }
