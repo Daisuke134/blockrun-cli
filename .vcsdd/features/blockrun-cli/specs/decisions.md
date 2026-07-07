@@ -69,6 +69,73 @@ returned (never thrown) for a locally-detectable validation failure (missing req
 field, wrong type, failed enum, path traversal, invalid network slug) so the command
 layer can render it via REQ-010/REQ-011 without a try/catch around the pure layer.
 
+Each `src/args/<command>.ts` ALSO exports its raw zod object schema as `schema` (the
+literal port of the clone's `inputSchema`), independent of `buildRequest`, so
+`test/unit/schema-parity.test.ts` (Tier 0/1, PROP-002) can `schema.safeParse()` the
+fixture payloads without needing a full `buildRequest` call for every field-shape
+assertion.
+
+## 5. `commands/<command>.ts` handler contract: return, don't write
+
+verification-architecture.md §1.2 describes `commands/*.ts` as writing stdout/stderr and
+setting the process exit code directly. To keep these Tier-2-testable in-process (per
+the same section's own Tier 2(a) description: "assert...the command's stdout/exit-code
+contract holds against a canned mock response"), each `src/commands/<command>.ts`
+exports:
+
+```ts
+export async function run(
+  flags: Record<string, unknown>,
+  opts: { json: boolean },
+): Promise<{ exitCode: number; stdout: string; stderr: string }>;
+```
+
+`run()` performs the SAME work verification-architecture.md assigns to the command
+layer (delegate to `args/<command>.ts` → call the SDK/shell flow → render via
+`render.ts`) but returns the three output channels as plain values instead of writing to
+real `process.stdout`/`process.stderr`/`process.exit`. The ONE real-I/O call site is
+`src/index.ts`'s dispatch loop, which awaits `run()` and then actually writes/exits.
+This is a strictly more-testable equivalent of the same impurity boundary — no
+additional real I/O is introduced, and the Tier 2b subprocess tests (which spawn the
+real built binary) still prove the full write/exit path end-to-end.
+
+## 6. `shell/manual-x402.ts` contract for the four manual-402 commands (video/music/speech/realface)
+
+To make the Tier 2 mocked-SDK tests for `video`, `music`, `speech`, and `realface`
+(`enroll`/`portrait`) independent of each command's exact internal polling loop,
+`src/shell/manual-x402.ts` exports two functions that ARE the impure chokepoint per
+verification-architecture.md §1.2 (network + SDK's `createPaymentPayload`/
+`parsePaymentRequired`/`extractPaymentDetails`, never constructed by hand — REQ-221):
+
+```ts
+export interface X402Request {
+  endpoint: string;
+  body: Record<string, unknown>;
+  resourceDescription: string;
+  maxTimeoutSeconds?: number;
+}
+export interface X402Result {
+  data: Record<string, unknown>;
+  billedUsd: number | null;
+  txHash?: string;
+}
+
+// Single probe → 402 → sign → resubmit round trip. Used by speech (speak/sound_effect)
+// and realface (enroll/portrait).
+export async function payOnce(req: X402Request): Promise<X402Result>;
+
+// Same round trip, then polls the same URL with the same payment header until
+// status:"completed"/"failed" or the budget elapses. Used by video and music.
+export async function payAndPoll(
+  req: X402Request & { pollIntervalMs: number; totalBudgetMs: number },
+): Promise<X402Result>;
+```
+
+`realface`'s free actions (`init`/`status`/`list`) never pay, so they go through a
+separate free-fetch helper, `src/shell/http.ts`'s `fetchJson(url, init) => Promise<{
+status: number; data: Record<string, unknown> }>`, mocked independently in that
+command's Tier 2 test.
+
 ## 4. `--param-json` / `--param @file.json` flag naming (REQ-004)
 
 For a command flag `--foo` whose value is object/array-typed (e.g. `chat --messages`,

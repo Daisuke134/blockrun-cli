@@ -1,0 +1,74 @@
+{
+  "wallet": {
+    "valid": { "action": "status" },
+    "invalid": { "action": "self-destruct" }
+  },
+  "chat": {
+    "valid": { "message": "hi", "max_tokens": 1024 },
+    "invalid": { "message": "hi", "max_tokens": "abc" }
+  },
+  "models": {
+    "valid": { "category": "all" },
+    "invalid": { "category": "sentience" }
+  },
+  "image": {
+    "valid": { "prompt": "a cube", "size": "1024x1024", "quality": "standard" },
+    "invalid": { "prompt": "a cube", "quality": "ultra-hd" }
+  },
+  "video": {
+    "valid": { "prompt": "a cube spinning", "duration_seconds": 8 },
+    "invalid": { "prompt": "a cube spinning", "duration_seconds": 0 }
+  },
+  "realface": {
+    "valid": { "action": "init", "name": "Alice" },
+    "invalid": { "action": "init", "name": "" }
+  },
+  "music": {
+    "valid": { "prompt": "lo-fi beats", "instrumental": true },
+    "invalid": { "prompt": "lo-fi beats", "instrumental": "yes" }
+  },
+  "speech": {
+    "valid": { "input": "hello", "action": "speak" },
+    "invalid": { "input": "hello", "speed": 5 }
+  },
+  "search": {
+    "valid": { "query": "ethereum pectra", "max_results": 10 },
+    "invalid": { "query": "ethereum pectra", "max_results": 0 }
+  },
+  "exa": {
+    "valid": { "path": "search", "body": { "query": "x" } },
+    "invalid": { "path": "delete-everything", "body": {} }
+  },
+  "markets": {
+    "valid": { "path": "polymarket/events" },
+    "invalid": {}
+  },
+  "price": {
+    "valid": { "action": "price", "category": "crypto", "symbol": "BTC-USD" },
+    "invalid": { "action": "price", "category": "stocks", "symbol": "AAPL" }
+  },
+  "dex": {
+    "valid": { "query": "SOL" },
+    "invalid": {}
+  },
+  "rpc": {
+    "valid": { "network": "base", "method": "eth_blockNumber" },
+    "invalid": { "network": "../v1/modal/sandbox/create", "method": "x" }
+  },
+  "defi": {
+    "valid": { "path": "chains" },
+    "invalid": {}
+  },
+  "modal": {
+    "valid": { "path": "sandbox/create", "body": {} },
+    "invalid": { "path": "sandbox/self-destruct" }
+  },
+  "phone": {
+    "valid": { "path": "phone/numbers/list", "body": {} },
+    "invalid": {}
+  },
+  "surf": {
+    "valid": { "path": "market/price", "params": { "symbol": "BTC" } },
+    "invalid": {}
+  }
+}
