@@ -4,9 +4,9 @@ Goal: blockrun-mcp v0.28.0 の全18ツールを 1:1 で CLI 化、実API E2E 検
 Source of truth: /goal (session)。VCSDD state = .vcsdd/。
 
 ## State
-- [ ] repo 作成 + push
+- [x] repo 作成 + push (github.com/Daisuke134/blockrun-cli)
 - [ ] VCSDD init(strict) → spec → spec-review → tdd → impl → adversary → harden → converge
-- [ ] E2E 資金: 0x810f に $0.28 USDC(Base)。不足分 0x904B(Polygon pUSD $19.26) から bridge 予定
+- [~] E2E 資金: Aave v3 Base withdraw 実行 (tx 0xb18b779759beda51a4d8397cfc098a0f12985339d1176e8a5383893396cd3489, status 0x1) → 0x810f Base USDC = $0.595。E2E最小 ≈$0.30 (video 1s $0.05 + music $0.1575 + search max_results=1 $0.025 + image $0.015 + 他 ≈$0.05) の2倍。不足時のみ POL 7.1 (Polygon) を bridge（予備）。Polymarket $19.26 は未証明経路のため不使用
 - [ ] E2E 18/18 + VERIFICATION.md
 
 ## Decisions
