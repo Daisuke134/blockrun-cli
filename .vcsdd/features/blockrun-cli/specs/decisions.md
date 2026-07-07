@@ -136,6 +136,36 @@ separate free-fetch helper, `src/shell/http.ts`'s `fetchJson(url, init) => Promi
 status: number; data: Record<string, unknown> }>`, mocked independently in that
 command's Tier 2 test.
 
+## 7. KNOWN GAP — spec revised mid-Sprint-1 (v3, budget persistence + REQ-023 aliases); this Red suite needs a refresh pass
+
+While this Sprint-1 Red-phase test suite was being written, `behavioral-spec.md` and
+`verification-architecture.md` were being revised CONCURRENTLY by another process on
+this same working tree (git history: `9c82631` iteration-2 PASS → entered phase 2a →
+`7eb2211` an independent codex-review found 5 blocking findings AFTER that gate → `799ff43`
+spec v3 resolving them → `f3597ad` iteration-3 opened → `0e9fdba` codex round-2, "4/5
+resolved, 3 residual blocking (text contradictions)" still open as of this commit). That
+process's commits also swept up this suite's files via a shared working directory (no
+worktree isolation between the two concurrent sessions — a violation of this repo's own
+`.claude/rules/worktree.md` "同じブランチで複数エージェントが作業しない" rule, flagged
+here for whoever operates the pipeline, not fixable by this agent).
+
+Confirmed, ALREADY-FIXED impact: REQ-019 changed from "no cross-process persistence" to
+"persist a ledger to `~/.blockrun/cli-budget.json`" (REQ-019/019a/019b/019c) and `wallet`
+gained REQ-107a (`delegate`/`report` read/write that same file). `test/unit/budget.test.ts`
+had one test asserting the OLD (now-wrong) claim — corrected above.
+
+NOT YET fixed (this suite still reflects the PRE-v3 spec here — flagged, not silently
+left uncovered): REQ-022/REQ-023 introduced a new cross-cutting alias/canonical-flag
+contract (e.g. `chat`'s REQ-108a positional-vs-`--message` conflict rejection, REQ-114a
+`--thinking-budget-tokens` vs `--thinking` conflict rejection) that likely has siblings
+across several of the other 17 commands' §2 sections in the CURRENT spec text — this
+suite does not yet have the "both forms produce an identical request" / "both forms
+supplied together is a conflict error" test pairs REQ-023 requires. A follow-up Red-phase
+pass MUST re-read the full CURRENT `behavioral-spec.md` §2 (once codex round-2's 3
+residual blocking findings are resolved and the spec-review gate re-PASSES) and add the
+missing REQ-023 alias-conflict tests before Phase 2b (Green) treats this suite as the
+complete contract.
+
 ## 4. `--param-json` / `--param @file.json` flag naming (REQ-004)
 
 For a command flag `--foo` whose value is object/array-typed (e.g. `chat --messages`,

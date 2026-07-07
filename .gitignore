@@ -1,4 +1,5 @@
 node_modules/
 dist/
 *.log
+!.vcsdd/**/evidence/*.log
 .DS_Store

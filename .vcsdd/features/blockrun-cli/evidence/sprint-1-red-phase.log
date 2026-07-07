@@ -1,0 +1,2746 @@
+new-feature-tests: FAIL
+regression-baseline: PASS
+# regression-baseline is trivially PASS: this is the first sprint of blockrun-cli — no
+# src/ implementation exists yet, so there is no prior/existing passing code whose
+# behavior could have regressed. Every test below targets NEW behavior for this
+# feature and is confirmed to fail (0 passing) for the correct reason: src/args/*.ts,
+# src/core/*.ts, src/commands/*.ts, and dist/index.js do not exist yet
+# (ERR_MODULE_NOT_FOUND at import time for unit/integration tests; MODULE_NOT_FOUND
+# subprocess crash for the Tier 2b cli/ subprocess+help tests).
+# Full run: `npm test` -> summary `pass 0 / fail 116` (node:test collapses a file
+# that fails at top-level `import`/`await import` into one file-level failure rather
+# than one failure per `test()` call inside it — expected ESM behavior).
+#
+# KNOWN GAP (see specs/decisions.md §7): behavioral-spec.md was revised (v3, budget
+# persistence REQ-019/019a/b/c + REQ-107a) by a CONCURRENT process on this same
+# working tree while this suite was being written; codex round-2 spec-review still
+# has 3 residual blocking findings open as of this log (spec not yet stable). One
+# now-incorrect assertion (budget.test.ts, cross-process persistence) has been
+# corrected; REQ-022/REQ-023 alias-conflict tests are NOT yet added pending the spec
+# re-stabilizing. Flagging to main/orchestrator, not silently completing over it.
+
+> blockrun-cli@0.1.0 test
+> tsx --experimental-test-module-mocks --test test/unit/*.test.ts test/integration/*.test.ts test/cli/*.test.ts
+
+✖ REQ-001/REQ-002/PROP-001: `blockrun --help` lists exactly the 18 subcommands (102.327ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun wallet --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (84.165375ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun chat --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (85.573416ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun models --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (108.32475ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun image --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (99.249958ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun video --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (97.897708ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun realface --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (85.625541ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun music --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (87.148834ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun speech --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (80.189667ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun search --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (87.357708ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun exa --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (102.389792ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun markets --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (82.607083ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun price --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (100.896625ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun dex --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (43.727791ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun rpc --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (43.01125ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun defi --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (43.233459ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun modal --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (42.4365ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun phone --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (42.554291ms)
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun surf --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (42.380459ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'wallet' with a locally-invalid input exits nonzero with a JSON error object, no network call (89.447292ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'chat' with a locally-invalid input exits nonzero with a JSON error object, no network call (75.646833ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'models' with a locally-invalid input exits nonzero with a JSON error object, no network call (78.188458ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'image' with a locally-invalid input exits nonzero with a JSON error object, no network call (139.763042ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'video' with a locally-invalid input exits nonzero with a JSON error object, no network call (80.961959ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'realface' with a locally-invalid input exits nonzero with a JSON error object, no network call (122.2155ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'music' with a locally-invalid input exits nonzero with a JSON error object, no network call (74.638417ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'speech' with a locally-invalid input exits nonzero with a JSON error object, no network call (89.292542ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'search' with a locally-invalid input exits nonzero with a JSON error object, no network call (72.737875ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'exa' with a locally-invalid input exits nonzero with a JSON error object, no network call (88.833417ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'markets' with a locally-invalid input exits nonzero with a JSON error object, no network call (84.595042ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'price' with a locally-invalid input exits nonzero with a JSON error object, no network call (74.594417ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'dex' with a locally-invalid input exits nonzero with a JSON error object, no network call (94.923833ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'rpc' with a locally-invalid input exits nonzero with a JSON error object, no network call (45.844875ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'defi' with a locally-invalid input exits nonzero with a JSON error object, no network call (43.56225ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'modal' with a locally-invalid input exits nonzero with a JSON error object, no network call (42.711542ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'phone' with a locally-invalid input exits nonzero with a JSON error object, no network call (45.392709ms)
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'surf' with a locally-invalid input exits nonzero with a JSON error object, no network call (43.930542ms)
+✖ REQ-006: --json output is ONLY a single parseable JSON document on stdout; logs go to stderr (44.059209ms)
+✖ REQ-007: without --json, a locally-rejected call prints human-readable text (formatError's 'Error: ' prefix) to stderr, nothing to stdout (44.880167ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/wallet.js' imported from /Users/anicca/blockrun-cli/test/integration/chat.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/wallet.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/chat.test.ts (294.534375ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/wallet.js' imported from /Users/anicca/blockrun-cli/test/integration/defi.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/wallet.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/defi.test.ts (295.494083ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/http.js' imported from /Users/anicca/blockrun-cli/test/integration/dex.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/http.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/dex.test.ts (292.421167ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/wallet.js' imported from /Users/anicca/blockrun-cli/test/integration/exa.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/wallet.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/exa.test.ts (297.950166ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/wallet.js' imported from /Users/anicca/blockrun-cli/test/integration/image.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/wallet.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/image.test.ts (294.552459ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/wallet.js' imported from /Users/anicca/blockrun-cli/test/integration/markets.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/wallet.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/markets.test.ts (296.945209ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/wallet.js' imported from /Users/anicca/blockrun-cli/test/integration/modal.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/wallet.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/modal.test.ts (297.541667ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/wallet.js' imported from /Users/anicca/blockrun-cli/test/integration/models.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/wallet.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/models.test.ts (223.812625ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/manual-x402.js' imported from /Users/anicca/blockrun-cli/test/integration/music.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/manual-x402.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/music.test.ts (210.815875ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/wallet.js' imported from /Users/anicca/blockrun-cli/test/integration/phone.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/wallet.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/phone.test.ts (218.838375ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/wallet.js' imported from /Users/anicca/blockrun-cli/test/integration/price.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/wallet.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/price.test.ts (205.270875ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/http.js' imported from /Users/anicca/blockrun-cli/test/integration/realface.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/http.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/realface.test.ts (226.129458ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/wallet.js' imported from /Users/anicca/blockrun-cli/test/integration/rpc.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/wallet.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/rpc.test.ts (234.993417ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/wallet.js' imported from /Users/anicca/blockrun-cli/test/integration/search.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/wallet.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/search.test.ts (235.740917ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/manual-x402.js' imported from /Users/anicca/blockrun-cli/test/integration/speech.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/manual-x402.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/speech.test.ts (229.550959ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/wallet.js' imported from /Users/anicca/blockrun-cli/test/integration/surf.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/wallet.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/surf.test.ts (223.907458ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/manual-x402.js' imported from /Users/anicca/blockrun-cli/test/integration/video.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/manual-x402.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/video.test.ts (188.170542ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/shell/wallet.js' imported from /Users/anicca/blockrun-cli/test/integration/wallet.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/shell/wallet.js'
+}
+
+Node.js v25.6.1
+✖ test/integration/wallet.test.ts (185.238334ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/body.js' imported from /Users/anicca/blockrun-cli/test/unit/body.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/core/body.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/body.test.ts (173.927917ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/budget.js' imported from /Users/anicca/blockrun-cli/test/unit/budget.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/core/budget.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/budget.test.ts (183.861792ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/cost/chat.js' imported from /Users/anicca/blockrun-cli/test/unit/chat.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/core/cost/chat.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/chat.test.ts (203.777167ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/cost/defi.js' imported from /Users/anicca/blockrun-cli/test/unit/defi.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/core/cost/defi.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/defi.test.ts (199.399125ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/dex.js' imported from /Users/anicca/blockrun-cli/test/unit/dex.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/args/dex.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/dex.test.ts (211.262917ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/errors.js' imported from /Users/anicca/blockrun-cli/test/unit/errors.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/core/errors.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/errors.test.ts (229.574708ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/cost/exa.js' imported from /Users/anicca/blockrun-cli/test/unit/exa.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/core/cost/exa.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/exa.test.ts (188.577208ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/cost/image.js' imported from /Users/anicca/blockrun-cli/test/unit/image.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/core/cost/image.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/image.test.ts (189.265417ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/cli/json-flag.js' imported from /Users/anicca/blockrun-cli/test/unit/json-flag.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/cli/json-flag.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/json-flag.test.ts (177.539292ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/cost/markets.js' imported from /Users/anicca/blockrun-cli/test/unit/markets.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/core/cost/markets.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/markets.test.ts (199.227083ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/cost/modal.js' imported from /Users/anicca/blockrun-cli/test/unit/modal.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/core/cost/modal.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/modal.test.ts (240.852917ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/models.js' imported from /Users/anicca/blockrun-cli/test/unit/models.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/args/models.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/models.test.ts (213.793459ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/music.js' imported from /Users/anicca/blockrun-cli/test/unit/music.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/args/music.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/music.test.ts (181.35425ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/path-safety.js' imported from /Users/anicca/blockrun-cli/test/unit/path-safety.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/core/path-safety.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/path-safety.test.ts (209.688ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/cost/phone.js' imported from /Users/anicca/blockrun-cli/test/unit/phone.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/core/cost/phone.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/phone.test.ts (217.856625ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/price.js' imported from /Users/anicca/blockrun-cli/test/unit/price.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/args/price.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/price.test.ts (216.407792ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/realface.js' imported from /Users/anicca/blockrun-cli/test/unit/realface.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/args/realface.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/realface.test.ts (221.751625ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/rpc.js' imported from /Users/anicca/blockrun-cli/test/unit/rpc.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/args/rpc.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/rpc.test.ts (226.264084ms)
+✖ PROP-002: wallet schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (1.970083ms)
+✖ PROP-002: wallet schema.safeParse() rejects the documented invalid example (0.764417ms)
+✖ PROP-002: chat schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.615ms)
+✖ PROP-002: chat schema.safeParse() rejects the documented invalid example (0.641042ms)
+✖ PROP-002: models schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.6635ms)
+✖ PROP-002: models schema.safeParse() rejects the documented invalid example (0.208291ms)
+✖ PROP-002: image schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.186ms)
+✖ PROP-002: image schema.safeParse() rejects the documented invalid example (0.155958ms)
+✖ PROP-002: video schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.175375ms)
+✖ PROP-002: video schema.safeParse() rejects the documented invalid example (0.193375ms)
+✖ PROP-002: realface schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.137542ms)
+✖ PROP-002: realface schema.safeParse() rejects the documented invalid example (0.128375ms)
+✖ PROP-002: music schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.137333ms)
+✖ PROP-002: music schema.safeParse() rejects the documented invalid example (0.125709ms)
+✖ PROP-002: speech schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.113667ms)
+✖ PROP-002: speech schema.safeParse() rejects the documented invalid example (0.114959ms)
+✖ PROP-002: search schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.118541ms)
+✖ PROP-002: search schema.safeParse() rejects the documented invalid example (0.109166ms)
+✖ PROP-002: exa schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.116083ms)
+✖ PROP-002: exa schema.safeParse() rejects the documented invalid example (0.150458ms)
+✖ PROP-002: markets schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.137125ms)
+✖ PROP-002: markets schema.safeParse() rejects the documented invalid example (0.12225ms)
+✖ PROP-002: price schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.855625ms)
+✖ PROP-002: price schema.safeParse() rejects the documented invalid example (0.363625ms)
+✖ PROP-002: dex schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.657333ms)
+✖ PROP-002: dex schema.safeParse() rejects the documented invalid example (0.639ms)
+✖ PROP-002: rpc schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.66225ms)
+✖ PROP-002: rpc schema.safeParse() rejects the documented invalid example (0.433334ms)
+✖ PROP-002: defi schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.587583ms)
+✖ PROP-002: defi schema.safeParse() rejects the documented invalid example (0.446459ms)
+✖ PROP-002: modal schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (1.01325ms)
+✖ PROP-002: modal schema.safeParse() rejects the documented invalid example (0.125417ms)
+✖ PROP-002: phone schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.111125ms)
+✖ PROP-002: phone schema.safeParse() rejects the documented invalid example (0.101916ms)
+✖ PROP-002: surf schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.103917ms)
+✖ PROP-002: surf schema.safeParse() rejects the documented invalid example (0.097ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/cost/search.js' imported from /Users/anicca/blockrun-cli/test/unit/search.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/core/cost/search.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/search.test.ts (206.241166ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/cost/speech.js' imported from /Users/anicca/blockrun-cli/test/unit/speech.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/core/cost/speech.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/speech.test.ts (209.981375ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/cost/surf.js' imported from /Users/anicca/blockrun-cli/test/unit/surf.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/core/cost/surf.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/surf.test.ts (196.673916ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/video.js' imported from /Users/anicca/blockrun-cli/test/unit/video.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/args/video.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/video.test.ts (202.453791ms)
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/wallet.js' imported from /Users/anicca/blockrun-cli/test/unit/wallet.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+    at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+    at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+    at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/anicca/blockrun-cli/src/args/wallet.js'
+}
+
+Node.js v25.6.1
+✖ test/unit/wallet.test.ts (188.336375ms)
+ℹ tests 116
+ℹ suites 0
+ℹ pass 0
+ℹ fail 116
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1664.005417
+
+✖ failing tests:
+
+test at test/cli/help.test.ts:1:631
+✖ REQ-001/REQ-002/PROP-001: `blockrun --help` lists exactly the 18 subcommands (102.327ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:26:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun wallet --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (84.165375ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun chat --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (85.573416ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun models --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (108.32475ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun image --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (99.249958ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun video --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (97.897708ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun realface --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (85.625541ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun music --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (87.148834ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun speech --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (80.189667ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun search --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (87.357708ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun exa --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (102.389792ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun markets --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (82.607083ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun price --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (100.896625ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun dex --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (43.727791ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun rpc --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (43.01125ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun defi --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (43.233459ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun modal --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (42.4365ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun phone --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (42.554291ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/help.test.ts:1:930
+✖ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun surf --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (42.380459ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1458
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)
+      at Module._load (node:internal/modules/cjs/loader:1241:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v25.6.1
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/help.test.ts:35:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'wallet' with a locally-invalid input exits nonzero with a JSON error object, no network call (89.447292ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'chat' with a locally-invalid input exits nonzero with a JSON error object, no network call (75.646833ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'models' with a locally-invalid input exits nonzero with a JSON error object, no network call (78.188458ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'image' with a locally-invalid input exits nonzero with a JSON error object, no network call (139.763042ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'video' with a locally-invalid input exits nonzero with a JSON error object, no network call (80.961959ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'realface' with a locally-invalid input exits nonzero with a JSON error object, no network call (122.2155ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'music' with a locally-invalid input exits nonzero with a JSON error object, no network call (74.638417ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'speech' with a locally-invalid input exits nonzero with a JSON error object, no network call (89.292542ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'search' with a locally-invalid input exits nonzero with a JSON error object, no network call (72.737875ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'exa' with a locally-invalid input exits nonzero with a JSON error object, no network call (88.833417ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'markets' with a locally-invalid input exits nonzero with a JSON error object, no network call (84.595042ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'price' with a locally-invalid input exits nonzero with a JSON error object, no network call (74.594417ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'dex' with a locally-invalid input exits nonzero with a JSON error object, no network call (94.923833ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'rpc' with a locally-invalid input exits nonzero with a JSON error object, no network call (45.844875ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'defi' with a locally-invalid input exits nonzero with a JSON error object, no network call (43.56225ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'modal' with a locally-invalid input exits nonzero with a JSON error object, no network call (42.711542ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'phone' with a locally-invalid input exits nonzero with a JSON error object, no network call (45.392709ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:1:1910
+✖ REQ-009/REQ-010/PROP-005/PROP-006: 'surf' with a locally-invalid input exits nonzero with a JSON error object, no network call (43.930542ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:63:25)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/cli/subprocess.test.ts:3:140
+✖ REQ-006: --json output is ONLY a single parseable JSON document on stdout; logs go to stderr (44.059209ms)
+  AssertionError [ERR_ASSERTION]: Got unwanted exception: stdout must be JSON.parse-able in full when --json is set
+  Actual message: "Unexpected end of JSON input"
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:71:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: SyntaxError: Unexpected end of JSON input
+        at JSON.parse (<anonymous>)
+        at <anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:71:34)
+        at getActual (node:assert:586:5)
+        at strict.doesNotThrow (node:assert:754:32)
+        at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:71:10)
+        at Test.runInAsyncScope (node:async_hooks:226:14)
+        at Test.run (node:internal/test_runner/test:1118:25)
+        at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+        at Test.postRun (node:internal/test_runner/test:1247:19)
+        at Test.run (node:internal/test_runner/test:1175:12),
+    expected: undefined,
+    operator: 'doesNotThrow',
+    diff: 'simple'
+  }
+
+test at test/cli/subprocess.test.ts:3:420
+✖ REQ-007: without --json, a locally-rejected call prints human-readable text (formatError's 'Error: ' prefix) to stderr, nothing to stdout (44.880167ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^Error: /. Input:
+  
+  'node:internal/modules/cjs/loader:1458\n' +
+    '  throw err;\n' +
+    '  ^\n' +
+    '\n' +
+    "Error: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'\n" +
+    '    at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)\n' +
+    '    at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)\n' +
+    '    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)\n' +
+    '    at Module._load (node:internal/modules/cjs/loader:1241:25)\n' +
+    '    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n' +
+    '    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n' +
+    '    at node:internal/main/run_main_module:33:47 {\n' +
+    "  code: 'MODULE_NOT_FOUND',\n" +
+    '  requireStack: []\n' +
+    '}\n' +
+    '\n' +
+    'Node.js v25.6.1\n'
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/subprocess.test.ts:82:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: "node:internal/modules/cjs/loader:1458\n  throw err;\n  ^\n\nError: Cannot find module '/Users/anicca/blockrun-cli/dist/index.js'\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1455:15)\n    at defaultResolveImpl (node:internal/modules/cjs/loader:1065:19)\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1070:22)\n    at Module._load (node:internal/modules/cjs/loader:1241:25)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  code: 'MODULE_NOT_FOUND',\n  requireStack: []\n}\n\nNode.js v25.6.1\n",
+    expected: /^Error: /,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at test/integration/chat.test.ts:1:1
+✖ test/integration/chat.test.ts (294.534375ms)
+  'test failed'
+
+test at test/integration/defi.test.ts:1:1
+✖ test/integration/defi.test.ts (295.494083ms)
+  'test failed'
+
+test at test/integration/dex.test.ts:1:1
+✖ test/integration/dex.test.ts (292.421167ms)
+  'test failed'
+
+test at test/integration/exa.test.ts:1:1
+✖ test/integration/exa.test.ts (297.950166ms)
+  'test failed'
+
+test at test/integration/image.test.ts:1:1
+✖ test/integration/image.test.ts (294.552459ms)
+  'test failed'
+
+test at test/integration/markets.test.ts:1:1
+✖ test/integration/markets.test.ts (296.945209ms)
+  'test failed'
+
+test at test/integration/modal.test.ts:1:1
+✖ test/integration/modal.test.ts (297.541667ms)
+  'test failed'
+
+test at test/integration/models.test.ts:1:1
+✖ test/integration/models.test.ts (223.812625ms)
+  'test failed'
+
+test at test/integration/music.test.ts:1:1
+✖ test/integration/music.test.ts (210.815875ms)
+  'test failed'
+
+test at test/integration/phone.test.ts:1:1
+✖ test/integration/phone.test.ts (218.838375ms)
+  'test failed'
+
+test at test/integration/price.test.ts:1:1
+✖ test/integration/price.test.ts (205.270875ms)
+  'test failed'
+
+test at test/integration/realface.test.ts:1:1
+✖ test/integration/realface.test.ts (226.129458ms)
+  'test failed'
+
+test at test/integration/rpc.test.ts:1:1
+✖ test/integration/rpc.test.ts (234.993417ms)
+  'test failed'
+
+test at test/integration/search.test.ts:1:1
+✖ test/integration/search.test.ts (235.740917ms)
+  'test failed'
+
+test at test/integration/speech.test.ts:1:1
+✖ test/integration/speech.test.ts (229.550959ms)
+  'test failed'
+
+test at test/integration/surf.test.ts:1:1
+✖ test/integration/surf.test.ts (223.907458ms)
+  'test failed'
+
+test at test/integration/video.test.ts:1:1
+✖ test/integration/video.test.ts (188.170542ms)
+  'test failed'
+
+test at test/integration/wallet.test.ts:1:1
+✖ test/integration/wallet.test.ts (185.238334ms)
+  'test failed'
+
+test at test/unit/body.test.ts:1:1
+✖ test/unit/body.test.ts (173.927917ms)
+  'test failed'
+
+test at test/unit/budget.test.ts:1:1
+✖ test/unit/budget.test.ts (183.861792ms)
+  'test failed'
+
+test at test/unit/chat.test.ts:1:1
+✖ test/unit/chat.test.ts (203.777167ms)
+  'test failed'
+
+test at test/unit/defi.test.ts:1:1
+✖ test/unit/defi.test.ts (199.399125ms)
+  'test failed'
+
+test at test/unit/dex.test.ts:1:1
+✖ test/unit/dex.test.ts (211.262917ms)
+  'test failed'
+
+test at test/unit/errors.test.ts:1:1
+✖ test/unit/errors.test.ts (229.574708ms)
+  'test failed'
+
+test at test/unit/exa.test.ts:1:1
+✖ test/unit/exa.test.ts (188.577208ms)
+  'test failed'
+
+test at test/unit/image.test.ts:1:1
+✖ test/unit/image.test.ts (189.265417ms)
+  'test failed'
+
+test at test/unit/json-flag.test.ts:1:1
+✖ test/unit/json-flag.test.ts (177.539292ms)
+  'test failed'
+
+test at test/unit/markets.test.ts:1:1
+✖ test/unit/markets.test.ts (199.227083ms)
+  'test failed'
+
+test at test/unit/modal.test.ts:1:1
+✖ test/unit/modal.test.ts (240.852917ms)
+  'test failed'
+
+test at test/unit/models.test.ts:1:1
+✖ test/unit/models.test.ts (213.793459ms)
+  'test failed'
+
+test at test/unit/music.test.ts:1:1
+✖ test/unit/music.test.ts (181.35425ms)
+  'test failed'
+
+test at test/unit/path-safety.test.ts:1:1
+✖ test/unit/path-safety.test.ts (209.688ms)
+  'test failed'
+
+test at test/unit/phone.test.ts:1:1
+✖ test/unit/phone.test.ts (217.856625ms)
+  'test failed'
+
+test at test/unit/price.test.ts:1:1
+✖ test/unit/price.test.ts (216.407792ms)
+  'test failed'
+
+test at test/unit/realface.test.ts:1:1
+✖ test/unit/realface.test.ts (221.751625ms)
+  'test failed'
+
+test at test/unit/rpc.test.ts:1:1
+✖ test/unit/rpc.test.ts (226.264084ms)
+  'test failed'
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: wallet schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (1.970083ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/wallet.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/wallet.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: wallet schema.safeParse() rejects the documented invalid example (0.764417ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/wallet.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/wallet.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: chat schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.615ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/chat.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/chat.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: chat schema.safeParse() rejects the documented invalid example (0.641042ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/chat.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/chat.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: models schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.6635ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/models.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/models.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: models schema.safeParse() rejects the documented invalid example (0.208291ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/models.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/models.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: image schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.186ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/image.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/image.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: image schema.safeParse() rejects the documented invalid example (0.155958ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/image.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/image.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: video schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.175375ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/video.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/video.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: video schema.safeParse() rejects the documented invalid example (0.193375ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/video.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/video.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: realface schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.137542ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/realface.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/realface.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: realface schema.safeParse() rejects the documented invalid example (0.128375ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/realface.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/realface.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: music schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.137333ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/music.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/music.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: music schema.safeParse() rejects the documented invalid example (0.125709ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/music.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/music.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: speech schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.113667ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/speech.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/speech.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: speech schema.safeParse() rejects the documented invalid example (0.114959ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/speech.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/speech.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: search schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.118541ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/search.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/search.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: search schema.safeParse() rejects the documented invalid example (0.109166ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/search.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/search.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: exa schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.116083ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/exa.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/exa.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: exa schema.safeParse() rejects the documented invalid example (0.150458ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/exa.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/exa.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: markets schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.137125ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/markets.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/markets.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: markets schema.safeParse() rejects the documented invalid example (0.12225ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/markets.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/markets.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: price schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.855625ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/price.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/price.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: price schema.safeParse() rejects the documented invalid example (0.363625ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/price.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/price.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: dex schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.657333ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/dex.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/dex.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: dex schema.safeParse() rejects the documented invalid example (0.639ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/dex.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/dex.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: rpc schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.66225ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/rpc.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/rpc.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: rpc schema.safeParse() rejects the documented invalid example (0.433334ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/rpc.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/rpc.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: defi schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.587583ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/defi.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/defi.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: defi schema.safeParse() rejects the documented invalid example (0.446459ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/defi.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/defi.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: modal schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (1.01325ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/modal.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/modal.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: modal schema.safeParse() rejects the documented invalid example (0.125417ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/modal.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/modal.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: phone schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.111125ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/phone.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/phone.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: phone schema.safeParse() rejects the documented invalid example (0.101916ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/phone.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/phone.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:354
+✖ PROP-002: surf schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.103917ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/surf.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/surf.js'
+  }
+
+test at test/unit/schema-parity.test.ts:1:905
+✖ PROP-002: surf schema.safeParse() rejects the documented invalid example (0.097ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/args/surf.js' imported from /Users/anicca/blockrun-cli/test/unit/schema-parity.test.ts
+      at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+      at moduleResolve (node:internal/modules/esm/resolve:865:10)
+      at defaultResolve (node:internal/modules/esm/resolve:991:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:713:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:730:38)
+      at nextStep (node:internal/modules/customization_hooks:189:26)
+      at resolveBaseSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:9115)
+      at resolveDirectorySync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:10328)
+      at resolveTsPathsSync (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:11560)
+      at resolve (file:///Users/anicca/blockrun-cli/node_modules/tsx/dist/register-D5KIhaFJ.mjs:2:13343) {
+    code: 'ERR_MODULE_NOT_FOUND',
+    url: 'file:///Users/anicca/blockrun-cli/src/args/surf.js'
+  }
+
+test at test/unit/search.test.ts:1:1
+✖ test/unit/search.test.ts (206.241166ms)
+  'test failed'
+
+test at test/unit/speech.test.ts:1:1
+✖ test/unit/speech.test.ts (209.981375ms)
+  'test failed'
+
+test at test/unit/surf.test.ts:1:1
+✖ test/unit/surf.test.ts (196.673916ms)
+  'test failed'
+
+test at test/unit/video.test.ts:1:1
+✖ test/unit/video.test.ts (202.453791ms)
+  'test failed'
+
+test at test/unit/wallet.test.ts:1:1
+✖ test/unit/wallet.test.ts (188.336375ms)
+  'test failed'

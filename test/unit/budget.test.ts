@@ -64,12 +64,23 @@ test("REQ-019/PROP-011: budget cap holds once ACTUAL frontier cost is booked", (
   assert.equal(third.allowed, false);
 });
 
-test("REQ-019: a FRESH BudgetState starts at spent:0 regardless of prior invocations (no cross-process persistence claimed)", () => {
+// CORRECTED per behavioral-spec.md v3 (REQ-019/REQ-019a/REQ-019b/REQ-019c, superseding
+// an earlier draft this suite was first written against): the CLI PERSISTS a cumulative
+// budget ledger to ~/.blockrun/cli-budget.json — a fresh in-memory BudgetState (this
+// pure `core/budget.ts` object) legitimately starts at spent:0 on every process launch,
+// but that is NOT the same claim as "no cross-process persistence" — the impure
+// shell/budget-ledger.ts layer (not exercised by this Tier-1 file) is responsible for
+// seeding a freshly-constructed BudgetState from the persisted ledger before the command
+// layer uses it, and for writing it back after. This test only proves the pure
+// constructor itself carries no hidden state — it does NOT stand in for the
+// shell/budget-ledger.ts read/write round trip, which needs its own Tier 2/3 coverage
+// (tracked as a gap — see decisions.md §7).
+test("a freshly-constructed (pure) BudgetState object itself starts at spent:0 (seeding it from the persisted ledger is the impure shell's job, not core/budget.ts's)", () => {
   const b = newBudget(5);
   recordSpending(b, 3, undefined);
   assert.equal(b.spent, 3);
   const fresh = newBudget(5);
-  assert.equal(fresh.spent, 0, "a new process's BudgetState never inherits a prior process's spend");
+  assert.equal(fresh.spent, 0, "newBudget()/the bare BudgetState constructor carries no hidden state of its own");
 });
 
 test("PROP-011 regression guard: booking a flat estimate instead of actual would blow a $1 cap over 50 $0.50 calls", () => {
