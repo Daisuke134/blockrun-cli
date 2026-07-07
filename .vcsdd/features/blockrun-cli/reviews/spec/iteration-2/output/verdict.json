@@ -1,0 +1,22 @@
+{
+  "reviewType": "spec",
+  "iteration": 2,
+  "dimensions": {
+    "spec_fidelity": "PASS",
+    "verification_readiness": "PASS"
+  },
+  "overall": "PASS",
+  "blockingCount": 0,
+  "majorCount": 0,
+  "minorCount": 0,
+  "priorFindingsResolved": {
+    "1": true,
+    "2": true,
+    "3": true,
+    "4": true,
+    "5": true,
+    "6": true,
+    "7": true
+  },
+  "summary": "All 7 iteration-1 findings verified fixed by direct text comparison plus ground-truth spot-checks against the clone. Finding 1 (BLOCKING): PROP-115 (verification-architecture.md line 84) and section 4.3's video row (line 185) now state one identical quote-gated rule verbatim in substance — request xai/grok-imagine-video, --duration-seconds 1, --resolution 360p; inspect the 402 quote before signing; sign only if quote <= $0.10; otherwise record the quote in VERIFICATION.md and fall back to the documented-default duration (8s) only after confirming remaining budget >= quote + $0.20 headroom. Grepped both files for duration/default/shortest/'do not attempt'/'untested against upstream' -- no residual contradictory sentence remains; the one 'untested against upstream' hit at line 185 is the resolved rule referencing and closing out the old concern, not a new contradiction. Findings 2-7 (all MINOR) verified fixed by direct read: REQ-179 now says '19 exact paths... verified by count' (spot-checked against surf.ts:41-61 SURF_T2_PATHS -- counted 19 entries, matches exactly); REQ-020 now lists speechCost (speech.ts:54-58) among the pre-call estimators; REQ-146 now discloses the recordActualSpend-on-receipt-without-url edge case (spot-checked against music.ts:188-195 -- txHash-gated recordActualSpend call before the 'No track URL' throw, matches exactly); REQ-137 now states the --name z.string().min(1).max(64) constraint and the --image-url generic z.string().url() (any scheme, https is a doc convention not a schema constraint) (spot-checked against realface.ts:101-103 -- both zod calls match exactly, no protocol restriction present); REQ-132 now documents azure/sora-2's duration_seconds in {4,8,12} constraint and requires video --help to surface it (spot-checked against video.ts:66 description text and the inputSchema at video.ts:79 -- confirmed this is prose-only, not a zod enum, exactly as the spec now characterizes it). My own adversarial pass over both dimensions found no new findings: spot-checked 3 tools (surf, video, realface) plus music against the clone, all citations and characterizations verified byte-accurate. verification_readiness PASSes because the single blocking self-contradiction is gone and no new gap was introduced; the Tier 0-3 taxonomy, the $10 hard cap with a realistic $0.17-0.60 running total, the §4.4 documented-not-hidden untested-path policy (realface enroll, phone lookup/buy/voice-call, video/image large-tier), and the §6.1 decided-rule sign-off for realface enroll are all internally consistent and traceable to REQs. Phase 1c gate: PASS -- clear to proceed to vcsdd-tdd."
+}
