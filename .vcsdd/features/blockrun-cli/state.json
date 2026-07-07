@@ -2,7 +2,7 @@
   "featureName": "blockrun-cli",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "5",
   "phaseHistory": [
     {
       "from": "init",
@@ -49,10 +49,18 @@
       "timestamp": "2026-07-07T16:28:22.355Z",
       "reason": "contract review PASS (5/5 dims, advisory-only findings); entering implementation adversary review",
       "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-07-07T17:14:38.249Z",
+      "reason": "adversary gate 3 PASS; entering formal hardening",
+      "sprint": 1
     }
   ],
   "iterations": {
     "3": 1,
+    "5": 1,
     "1a": 1,
     "1b": 1,
     "1c": 1,
@@ -1725,5 +1733,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-07-07T14:15:05.132Z",
-  "updatedAt": "2026-07-07T17:14:23.803Z"
+  "updatedAt": "2026-07-07T17:14:38.250Z"
 }
