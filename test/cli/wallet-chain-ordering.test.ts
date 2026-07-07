@@ -20,7 +20,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -91,4 +91,26 @@ test("FIND-007 follow-up: an EXPLICIT --chain base switch still wins over rule-3
   const viewOnly = runCli(["wallet", "--action", "chain", "--json"], home);
   assert.equal(viewOnly.status, 0, `stdout: ${viewOnly.stdout}\nstderr: ${viewOnly.stderr}`);
   assert.equal(JSON.parse(viewOnly.stdout).activeChain, "base", "an explicit .chain preference must outrank rule-3 auto-detection on later view-only calls");
+});
+
+test("REQ-016a audit: qr/deposit (Base-default view-only actions) never create ~/.blockrun/.solana-session either", () => {
+  const home = mkdtempSync(join(tmpdir(), "blockrun-cli-qr-deposit-ordering-"));
+  const solanaSessionPath = join(home, ".blockrun", ".solana-session");
+
+  const deposit = runCli(["wallet", "--action", "deposit", "--json"], home);
+  assert.equal(deposit.status, 0, `stdout: ${deposit.stdout}\nstderr: ${deposit.stderr}`);
+  assert.equal(JSON.parse(deposit.stdout).chain, "base");
+  assert.equal(existsSync(solanaSessionPath), false, "deposit must not create a Solana wallet as a side effect");
+
+  const qr = runCli(["wallet", "--action", "qr", "--json"], home);
+  assert.equal(qr.status, 0, `stdout: ${qr.stdout}\nstderr: ${qr.stderr}`);
+  assert.equal(JSON.parse(qr.stdout).chain, "base");
+  assert.equal(existsSync(solanaSessionPath), false, "qr must not create a Solana wallet as a side effect");
+
+  // A subsequent plain `wallet` status call must still report base, proving
+  // neither deposit nor qr flipped the chain via ensureBothWallets()'s side effect.
+  const status = runCli(["wallet", "--json"], home);
+  assert.equal(status.status, 0, `stdout: ${status.stdout}\nstderr: ${status.stderr}`);
+  assert.equal(JSON.parse(status.stdout).activeChain, "base");
+  assert.equal(JSON.parse(status.stdout).solana, null);
 });

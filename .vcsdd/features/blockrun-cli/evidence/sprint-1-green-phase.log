@@ -1,10 +1,13 @@
-FIND-007 actually complete now: fixed the SAME bug in the status action (missed in the prior round). Full suite green: 406/406.
+FIND-007 full audit round (team-lead's follow-up request): confirmed status/chain fix already covers all view-only Base-default actions. Extended audit to qr/deposit against the real binary. 407/407.
 ==================================================================
-npm run typecheck
-
-> blockrun-cli@0.1.0 typecheck
-> tsc --noEmit
-
+grep -rn ensureBothWallets src/ — the ONLY call site outside its own definition/comments is the explicit wantsSolana branch in commands/wallet.ts's chain action:
+src/shell/wallet.ts:87:export async function ensureBothWallets(): Promise<{
+src/commands/wallet.ts:5:import { ensureBaseWallet, ensureBothWallets, getChain, getChainBalance, getWalletInfo, peekSolanaWallet, setChain } from "../shell/wallet.js";
+src/commands/wallet.ts:93:      // unconditionally calls ensureBothWallets() (which auto-creates
+src/commands/wallet.ts:105:        ? (await ensureBothWallets()).solana
+src/commands/wallet.ts:146:    // a side effect (ensureBothWallets() would) — peek only, same as the `chain`
+==================================================================
+npx tsc --noEmit
 ==================================================================
 npm run build
 
@@ -18,55 +21,71 @@ CLI Target: es2022
 CLI Cleaning output folder
 ESM Build start
 ESM dist/index.js 142.23 KB
-ESM ⚡️ Build success in 72ms
+ESM ⚡️ Build success in 65ms
 ==================================================================
 npm test — run 1/3
-✔ REQ-106: revoke requires agent_id (0.031291ms)
-✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.039042ms)
-✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.035417ms)
-✔ schema.safeParse rejects a non-numeric agent_limit (0.6855ms)
-ℹ tests 406
+✔ REQ-106: revoke requires agent_id (0.033416ms)
+✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.0435ms)
+✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.038459ms)
+✔ schema.safeParse rejects a non-numeric agent_limit (0.665792ms)
+ℹ tests 407
 ℹ suites 0
-ℹ pass 406
+ℹ pass 407
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 7774.31475
+ℹ duration_ms 8831.478292
 ==================================================================
 npm test — run 2/3 (stability)
-✔ REQ-106: revoke requires agent_id (0.034166ms)
-✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.045958ms)
-✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.0375ms)
-✔ schema.safeParse rejects a non-numeric agent_limit (0.673167ms)
-ℹ tests 406
+✔ REQ-106: revoke requires agent_id (0.077042ms)
+✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.103958ms)
+✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.084917ms)
+✔ schema.safeParse rejects a non-numeric agent_limit (1.956625ms)
+ℹ tests 407
 ℹ suites 0
-ℹ pass 406
+ℹ pass 407
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 9276.074167
+ℹ duration_ms 10951.949459
 ==================================================================
 npm test — run 3/3
-✔ REQ-106: revoke requires agent_id (0.03425ms)
-✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.047792ms)
-✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.03925ms)
-✔ schema.safeParse rejects a non-numeric agent_limit (0.729917ms)
-ℹ tests 406
+✔ REQ-106: revoke requires agent_id (0.032167ms)
+✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.044459ms)
+✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.043083ms)
+✔ schema.safeParse rejects a non-numeric agent_limit (0.68525ms)
+ℹ tests 407
 ℹ suites 0
-ℹ pass 406
+ℹ pass 407
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 11063.411625
+ℹ duration_ms 10463.589041
 ==================================================================
-Manual live verification (exactly what team-lead tested manually):
---- fresh HOME, wallet --action chain --json ---
-{"activeChain":"base","base":"0xaB55d4B1A42CEC77ebaEC51c7cB23dD796fd177f","solana":null,"activeBalance":0}
---- fresh HOME, wallet --json run twice ---
-run 1:
-{"activeChain":"base","base":{"address":"0x7Ae32C2940d335dEcD7D579A0289C06021438869","balance":0},"solana":null}
-run 2:
-{"activeChain":"base","base":{"address":"0x7Ae32C2940d335dEcD7D579A0289C06021438869","balance":0},"solana":null}
+Manual live audit of ALL wallet actions on ONE fresh HOME (team-lead's explicit request):
+HOME=/var/folders/c1/11fd4j597vx4fb8tnv25y28r0000gn/T/tmp.8NzAzFsVtJ
+--- run 1: wallet (status) ---
+{"activeChain":"base","base":{"address":"0x0214FEf4102Dfb0572685C67af3Ddf1c29ae973C","balance":0},"solana":null}
+--- run 2: wallet (status) ---
+{"activeChain":"base","base":{"address":"0x0214FEf4102Dfb0572685C67af3Ddf1c29ae973C","balance":0},"solana":null}
+--- files after 2x status ---
+.session  66B
+--- run 3: wallet --action chain ---
+{"activeChain":"base","base":"0x0214FEf4102Dfb0572685C67af3Ddf1c29ae973C","solana":null,"activeBalance":0}
+--- run 4: wallet --action deposit ---
+{"chain":"base","address":"0x0214FEf4102Dfb0572685C67af3Ddf1c29ae973C","note":"Fund your wallet with USDC on the active chain."}
+--- run 5: wallet --action qr ---
+{"chain":"base","address":"0x0214FEf4102Dfb0572685C67af3Ddf1c29ae973C","qrPath":"/var/folders/c1/11fd4j597vx4fb8tnv25y28r0000gn/T/tmp.8NzAzFsVtJ/.blockrun/qr.png"}
+--- files after status/chain/deposit/qr (still no .solana-session) ---
+.session  66B
+qr.png  5.8K
+--- run 6: explicit --chain solana switch (the ONE legitimate creation trigger) ---
+{"activeChain":"solana","base":"0x0214FEf4102Dfb0572685C67af3Ddf1c29ae973C","solana":"CzSdeU6gS36J4iVuJKCncX3caWsvNXqQWWPA5erAx5pA","activeBalance":0}
+--- files after explicit switch (.solana-session now exists) ---
+.chain  6B
+.session  66B
+.solana-session  88B
+qr.png  5.8K
