@@ -136,7 +136,15 @@ separate free-fetch helper, `src/shell/http.ts`'s `fetchJson(url, init) => Promi
 status: number; data: Record<string, unknown> }>`, mocked independently in that
 command's Tier 2 test.
 
-## 7. KNOWN GAP — spec revised mid-Sprint-1 (v3, budget persistence + REQ-023 aliases); this Red suite needs a refresh pass
+## 7. RESOLVED (was: KNOWN GAP) — spec revised mid-Sprint-1 (v3, budget persistence + REQ-023 aliases); v4 delta pass completed below (§8-§13)
+
+Spec-review adversary iteration-3 PASSED with 0 blocking findings and the spec is now
+final as v4. The REQ-022/REQ-023 alias-conflict gap flagged below has been closed by the
+Sprint-2 delta pass — see §8 (budget-limit), §9 (cli-budget-schema), §10 (alias/conflict
+builder contract), §11 (`--max-quote-usd` + test-only API base override), §12
+(agent_id threading), §13 (search/exa alias tables) for the new contracts, and the new
+test files listed in each section for the corresponding coverage. Original gap note
+retained below for history/traceability, superseded by §8-§13:
 
 While this Sprint-1 Red-phase test suite was being written, `behavioral-spec.md` and
 `verification-architecture.md` were being revised CONCURRENTLY by another process on
@@ -178,3 +186,143 @@ Both normalize to the same parsed value before being handed to the field's zod
 sub-schema, so `args/<command>.ts` sees one already-decoded value regardless of which
 form the caller used. This is exercised by the Tier 1 flag-parsing-harness test
 (PROP-003) shared across every command that has a JSON-shaped flag.
+
+## 8. Per-invocation `--budget-limit` resolution (REQ-018, PROP-010)
+
+A new pure function, `src/core/budget-limit.ts`:
+
+```ts
+export function resolveInvocationBudgetLimit(
+  flagValue: number | undefined,
+  envValue: string | undefined,
+): number | null; // null = unlimited
+```
+
+Precedence: `flagValue` (if a positive number) > `parseBudgetLimitEnv(envValue)` (the
+already-ported `core/budget.ts` function) > `null` (unlimited). This function takes ONLY
+plain arguments (the flag value already parsed by commander, and `process.env.
+BLOCKRUN_BUDGET_LIMIT` already read by the impure shell and passed in) — it never reads
+`process.env` itself, and it never touches `~/.blockrun/cli-budget.json`, which is the
+mechanical proof PROP-010 requires ("assert...ZERO reads/writes of cli-budget.json").
+This cap stays entirely in the command layer's local variable for the lifetime of one
+invocation (REQ-018's "EPHEMERAL...never read from or written to the persisted ledger").
+
+## 9. `~/.blockrun/cli-budget.json` persistence (REQ-019 family, PROP-011/011a)
+
+`src/core/cli-budget-schema.ts` (pure, per verification-architecture.md §1.1):
+
+```ts
+export interface AgentBudgetEntry { limit: number; spent: number; calls: number }
+export interface CliBudgetLedger {
+  version: 1;
+  global: { limit: number | null; spent: number; calls: number };
+  agents: Record<string, AgentBudgetEntry>;
+  updatedAt: string; // ISO-8601
+}
+
+export function emptyLedger(seedLimit: number | null, now: () => string): CliBudgetLedger;
+export function encodeBudgetLedger(ledger: CliBudgetLedger): string;   // JSON.stringify
+export function decodeBudgetLedger(raw: string): CliBudgetLedger;      // JSON.parse + shape validation
+// Bridges to the ALREADY-PORTED core/budget.ts logic (REQ-019c: "apply the SAME
+// checkBudget/recordActualSpend logic ported from budget.ts") by converting the
+// file's plain-object `agents` map to/from budget.ts's in-memory `Map`-based
+// BudgetState, so the persisted-ledger check/spend path reuses the identical pure
+// logic rather than re-deriving it:
+export function toBudgetState(ledger: CliBudgetLedger): BudgetState;
+export function fromBudgetState(state: BudgetState, updatedAt: string): CliBudgetLedger;
+export function checkPersistedBudget(
+  ledger: CliBudgetLedger, agentId: string | undefined, estimate: number,
+): { allowed: boolean; reason?: string }; // wraps toBudgetState + core/budget.ts's checkBudget
+export function applyPersistedSpend(
+  ledger: CliBudgetLedger, agentId: string | undefined, actualUsd: number, estimate: number, now: () => string,
+): CliBudgetLedger; // wraps toBudgetState + recordActualSpend + fromBudgetState, returns a NEW ledger (immutable)
+```
+
+The impure shell, `src/shell/budget-store.ts` (per verification-architecture.md §1.2),
+owns the actual file I/O around these pure functions:
+
+```ts
+export function readLedger(): CliBudgetLedger;                 // reads ~/.blockrun/cli-budget.json, or emptyLedger() if absent
+export function writeLedgerAtomic(ledger: CliBudgetLedger): void; // write to cli-budget.json.tmp-<pid> in the SAME dir, then fs.renameSync over the target (REQ-019b)
+```
+
+Test-only seam: `readLedger`/`writeLedgerAtomic` resolve the file path via
+`path.join(os.homedir(), ".blockrun", "cli-budget.json")` — same `os.homedir()`/`HOME`
+mechanism as REQ-017's wallet-file isolation, so Tier 2 tests point at a real temp dir by
+setting `HOME` for the test process (no separate env var invented for this).
+
+## 10. Alias / canonical-flag conflict-rejection contract (REQ-023, extending §3's `BuildResult`)
+
+Every `args/<command>.ts` whose command has a REQ-023 alias (chat, image, video, music,
+speech: positional-vs-canonical scalar; chat: `--thinking-budget-tokens` vs `--thinking`;
+search/exa: body-shape aliases, §13) follows ONE resolution rule inside `buildRequest`,
+checked BEFORE zod validation:
+
+1. If the alias form is supplied AND the canonical form is ALSO supplied (whether they
+   agree or not — REQ-023 says "never accepted in silent conflict...even matching"
+   is not required to be checked for equality, just presence-conflict), return
+   `{ ok: false, error: "... conflicts with ... — supply only one" }`.
+2. If ONLY the alias is supplied, compile it into the canonical field before building
+   the request (so `buildRequest`'s OUTPUT shape is always keyed by canonical field
+   names — the alias never appears in the returned `CommandRequest`).
+3. If ONLY the canonical is supplied (or neither, when optional), proceed as today.
+
+Positional arguments arrive from `src/index.ts`'s commander wiring as a `$positional:
+string[]` array appended to the flags object handed to `buildRequest` (commander's own
+`program.argument('[prompt]')` capture) — e.g. `blockrun chat "hi"` calls `buildRequest({
+$positional: ["hi"] })`, and `blockrun chat --message "hi"` calls `buildRequest({ message:
+"hi" })`; both MUST produce `{ ok: true, value: { message: "hi", ... } }` (REQ-108a's
+"IDENTICAL request" requirement) — proven directly in each affected command's
+`test/unit/<command>.test.ts` (extended in this delta pass) rather than a separate file,
+since positional-vs-canonical is a single command-local concern (unlike search/exa's
+multi-field body aliases, which get their own files per §13).
+
+## 11. `video --max-quote-usd` (REQ-135a) and the test-only API-base override
+
+`src/args/video.ts`'s `buildRequest` validates `--max-quote-usd` is a positive finite
+number when supplied (rejected locally otherwise, per REQ-135a's "abort BEFORE
+`createPaymentPayload()`" contract starting even earlier at the args layer for a
+malformed value). The actual quote-vs-cap comparison happens in `src/commands/video.ts`
+against the REAL 402 quote, calling `shell/manual-x402.ts`'s `payAndPoll` with an
+`onQuote` callback (mirroring the clone's `reReserveIfHigher` callback shape) that throws
+BEFORE the function would call `createPaymentPayload` if the quote exceeds the cap.
+
+verification-architecture.md §2.2's PROP-114 explicitly requires a Tier 2b **subprocess**
+test against "a local stub HTTP server" for this gate — since `shell/manual-x402.ts`
+otherwise targets the hardcoded `https://blockrun.ai/api` (mirroring the clone's
+`BLOCKRUN_API` constant), a built binary cannot be pointed at a local stub without SOME
+override. Decision: `shell/manual-x402.ts` reads its base URL from an env var,
+`BLOCKRUN_API_BASE_URL`, defaulting to `https://blockrun.ai/api` when unset. This is
+NOT a user-facing feature and is NOT documented in the CLI's README as a supported
+override (avoiding any tension with REQ-017's specific, narrow prohibition on inventing a
+`BLOCKRUN_HOME` config-dir override) — it exists solely so `test/cli/video-max-quote-usd.
+test.ts` can spawn the real built binary against an in-process `node:http` stub server
+instead of the real gateway, which is the ONLY way to satisfy PROP-114's explicit
+subprocess-tier requirement without spending real USDC in Tier 2.
+
+## 12. `agent_id` threading (REQ-022, PROP-205)
+
+`test/unit/agent-id-threading.test.ts` is table-driven across the 15 commands whose
+source `inputSchema` declares `agent_id` (all 18 minus `wallet`, `models`, `dex` — REQ-022
+itself names this set): `chat`, `image`, `video`, `realface`, `music`, `speech`, `search`,
+`exa`, `markets`, `price`, `rpc`, `defi`, `modal`, `phone`, `surf`. For each, the test
+imports that command's `buildRequest`, calls it once WITH `agentId`/`agent-id`-equivalent
+flag set and once WITHOUT, and asserts: (a) when set, the returned `CommandRequest`
+carries `agent_id` verbatim; (b) when NOT set, the key is absent from the object
+entirely (`!('agent_id' in value)`), never present as `agent_id: undefined` (a Green-phase
+implementer using an object spread with an `undefined` value would still satisfy `in`
+falsely — the test uses `Object.prototype.hasOwnProperty`-based absence, not just
+`=== undefined`, to catch that).
+
+## 13. `search`/`exa` alias tables (REQ-152a, REQ-154a, PROP-206)
+
+New files `test/unit/search-alias.test.ts` and `test/unit/exa-alias.test.ts`, table-driven
+one row per documented alias (search: `--query`→`body.query`, `--sources`→`body.sources`,
+`--max-results`→`body.max_results`, `--from-date`→`body.from_date`, `--to-date`→
+`body.to_date`; exa per-path: `search`'s `--query`/`--num-results`/`--category`/
+`--include-domains`/`--exclude-domains`, `answer`'s `--query`, `contents`'s `--urls`,
+`find-similar`'s `--url`/`--num-results`). Each row asserts the alias form and the
+equivalent `--body '{...}'` canonical form produce an IDENTICAL `CommandRequest.body`,
+and that supplying BOTH the alias and a `--body` that also sets the same field is
+rejected (same conflict rule as §10, applied per-field to the resolved body object
+rather than to a single top-level scalar).

@@ -44,6 +44,15 @@ test("REQ-134: a failed job records NO charge and returns a nonzero exit", async
   assert.equal(budget.spent, 0, "no payment was taken on a failed/timed-out job");
 });
 
+test("REQ-022/PROP-205: --agent-id reaches per-agent budget accounting on the manual-x402 (video) path", async () => {
+  mode = "completed";
+  const budget = newBudget();
+  budget.agents.set("research", { limit: 1, spent: 0, calls: 0 });
+  const res = await run({ prompt: "a spinning cube", model: "xai/grok-imagine-video", durationSeconds: 1, agentId: "research" }, { json: true }, budget);
+  assert.equal(res.exitCode, 0);
+  assert.equal(budget.agents.get("research")!.spent, 0.05);
+});
+
 test("REQ-133: Solana chain rejects video with an actionable chain-switch message, before any call", async () => {
   mode = "completed";
   const budget = newBudget();

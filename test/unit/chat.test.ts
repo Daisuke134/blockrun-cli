@@ -83,3 +83,32 @@ test("REQ-110/REQ-112: mode and routing_profile enums are validated, routing_pro
   assert.equal(r.ok, true);
   if (r.ok) assert.equal(r.value.routingProfile, "auto");
 });
+
+test("REQ-108a: a bare positional argument compiles into --message, identical to the canonical form", () => {
+  const viaPositional = buildRequest({ $positional: ["hi"] });
+  const viaCanonical = buildRequest({ message: "hi" });
+  assert.equal(viaPositional.ok, true);
+  assert.equal(viaCanonical.ok, true);
+  if (viaPositional.ok && viaCanonical.ok) assert.deepEqual(viaPositional.value, viaCanonical.value);
+});
+
+test("REQ-108a: supplying BOTH the positional and --message is a conflict error", () => {
+  const r = buildRequest({ $positional: ["hi"], message: "hi" });
+  assert.equal(r.ok, false);
+});
+
+test("REQ-114/REQ-114a: --thinking-budget-tokens alias compiles into the canonical --thinking object, identical to supplying --thinking directly", () => {
+  const viaAlias = buildRequest({ message: "hi", model: "anthropic/claude-opus-4.8", thinkingBudgetTokens: 2000 });
+  const viaCanonical = buildRequest({ message: "hi", model: "anthropic/claude-opus-4.8", thinking: { type: "enabled", budget_tokens: 2000 } });
+  assert.equal(viaAlias.ok, true);
+  assert.equal(viaCanonical.ok, true);
+  if (viaAlias.ok && viaCanonical.ok) assert.deepEqual(viaAlias.value.thinking, viaCanonical.value.thinking);
+});
+
+test("REQ-114a: supplying BOTH --thinking and --thinking-budget-tokens is a conflict error", () => {
+  const r = buildRequest({
+    message: "hi", model: "anthropic/claude-opus-4.8",
+    thinking: { type: "enabled", budget_tokens: 2000 }, thinkingBudgetTokens: 3000,
+  });
+  assert.equal(r.ok, false);
+});

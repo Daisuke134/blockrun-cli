@@ -30,3 +30,15 @@ test("REQ-153: --max-results 1 charges $0.025 and forwards the mapped body", asy
   assert.equal((lastCall!.body as any).query, "test");
   assert.equal((lastCall!.body as any).max_results, 1);
 });
+
+test("REQ-152a/PROP-206: the canonical --body form reaches the SDK with the SAME shape as the --query/--max-results alias form", async () => {
+  const budget1 = newBudget();
+  await run({ query: "test", maxResults: 1 }, { json: true }, budget1);
+  const viaAlias = { ...(lastCall!.body as any) };
+
+  const budget2 = newBudget();
+  await run({ body: { query: "test", max_results: 1 } }, { json: true }, budget2);
+  const viaCanonical = { ...(lastCall!.body as any) };
+
+  assert.deepEqual(viaAlias, viaCanonical);
+});

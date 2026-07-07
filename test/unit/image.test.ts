@@ -76,3 +76,16 @@ test("REQ-005: size/quality default when omitted (generate action)", () => {
     assert.equal(r.value.action, "generate");
   }
 });
+
+test("REQ-123a: a bare positional argument compiles into --prompt, identical to the canonical form", () => {
+  const viaPositional = buildRequest({ $positional: ["a cat"] });
+  const viaCanonical = buildRequest({ prompt: "a cat" });
+  assert.equal(viaPositional.ok, true);
+  assert.equal(viaCanonical.ok, true);
+  if (viaPositional.ok && viaCanonical.ok) assert.deepEqual(viaPositional.value, viaCanonical.value);
+});
+
+test("REQ-123a: supplying BOTH the positional and --prompt is a conflict error", () => {
+  const r = buildRequest({ $positional: ["a cat"], prompt: "a dog" });
+  assert.equal(r.ok, false);
+});

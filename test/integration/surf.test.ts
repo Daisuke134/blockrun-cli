@@ -37,3 +37,11 @@ test("REQ-181/REQ-179: a body -> POST, Tier 3 cost $0.02 for onchain/sql", async
   assert.equal(budget.spent, 0.02);
   assert.match(lastPost!.endpoint, /\/v1\/surf\/onchain\/sql$/);
 });
+
+test("REQ-022/PROP-205: --agent-id reaches per-agent budget accounting (surf is the path-based-passthrough family representative)", async () => {
+  const budget = newBudget();
+  budget.agents.set("research", { limit: 1, spent: 0, calls: 0 });
+  const res = await run({ path: "market/price", params: { symbol: "BTC" }, agentId: "research" }, { json: true }, budget);
+  assert.equal(res.exitCode, 0);
+  assert.equal(budget.agents.get("research")!.spent, 0.001, "the $0.001 spend must be booked against the 'research' agent, proving agent_id reached the SDK-call/budget path, not just the global ledger");
+});

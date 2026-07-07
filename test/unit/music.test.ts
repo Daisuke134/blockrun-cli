@@ -32,3 +32,16 @@ test("an empty/whitespace lyrics string with instrumental:true is not treated as
   const r = buildRequest({ prompt: "p", instrumental: true, lyrics: "   " });
   assert.equal(r.ok, true, "mirrors music.ts's lyrics?.trim() check");
 });
+
+test("REQ-144a: a bare positional argument compiles into --prompt, identical to the canonical form", () => {
+  const viaPositional = buildRequest({ $positional: ["chill lo-fi beats"] });
+  const viaCanonical = buildRequest({ prompt: "chill lo-fi beats" });
+  assert.equal(viaPositional.ok, true);
+  assert.equal(viaCanonical.ok, true);
+  if (viaPositional.ok && viaCanonical.ok) assert.deepEqual(viaPositional.value, viaCanonical.value);
+});
+
+test("REQ-144a: supplying BOTH the positional and --prompt is a conflict error", () => {
+  const r = buildRequest({ $positional: ["beat a"], prompt: "beat b" });
+  assert.equal(r.ok, false);
+});

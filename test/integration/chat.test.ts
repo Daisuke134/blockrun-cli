@@ -51,3 +51,19 @@ test("REQ-118: routing:smart + messages is rejected before any network call", as
   assert.notEqual(res.exitCode, 0);
   assert.deepEqual(lastChatArgs, []);
 });
+
+test("REQ-108a: a bare positional message reaches the SDK call identically to --message", async () => {
+  const budget = newBudget();
+  lastChatArgs = [];
+  const res = await run({ $positional: ["2+2?"], model: "nvidia/deepseek-v4-flash" }, { json: true }, budget);
+  assert.equal(res.exitCode, 0);
+  assert.equal(lastChatArgs[1], "2+2?");
+});
+
+test("REQ-022/PROP-205: --agent-id reaches per-agent accounting — even a $0 (nvidia) call increments that agent's call count", async () => {
+  const budget = newBudget();
+  budget.agents.set("research", { limit: 0.001, spent: 0, calls: 0 });
+  const res = await run({ message: "hi", model: "nvidia/deepseek-v4-flash", agentId: "research" }, { json: true }, budget);
+  assert.equal(res.exitCode, 0);
+  assert.equal(budget.agents.get("research")!.calls, 1, "the call must be recorded against the 'research' agent specifically, proving agent_id reached the recordActualSpend call");
+});

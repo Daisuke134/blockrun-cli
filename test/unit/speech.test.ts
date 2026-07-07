@@ -51,3 +51,21 @@ test("REQ-148: action defaults to speak, model defaults to elevenlabs/flash-v2.5
     assert.equal(r.value.responseFormat, "mp3");
   }
 });
+
+test("REQ-148a: a bare positional argument compiles into --input, identical to the canonical form", () => {
+  const viaPositional = buildRequest({ $positional: ["hi"] });
+  const viaCanonical = buildRequest({ input: "hi" });
+  assert.equal(viaPositional.ok, true);
+  assert.equal(viaCanonical.ok, true);
+  if (viaPositional.ok && viaCanonical.ok) assert.deepEqual(viaPositional.value, viaCanonical.value);
+});
+
+test("REQ-148a: supplying BOTH the positional and --input is a conflict error", () => {
+  const r = buildRequest({ $positional: ["hi"], input: "hello" });
+  assert.equal(r.ok, false);
+});
+
+test("REQ-148a: voices action needs no positional/input at all", () => {
+  const r = buildRequest({ $positional: [], action: "voices" });
+  assert.equal(r.ok, true);
+});

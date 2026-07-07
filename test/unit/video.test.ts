@@ -54,3 +54,29 @@ test("REQ-130: last_frame_url requires image_url and excludes real_face_asset_id
   );
   assert.equal(buildRequest({ prompt: "p", imageUrl: "https://x/a.png", lastFrameUrl: "https://x/b.png" }).ok, true);
 });
+
+test("REQ-130a: a bare positional argument compiles into --prompt, identical to the canonical form", () => {
+  const viaPositional = buildRequest({ $positional: ["a cube spinning"] });
+  const viaCanonical = buildRequest({ prompt: "a cube spinning" });
+  assert.equal(viaPositional.ok, true);
+  assert.equal(viaCanonical.ok, true);
+  if (viaPositional.ok && viaCanonical.ok) assert.deepEqual(viaPositional.value, viaCanonical.value);
+});
+
+test("REQ-130a: supplying BOTH the positional and --prompt is a conflict error", () => {
+  const r = buildRequest({ $positional: ["a cube"], prompt: "a sphere" });
+  assert.equal(r.ok, false);
+});
+
+test("REQ-135a: --max-quote-usd must be a positive finite number when supplied", () => {
+  assert.equal(buildRequest({ prompt: "p", maxQuoteUsd: 0 }).ok, false);
+  assert.equal(buildRequest({ prompt: "p", maxQuoteUsd: -1 }).ok, false);
+  assert.equal(buildRequest({ prompt: "p", maxQuoteUsd: Infinity }).ok, false);
+  assert.equal(buildRequest({ prompt: "p", maxQuoteUsd: 0.1 }).ok, true);
+});
+
+test("REQ-135a: --max-quote-usd is omitted from the request (no gate) when not supplied", () => {
+  const r = buildRequest({ prompt: "p" });
+  assert.equal(r.ok, true);
+  if (r.ok) assert.equal(Object.prototype.hasOwnProperty.call(r.value, "maxQuoteUsd"), false);
+});

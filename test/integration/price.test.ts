@@ -41,3 +41,11 @@ test("REQ-161: stocks price is paid (paid=true) and costs $0.001", async () => {
   assert.equal(lastPaidFlag, true);
   assert.equal(budget.spent, 0.001);
 });
+
+test("REQ-022/PROP-205: --agent-id reaches per-agent budget accounting on a paid (stocks) call", async () => {
+  const budget = newBudget();
+  budget.agents.set("research", { limit: 1, spent: 0, calls: 0 });
+  const res = await run({ action: "price", category: "stocks", symbol: "AAPL", market: "us", agentId: "research" }, { json: true }, budget);
+  assert.equal(res.exitCode, 0);
+  assert.equal(budget.agents.get("research")!.spent, 0.001);
+});
