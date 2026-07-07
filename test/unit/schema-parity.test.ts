@@ -15,12 +15,14 @@ const fixture = JSON.parse(readFileSync(fixturePath, "utf8")) as Record<string, 
 
 const commands = Object.keys(fixture);
 
-test("schema-parity fixture covers all 18 commands", () => {
-  assert.equal(commands.length, 18, "one valid+invalid example per command, per verification-architecture.md §3");
-});
-
+// Fixture completeness (18 commands) is asserted INSIDE the first per-command test
+// below via commands.length, rather than as its own standalone assertion — a
+// standalone "the fixture has 18 keys" test needs no src/ import and would trivially
+// pass before any implementation exists, which the Red phase must not allow (every new
+// test here must fail until src/args/*.ts exists per the TDD-Red contract).
 for (const command of commands) {
-  test(`PROP-002: ${command} schema.safeParse() accepts the documented valid example`, async () => {
+  test(`PROP-002: ${command} schema.safeParse() accepts the documented valid example (fixture covers ${commands.length}/18 commands)`, async () => {
+    assert.equal(commands.length, 18, "one valid+invalid example per command, per verification-architecture.md §3");
     const mod = await import(`../../src/args/${command}.js`);
     const result = mod.schema.safeParse(fixture[command].valid);
     assert.equal(result.success, true, result.success ? "" : JSON.stringify(result.error?.issues));

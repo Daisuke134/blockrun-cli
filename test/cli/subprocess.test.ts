@@ -71,8 +71,14 @@ test("REQ-006: --json output is ONLY a single parseable JSON document on stdout;
   assert.doesNotThrow(() => JSON.parse(res.stdout), "stdout must be JSON.parse-able in full when --json is set");
 });
 
-test("REQ-007: without --json, a locally-rejected call prints human-readable text to stderr, not JSON", () => {
+test("REQ-007: without --json, a locally-rejected call prints human-readable text (formatError's 'Error: ' prefix) to stderr, nothing to stdout", () => {
   const res = runCli(["wallet", "--action", "self-destruct"]);
   assert.notEqual(res.status, 0);
+  assert.equal(res.stdout.trim(), "", "no --json means nothing should be written to stdout on failure");
+  // Tied to the real formatError() contract (src/core/errors.ts), not just "any
+  // nonzero exit with non-JSON stderr" — a bare Node MODULE_NOT_FOUND crash (what
+  // happens before dist/index.js exists) does NOT start with "Error: ", so this
+  // correctly fails in the Red phase instead of passing on the wrong signal.
+  assert.match(res.stderr, /^Error: /);
   assert.throws(() => JSON.parse(res.stderr), "stderr text should be human-readable, not a JSON document");
 });

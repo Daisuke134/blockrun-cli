@@ -1,0 +1,27 @@
+{
+  "ok": false,
+  "blocking": [
+    {
+      "file": ".vcsdd/features/blockrun-cli/specs/verification-architecture.md",
+      "issue": "Section 6.2 still says budget persistence across CLI invocations is deliberately NOT required and that a persisted ledger is out of scope for v1. This directly contradicts behavioral REQ-019/019a-c, REQ-107a, and verification PROP-011/011a/103, which now require ~/.blockrun/cli-budget.json persistence and cross-invocation delegate/report and budget enforcement.",
+      "fix": "Delete or rewrite §6.2 item 1 to state the decided rule: budget/delegate/revoke/report and paid-command spend tracking persist through ~/.blockrun/cli-budget.json across separate CLI invocations."
+    },
+    {
+      "file": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+      "issue": "Schema fidelity is still not fully 1:1 for chat thinking. Ground truth chat.ts exposes canonical field `thinking` as an object `{type:\"enabled\", budget_tokens:number}`. REQ-114 documents only `--thinking-budget-tokens`, which is not a source zod field and is not labeled as an alias under REQ-023; the canonical `--thinking <json>` surface is omitted.",
+      "fix": "Add canonical `--thinking <json|@file>` / `--thinking-json` support for the source `thinking` field, and either remove `--thinking-budget-tokens` or explicitly mark it as an alias to `thinking.budget_tokens` with conflict rejection when `--thinking` is also provided."
+    },
+    {
+      "file": ".vcsdd/features/blockrun-cli/specs/behavioral-spec.md",
+      "issue": "Several canonical scalar fields are documented only as positionals, despite REQ-004 requiring parameters as CLI flags and REQ-022 saying no canonical source field may be omitted from §2. Examples: image/video/music use `<prompt>` without documenting canonical `--prompt`; speech uses `[<input>]` without documenting canonical `--input`, while verification §4.3 later invokes speech with `--input \"hi\"`. This leaves the 1:1 CLI surface ambiguous and internally inconsistent.",
+      "fix": "For every positional convenience form, document the canonical flag too, e.g. `image --prompt`, `video --prompt`, `music --prompt`, `speech --input`; define the positional as an alias/convenience mapping and reject conflicts when both positional and canonical flag are supplied."
+    }
+  ],
+  "advisory": [
+    "The BLOCKRUN_HOME contradiction appears resolved: both specs now use HOME-based isolation and no BLOCKRUN_HOME requirement remains.",
+    "Search/exa canonical body surfaces and alias tables are now explicit and have verification hooks.",
+    "The video quote gate is now executable via `--max-quote-usd` with Tier-2 and Tier-3 verification coverage.",
+    "Agent_id coverage is substantially fixed for the 15 source schemas that declare it, with wallet handled through its own scoped agent_id/agent_limit actions."
+  ],
+  "summary": "Four of the five prior blockers are resolved. The remaining blocker is schema fidelity, plus a new stale contradiction in verification §6.2 that re-opens the budget persistence decision already fixed elsewhere."
+}
