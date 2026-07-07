@@ -1,0 +1,13 @@
+{
+  "reviewType": "spec",
+  "iteration": 1,
+  "dimensions": {
+    "spec_fidelity": "PASS",
+    "verification_readiness": "FAIL"
+  },
+  "overall": "FAIL",
+  "blockingCount": 1,
+  "majorCount": 0,
+  "minorCount": 6,
+  "summary": "Grounding is unusually precise: every checked line-range citation (surf.ts:69-77, errors.ts:9-34/57-103, budget.ts's 7 functions, path-safety.ts, SDK dist/index.js homedir lines, SDK dist/index.d.ts private-method lines, wallet.ts chain precedence, image.ts count caps, test/surf.test.ts's 2 test bodies) matched the clone exactly across 5+ spot-checked tools (chat, surf, dex, music, realface) plus video/image/wallet/errors/budget cross-cutting checks. spec_fidelity dimension PASSes (zero blocking; 6 minor factual/completeness gaps: a path-count miscount, one missing cost-function name, one undisclosed charge-on-receipt edge case, two undocumented zod constraints, one per-model duration note). verification_readiness FAILs on 1 blocking finding: PROP-115 (video Tier-3, section 2.2) says to run the real E2E call at the 'shortest allowed duration' while section 4.3's own per-command table explicitly forbids exactly that and specifies the model's documented default duration instead -- a direct self-contradiction in the real-money ($10 cap, real USDC on Base mainnet) execution plan that must be reconciled before Phase 5 (vcsdd-harden) E2E execution."
+}
