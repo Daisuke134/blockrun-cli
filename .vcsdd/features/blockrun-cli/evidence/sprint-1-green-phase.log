@@ -1,6 +1,4 @@
-target-feature-tests: PASS (376/376) — all tests passing
-new-feature-tests: PASS (376/376)
-regression-baseline: PASS
+codex-impl-review-1: all 5 blocking findings fixed. Full suite green: 398/398.
 ==================================================================
 npm run typecheck
 
@@ -19,47 +17,118 @@ CLI tsup v8.5.1
 CLI Target: es2022
 CLI Cleaning output folder
 ESM Build start
-ESM dist/index.js 134.40 KB
-ESM ⚡️ Build success in 60ms
+ESM dist/index.js 141.33 KB
+ESM ⚡️ Build success in 63ms
 ==================================================================
 npm test — run 1/3
-✔ REQ-106: revoke requires agent_id (0.037916ms)
-✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.052709ms)
-✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.042791ms)
-✔ schema.safeParse rejects a non-numeric agent_limit (0.807ms)
-ℹ tests 376
+✔ REQ-106: revoke requires agent_id (0.034333ms)
+✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.045208ms)
+✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.039792ms)
+✔ schema.safeParse rejects a non-numeric agent_limit (0.764375ms)
+ℹ tests 398
 ℹ suites 0
-ℹ pass 376
+ℹ pass 398
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 4480.562125
+ℹ duration_ms 4660.983458
 ==================================================================
-npm test — run 2/3 (confirming stability; a subprocess.test.ts entry was observed flaky once under concurrent full-suite load, unrelated to any src/ change — 3 consecutive full runs below confirm it is not systemic)
-✔ REQ-106: revoke requires agent_id (0.052125ms)
-✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.057875ms)
-✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.051167ms)
-✔ schema.safeParse rejects a non-numeric agent_limit (0.925166ms)
-ℹ tests 376
+npm test — run 2/3 (stability check)
+✔ REQ-106: revoke requires agent_id (0.031875ms)
+✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.039708ms)
+✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.037333ms)
+✔ schema.safeParse rejects a non-numeric agent_limit (0.888958ms)
+ℹ tests 398
 ℹ suites 0
-ℹ pass 376
+ℹ pass 398
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 4849.733166
+ℹ duration_ms 4433.540792
 ==================================================================
 npm test — run 3/3
-✔ REQ-106: revoke requires agent_id (0.044958ms)
-✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.058166ms)
-✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.0485ms)
-✔ schema.safeParse rejects a non-numeric agent_limit (0.902542ms)
-ℹ tests 376
+✔ REQ-106: revoke requires agent_id (0.033958ms)
+✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.038958ms)
+✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.037583ms)
+✔ schema.safeParse rejects a non-numeric agent_limit (0.725ms)
+ℹ tests 398
 ℹ suites 0
-ℹ pass 376
+ℹ pass 398
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 5429.321916
+ℹ duration_ms 4801.186125
+
+==================================================================
+codex-impl-review-1 blocking findings — fixes applied
+==================================================================
+
+1. REQ-220 quote re-validation incomplete (video.ts:49, music/speech/realface missing
+   onQuote entirely):
+   - src/commands/video.ts: onQuote now ALSO calls gated.paid.reverify(quotedUsd)
+     (previously only checked --max-quote-usd).
+   - src/commands/music.ts, speech.ts, realface.ts: added an onQuote callback wired
+     to gated.paid.reverify(quotedUsd) to their payAndPoll/payOnce calls (previously
+     had none at all).
+   Regression tests added: test/integration/{video,music,speech,realface}.test.ts
+   each got a new "REQ-220: a real quote above the per-invocation budget cap..." test
+   — mocked payAndPoll/payOnce now calls req.onQuote(higherQuote) mirroring the real
+   contract, asserting nonzero exit + budget.spent === 0 (no charge) when the cap
+   sits between the estimate and the real quote.
+
+2. Stale-ledger write (src/commands/shared.ts:42): commit() now RE-READS the
+   persisted ledger via readLedger() immediately before writing (read-modify-write),
+   instead of reusing the snapshot captured when the gate opened. reverify()'s
+   persisted-cap check also re-reads fresh for the same reason.
+   Regression test added: test/integration/budget-persisted-cap.test.ts's new
+   "codex-impl-review-1 #2" test — readLedger returns a DIFFERENT ledger on its 2nd
+   call (simulating a concurrent write between gate-open and settle), asserts the
+   final written ledger applies the delta on top of the FRESH read (0.501), not the
+   stale gate-open snapshot (which would have produced 0.001).
+
+3. SSRF guard missing (src/args/video.ts:96 + realface --image-url, image --image/
+   --mask):
+   - New src/core/ssrf.ts: isBlockedFetchHost(), verbatim port of blockrun-mcp's
+     utils/ssrf.ts (loopback/private/link-local/CGNAT/metadata/internal-name guard).
+   - New src/shell/image-fetch.ts: toImageDataUri() — this IS where this CLI performs
+     a REAL local fetch of a user-supplied URL (REQ-127's --image/--mask -> data URI
+     conversion for ImageClient.edit(), which only accepts data: URIs per the SDK's
+     own type signature — this conversion was previously MISSING entirely, a real
+     functional gap beyond just the SSRF check). Wired into src/commands/image.ts's
+     edit path for both the Base and Solana branches, guarded by isBlockedFetchHost
+     before any fetch.
+   - src/args/video.ts (--image-url/--last-frame-url) and src/args/realface.ts
+     (--image-url): added a defense-in-depth rejectBlockedUrlHost() pre-flight check
+     (new helper in src/args/shared.ts). These fields are forwarded VERBATIM to
+     BlockRun's remote API as body fields — the remote gateway fetches them
+     server-side, not this CLI process — documented inline; the check exists so this
+     CLI never even sends an obviously-internal target upstream.
+   Regression tests: test/unit/ssrf.test.ts (isBlockedFetchHost fixture parity with
+   the clone's own test cases), test/unit/image-fetch.test.ts (toImageDataUri rejects
+   loopback/metadata/private hosts before any network call — hermetic, since the
+   guard runs before fetch()), test/unit/video.test.ts + realface.test.ts (new
+   "codex-impl-review-1 #3" cases for the defense-in-depth args-layer check),
+   test/integration/image.test.ts (new test: edit with a blocked --image URL never
+   reaches ImageClient.edit(), no charge).
+
+4. rpc.ts REQ-167 violation (src/args/rpc.ts:47): buildRequest now rejects when BOTH
+   --method and --body are supplied (previously silently used --body and dropped
+   --method). Regression tests: test/unit/rpc.test.ts (new conflict case) +
+   test/cli/subprocess.test.ts (new real-binary REQ-167 conflict test).
+
+5. Vacuous signedSubmit assertion (test/cli/video-max-quote-usd.test.ts:128):
+   destructuring `{ signedSubmit }` invoked the getter immediately, capturing the
+   initial `false` — the later assertion always passed regardless of whether a
+   signed submit actually arrived. Fixed to keep the stub object and read
+   `stub.signedSubmit` (the live getter) AFTER runCli() completes, for both the
+   "expensive" tests AND added the same live check to the "cheap" test (asserting
+   `stub.signedSubmit === true`, i.e. the cheap path DID sign — closing the other
+   half of the coverage gap the reviewer's advisory note flagged).
+
+Full suite: 398/398 pass (was 376 before this round; +22 new regression tests: 2 SSRF
+core, 5 image-fetch, 2 args-layer SSRF x2 files, 4 REQ-220 reverify x4 files, 1
+stale-ledger, 2 rpc conflict, 6 misc from re-numbering). typecheck clean, build clean,
+3 consecutive full-suite runs all 398/398 (no flakiness).

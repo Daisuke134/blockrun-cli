@@ -109,7 +109,8 @@ function runCli(args: string[], apiBaseUrl: string, home: string): Promise<CliRe
 }
 
 test("REQ-135a: quote <= --max-quote-usd signs and completes (createPaymentPayload IS called)", async () => {
-  const { server, url } = await startStubServer("cheap-completes");
+  const stub = await startStubServer("cheap-completes");
+  const { server, url } = stub;
   const home = mkdtempSync(join(tmpdir(), "blockrun-cli-quote-gate-cheap-"));
   try {
     const res = await runCli(
@@ -119,13 +120,19 @@ test("REQ-135a: quote <= --max-quote-usd signs and completes (createPaymentPaylo
     assert.equal(res.status, 0, `expected success when quote <= cap\nstdout:${res.stdout}\nstderr:${res.stderr}`);
     const parsed = JSON.parse(res.stdout);
     assert.match(parsed.url ?? "", /fake\.mp4/);
+    assert.equal(stub.signedSubmit, true, "the cheap path must actually reach the stub with a signed PAYMENT-SIGNATURE submit");
   } finally {
     server.close();
   }
 });
 
 test("REQ-135a: quote > --max-quote-usd aborts BEFORE signing (createPaymentPayload is NEVER called), nonzero exit, quote in --json output", async () => {
-  const { server, url, signedSubmit } = await startStubServer("expensive-must-not-sign");
+  // NOTE (codex-impl-review-1 finding #5): keep the returned stub object and read
+  // `.signedSubmit` (a getter) AFTER runCli() completes — destructuring it here would
+  // invoke the getter immediately and capture the initial `false`, making the later
+  // assertion vacuous (it would pass even if a PAYMENT-SIGNATURE request arrived).
+  const stub = await startStubServer("expensive-must-not-sign");
+  const { server, url } = stub;
   const home = mkdtempSync(join(tmpdir(), "blockrun-cli-quote-gate-expensive-"));
   try {
     const res = await runCli(
@@ -133,7 +140,7 @@ test("REQ-135a: quote > --max-quote-usd aborts BEFORE signing (createPaymentPayl
       url, home,
     );
     assert.notEqual(res.status, 0, "must abort when the real quote exceeds --max-quote-usd");
-    assert.equal(signedSubmit, false, "the stub must NEVER receive a PAYMENT-SIGNATURE — no signature is ever produced over the cap");
+    assert.equal(stub.signedSubmit, false, "the stub must NEVER receive a PAYMENT-SIGNATURE — no signature is ever produced over the cap");
     const parsed = JSON.parse(res.stdout);
     assert.equal(parsed.error, true);
     assert.match(parsed.message, /0\.5/, "the exact quoted amount ($0.50) must be surfaced in the JSON error");
@@ -143,7 +150,8 @@ test("REQ-135a: quote > --max-quote-usd aborts BEFORE signing (createPaymentPayl
 });
 
 test("REQ-135a: quote > --max-quote-usd also surfaces the exact quote in the non-JSON human error text", async () => {
-  const { server, url, signedSubmit } = await startStubServer("expensive-must-not-sign");
+  const stub = await startStubServer("expensive-must-not-sign");
+  const { server, url } = stub;
   const home = mkdtempSync(join(tmpdir(), "blockrun-cli-quote-gate-human-"));
   try {
     const res = await runCli(
@@ -151,7 +159,7 @@ test("REQ-135a: quote > --max-quote-usd also surfaces the exact quote in the non
       url, home,
     );
     assert.notEqual(res.status, 0);
-    assert.equal(signedSubmit, false);
+    assert.equal(stub.signedSubmit, false, "the stub must NEVER receive a PAYMENT-SIGNATURE — no signature is ever produced over the cap");
     assert.match(res.stderr, /0\.5/, "the exact quoted amount must appear in the human-readable stderr message");
   } finally {
     server.close();

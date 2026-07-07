@@ -15,9 +15,22 @@ let fixtureLedger = {
 let writtenLedger: unknown;
 let sdkCalled = false;
 
+// Set by the concurrent-write regression test below to make readLedger() return a
+// DIFFERENT snapshot on its second call within one run() — simulating another CLI
+// invocation writing to the ledger between this call's gate-open and its settle.
+// A mutable closure variable (not a reassigned export) since mock.module()'s
+// namedExports functions are the only legal seam for varying a mock's return value
+// per-test — the imported module namespace itself is a frozen ES module object.
+let concurrentWriteLedger: typeof fixtureLedger | undefined;
+let readCount = 0;
+
 mock.module("../../src/shell/budget-store.js", {
   namedExports: {
-    readLedger: () => fixtureLedger,
+    readLedger: () => {
+      readCount += 1;
+      if (concurrentWriteLedger && readCount >= 2) return concurrentWriteLedger;
+      return fixtureLedger;
+    },
     writeLedgerAtomic: (ledger: unknown) => { writtenLedger = ledger; },
   },
 });
@@ -70,4 +83,28 @@ test("REQ-019c: per-agent persisted limit is enforced independently of the globa
   const res = await run({ path: "chains", agentId: "research" }, { json: true }, newBudget() as any);
   assert.notEqual(res.exitCode, 0);
   assert.equal(sdkCalled, false);
+});
+
+test("codex-impl-review-1 #2: commit re-reads the ledger FRESH — a concurrent write between gate-open and settle is not clobbered", async () => {
+  // Simulates another CLI invocation (e.g. a concurrent paid call, or a wallet
+  // delegate/budget-set) writing to the ledger AFTER this call's gate opened but
+  // BEFORE it settles — readLedger returns a DIFFERENT snapshot on its second call
+  // (see the readLedger mock above: concurrentWriteLedger kicks in from the 2nd read).
+  fixtureLedger = { version: 1, global: { limit: null, spent: 0, calls: 0 }, agents: {}, updatedAt: "2026-07-08T00:00:00.000Z" };
+  concurrentWriteLedger = { version: 1, global: { limit: null, spent: 0.5, calls: 7 }, agents: {}, updatedAt: "2026-07-08T00:05:00.000Z" };
+  readCount = 0;
+  writtenLedger = undefined;
+  sdkCalled = false;
+  try {
+    const res = await run({ path: "prices/coingecko:bitcoin" }, { json: true }, newBudget() as any);
+    assert.equal(res.exitCode, 0);
+    assert.equal(sdkCalled, true);
+    assert.ok(readCount >= 2, "readLedger must be called again at commit time, not just once at gate-open");
+    assert.ok(writtenLedger, "the updated ledger must be written back after a successful settle");
+    // 0.5 (the CONCURRENT baseline read at commit time) + 0.001 (this call's real
+    // spend) — NOT 0 + 0.001, which is what a stale-snapshot write would produce.
+    assert.equal((writtenLedger as any).global.spent, 0.501, "commit must apply the delta on top of the FRESH ledger, not the stale gate-open snapshot");
+  } finally {
+    concurrentWriteLedger = undefined;
+  }
 });

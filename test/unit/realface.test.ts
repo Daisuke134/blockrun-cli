@@ -48,3 +48,9 @@ test("image_url must be a well-formed URL (schema is z.string().url(), no protoc
 test("unknown action is rejected", () => {
   assert.equal(buildRequest({ action: "teleport" }).ok, false);
 });
+
+test("codex-impl-review-1 #3: --image-url pointed at a private/loopback/link-local host is rejected locally", () => {
+  assert.equal(buildRequest({ action: "portrait", name: "Zed", imageUrl: "http://127.0.0.1/z.png" }).ok, false);
+  assert.equal(buildRequest({ action: "portrait", name: "Zed", imageUrl: "http://169.254.169.254/latest/meta-data/" }).ok, false);
+  assert.equal(buildRequest({ action: "portrait", name: "Zed", imageUrl: "http://example.com/z.png" }).ok, true, "a public host is unaffected");
+});
