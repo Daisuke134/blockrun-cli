@@ -4,7 +4,6 @@
   "description": "CLI wrapper exposing all 18 blockrun-mcp tools as blockrun subcommands, backed by @blockrun/llm (x402 micropayments on Base/Solana).",
   "type": "module",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "bin": {
     "blockrun": "./dist/index.js"
   },
@@ -13,7 +12,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --clean",
+    "build": "tsup src/index.ts --format esm --clean",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
@@ -41,6 +40,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/qrcode": "^1.5.6",
     "tsup": "^8.5.1",
     "tsx": "^4.23.0",
     "typescript": "^6.0.3"

@@ -1,0 +1,588 @@
+new-feature-tests: PASS (363/367; 4 documented pre-existing test-file defects, see notes below — not implementation bugs)
+regression-baseline: PASS
+==================================================================
+npm run typecheck
+
+> blockrun-cli@0.1.0 typecheck
+> tsc --noEmit
+
+==================================================================
+npm run build
+
+> blockrun-cli@0.1.0 build
+> tsup src/index.ts --format esm --clean
+
+CLI Building entry: src/index.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v8.5.1
+CLI Target: es2022
+CLI Cleaning output folder
+ESM Build start
+ESM dist/index.js           118.23 KB
+ESM dist/chunk-AZQAPHXR.js  6.12 KB
+ESM dist/wallet-GG6I4TEB.js 537.00 B
+ESM ⚡️ Build success in 61ms
+==================================================================
+npm test (tsx --experimental-test-module-mocks --test test/unit/*.test.ts test/integration/*.test.ts test/cli/*.test.ts)
+✔ REQ-001/REQ-002/PROP-001: `blockrun --help` lists exactly the 18 subcommands (440.374125ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun wallet --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (379.255042ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun chat --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (251.771375ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun models --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (326.934583ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun image --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (269.285667ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun video --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (174.679292ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun realface --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (159.353916ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun music --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (156.546167ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun speech --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (156.459834ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun search --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (159.656917ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun exa --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (156.388834ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun markets --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (157.928167ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun price --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (157.662459ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun dex --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (156.629125ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun rpc --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (158.997584ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun defi --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (163.563958ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun modal --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (169.545292ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun phone --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (169.569084ms)
+✔ REQ-012/REQ-013/REQ-014/PROP-007: 'blockrun surf --help' exits 0 with a bounded body (<=~40 lines incl. flag table) (172.4115ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'wallet' with a locally-invalid input exits nonzero with a JSON error object, no network call (455.351042ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'chat' with a locally-invalid input exits nonzero with a JSON error object, no network call (327.783875ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'models' with a locally-invalid input exits nonzero with a JSON error object, no network call (257.048083ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'image' with a locally-invalid input exits nonzero with a JSON error object, no network call (324.800167ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'video' with a locally-invalid input exits nonzero with a JSON error object, no network call (247.7225ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'realface' with a locally-invalid input exits nonzero with a JSON error object, no network call (168.604041ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'music' with a locally-invalid input exits nonzero with a JSON error object, no network call (156.87575ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'speech' with a locally-invalid input exits nonzero with a JSON error object, no network call (159.256958ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'search' with a locally-invalid input exits nonzero with a JSON error object, no network call (158.910708ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'exa' with a locally-invalid input exits nonzero with a JSON error object, no network call (158.899542ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'markets' with a locally-invalid input exits nonzero with a JSON error object, no network call (156.796584ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'price' with a locally-invalid input exits nonzero with a JSON error object, no network call (156.671667ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'dex' with a locally-invalid input exits nonzero with a JSON error object, no network call (156.046125ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'rpc' with a locally-invalid input exits nonzero with a JSON error object, no network call (156.177625ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'defi' with a locally-invalid input exits nonzero with a JSON error object, no network call (156.698083ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'modal' with a locally-invalid input exits nonzero with a JSON error object, no network call (165.737334ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'phone' with a locally-invalid input exits nonzero with a JSON error object, no network call (172.483875ms)
+✔ REQ-009/REQ-010/PROP-005/PROP-006: 'surf' with a locally-invalid input exits nonzero with a JSON error object, no network call (166.801417ms)
+✔ REQ-006: --json output is ONLY a single parseable JSON document on stdout; logs go to stderr (172.564041ms)
+✔ REQ-007: without --json, a locally-rejected call prints human-readable text (formatError's 'Error: ' prefix) to stderr, nothing to stdout (166.110458ms)
+✖ REQ-135a: quote <= --max-quote-usd signs and completes (createPaymentPayload IS called) (15563.605709ms)
+✖ REQ-135a: quote > --max-quote-usd aborts BEFORE signing (createPaymentPayload is NEVER called), nonzero exit, quote in --json output (15236.336458ms)
+✖ REQ-135a: quote > --max-quote-usd also surfaces the exact quote in the non-JSON human error text (15283.829583ms)
+(node:64701) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-019c: within persisted headroom — call proceeds and the updated ledger is written back (5.576417ms)
+✔ REQ-019c: exceeding persisted headroom — call is rejected locally, NO network call, ledger untouched (0.266833ms)
+✔ REQ-019c: per-agent persisted limit is enforced independently of the global limit (0.117042ms)
+✔ REQ-019b: writeLedgerAtomic creates ~/.blockrun/cli-budget.json readable via readLedger (4.732708ms)
+✔ REQ-019b: a write goes through a sibling .tmp-<pid> file, never a direct in-place write (1.033459ms)
+✔ REQ-019a (v4): BLOCKRUN_BUDGET_LIMIT seeds global.limit ONLY when the ledger file does not yet exist (2.854542ms)
+✔ REQ-019a: BLOCKRUN_BUDGET_LIMIT unset or non-positive seeds global.limit:null on first read (no file yet) (0.987791ms)
+✔ REQ-019b: a stray leftover .tmp-<pid> file (simulating a kill BEFORE rename) leaves the ORIGINAL target intact on the next read (3.991417ms)
+(node:64703) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-109/REQ-119: an explicit --model call dispatches llm.chat(model, message, ...) and reports the real response (7.549209ms)
+✔ REQ-020/REQ-009: a budget-exceeded gate returns nonzero exit and a JSON error object, no network call (3.2185ms)
+✔ REQ-118: routing:smart + messages is rejected before any network call (0.15375ms)
+✔ REQ-108a: a bare positional message reaches the SDK call identically to --message (1.0435ms)
+✔ REQ-022/PROP-205: --agent-id reaches per-agent accounting — even a $0 (nvidia) call increments that agent's call count (2.2295ms)
+(node:64704) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-171: prices/* costs $0.001 and hits /v1/defillama/prices/... (3.770542ms)
+✔ REQ-171: chains costs $0.005 (1.129417ms)
+(node:64705) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-164/REQ-121: dex is free (no wallet import needed) and returns DexScreener pairs (11.180958ms)
+(node:64706) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-155: contents with 1 URL charges $0.002 and hits /v1/exa/contents (2.549875ms)
+✔ REQ-154a/PROP-206: the --query alias form reaches the SDK with the SAME body as the canonical --body form (answer path) (1.069ms)
+(node:64711) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-129/REQ-006: generate reports the model's catalog cost in JSON output (5.501792ms)
+✔ REQ-126: edit without --image fails locally, no SDK call, nonzero exit (0.216291ms)
+(node:64713) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-158: a GET call (no body) dispatches pm(path, params) and costs $0.001 (4.883208ms)
+✔ REQ-158: a body-bearing call dispatches pmQuery(path, body) and costs $0.005 (0.326209ms)
+(node:64714) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-173/REQ-174: sandbox/create costs $0.01 and sizes the timeout to cover the requested duration (4.877375ms)
+✔ REQ-173: sandbox/status costs $0.001 (1.116875ms)
+(node:64715) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-121: models is free — never touches the budget ledger (0.686625ms)
+✔ REQ-120: category=image filters to image-typed models only (0.314125ms)
+(node:64716) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-147: reports the real settled 402-quoted cost (4.369375ms)
+✔ REQ-145: instrumental (default true) + lyrics is rejected before any network call (0.211916ms)
+(node:64717) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-176: phone/numbers/list costs $0.001 (7.882333ms)
+✔ REQ-177: voice/call without a 'from' field is rejected locally, no network call (0.23875ms)
+✔ REQ-176: voice/call with 'from' costs $0.54 (0.303ms)
+(node:64718) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-161: crypto price is free (paid=false) and never touches the budget ledger (0.91875ms)
+✔ REQ-161: stocks price is paid (paid=true) and costs $0.001 (2.429209ms)
+✔ REQ-022/PROP-205: --agent-id reaches per-agent budget accounting on a paid (stocks) call (1.373ms)
+(node:64719) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-138: init is free and returns the group_id (0.781459ms)
+✔ REQ-141: portrait ($0.01) reports the real settled cost (2.844709ms)
+(node:64720) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-169: a single call costs $0.002 and dispatches to /v1/rpc/{network} (2.563208ms)
+✔ REQ-169: a 2-element batch body costs $0.004 (0.352208ms)
+(node:64721) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-153: --max-results 1 charges $0.025 and forwards the mapped body (3.90225ms)
+✔ REQ-152a/PROP-206: the canonical --body form reaches the SDK with the SAME shape as the --query/--max-results alias form (1.372458ms)
+(node:64722) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-151: speak reports the real settled cost (cost floor for a 2-char input) (5.663792ms)
+✔ REQ-149: voices is free and never touches the budget ledger (0.121167ms)
+✔ REQ-150: an oversized sound_effect input is rejected locally before any network call (0.193792ms)
+(node:64724) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-181: no body -> GET, Tier 1 default cost $0.001 (4.886416ms)
+✔ REQ-181/REQ-179: a body -> POST, Tier 3 cost $0.02 for onchain/sql (1.292833ms)
+✔ REQ-022/PROP-205: --agent-id reaches per-agent budget accounting (surf is the path-based-passthrough family representative) (0.513ms)
+(node:64726) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-136: a completed job reports the real settled cost and URL (4.508458ms)
+✔ REQ-134: a failed job records NO charge and returns a nonzero exit (0.37625ms)
+✔ REQ-022/PROP-205: --agent-id reaches per-agent budget accounting on the manual-x402 (video) path (0.282625ms)
+✖ REQ-133: Solana chain rejects video with an actionable chain-switch message, before any call (0.493708ms)
+(node:64727) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-105/REQ-006: `wallet status --json` prints one parseable JSON document with both chain addresses (0.915875ms)
+✔ REQ-107: wallet actions never reserve or spend against the budget ledger (0.080625ms)
+✔ REQ-106: `wallet delegate` without agent-id fails locally with a nonzero exit and no network call (0.163375ms)
+✔ REQ-107a/REQ-019: `delegate` in one invocation persists, and `report` in a SEPARATE (later) invocation reflects it (0.113333ms)
+✔ REQ-022/PROP-205: chat threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (76.143875ms)
+✔ REQ-022/PROP-205: chat OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.3915ms)
+✔ REQ-022/PROP-205: image threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (5.591375ms)
+✔ REQ-022/PROP-205: image OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.108583ms)
+✔ REQ-022/PROP-205: video threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (3.717083ms)
+✔ REQ-022/PROP-205: video OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.320208ms)
+✔ REQ-022/PROP-205: realface threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (4.638875ms)
+✔ REQ-022/PROP-205: realface OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (1.241ms)
+✔ REQ-022/PROP-205: music threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (3.38175ms)
+✔ REQ-022/PROP-205: music OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.128542ms)
+✔ REQ-022/PROP-205: speech threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (1.207375ms)
+✔ REQ-022/PROP-205: speech OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.064791ms)
+✔ REQ-022/PROP-205: search threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (1.411833ms)
+✔ REQ-022/PROP-205: search OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.112584ms)
+✔ REQ-022/PROP-205: exa threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.770125ms)
+✔ REQ-022/PROP-205: exa OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.066958ms)
+✔ REQ-022/PROP-205: markets threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.685083ms)
+✔ REQ-022/PROP-205: markets OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.043875ms)
+✔ REQ-022/PROP-205: price threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.852166ms)
+✔ REQ-022/PROP-205: price OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.085834ms)
+✔ REQ-022/PROP-205: rpc threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (0.733625ms)
+✔ REQ-022/PROP-205: rpc OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.107125ms)
+✔ REQ-022/PROP-205: defi threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (2.026208ms)
+✔ REQ-022/PROP-205: defi OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.372542ms)
+✔ REQ-022/PROP-205: modal threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (1.717167ms)
+✔ REQ-022/PROP-205: modal OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.124458ms)
+✔ REQ-022/PROP-205: phone threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (13.628666ms)
+✔ REQ-022/PROP-205: phone OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.288583ms)
+✔ REQ-022/PROP-205: surf threads agent_id verbatim when --agent-id is passed (fixture covers 15/15 commands) (2.449375ms)
+✔ REQ-022/PROP-205: surf OMITS agent_id entirely (not agent_id:undefined) when --agent-id is not passed (0.247542ms)
+✔ coerceBody parses JSON strings to objects (2.381709ms)
+✔ coerceBody returns non-strings untouched (real empty object stays a POST body) (0.138333ms)
+✔ coerceBody maps an empty/whitespace string to undefined, not {} (0.057ms)
+✔ coerceBody leaves non-JSON strings as-is for the gateway to reject (0.058459ms)
+✔ asStructuredContent passes objects through, wraps arrays/primitives (0.078791ms)
+✔ REQ-018: --budget-limit flag wins over the env var (1.270375ms)
+✔ REQ-018: env var is used when no flag is given (0.112542ms)
+✔ REQ-018: unlimited (null) when neither is set or both are junk (0.0505ms)
+✔ REQ-018: a non-positive flag value is treated as not set, falling back to env (0.042417ms)
+✔ PROP-010: resolving the invocation cap makes zero reads/writes of the persisted ledger file (0.072583ms)
+✔ REQ-021/PROP-012: amountToUsd converts atomic USDC (6 decimals) to USD (0.682833ms)
+✔ amountToUsd returns null for missing/garbled/non-positive amounts (0.05475ms)
+✔ REQ-021: recordActualSpend books the real settled cost when known (0.067834ms)
+✔ recordActualSpend falls back to the estimate when actual is unavailable/zero/negative (0.047166ms)
+✔ REQ-019/PROP-011: budget cap holds once ACTUAL frontier cost is booked (0.087083ms)
+✔ a freshly-constructed (pure) BudgetState object itself starts at spent:0 (seeding it from the persisted ledger is the impure shell's job, not core/budget.ts's) (0.038791ms)
+✔ PROP-011 regression guard: booking a flat estimate instead of actual would blow a $1 cap over 50 $0.50 calls (0.061625ms)
+✔ reserveBudget gates concurrent in-flight calls against the cap (TOCTOU) (0.065625ms)
+✔ reserveBudget.release frees the reservation and is idempotent (0.06375ms)
+✔ reserve + recordActualSpend + release nets the actual settled cost (0.076042ms)
+✔ a blocked reserveBudget makes no reservation (release is a safe no-op) (0.050583ms)
+✔ reserveBudget enforces per-agent caps across concurrent calls (0.048417ms)
+✔ REQ-220/PROP-203: reReserveIfHigher swaps to the higher actual and holds only that amount (0.046416ms)
+✔ reReserveIfHigher keeps the original reservation when actual is <= estimate or unknown (0.032292ms)
+✔ REQ-220/PROP-203: reReserveIfHigher denies when the higher actual would blow the cap, leaving no reservation (0.03675ms)
+✔ REQ-018/PROP-010: parseBudgetLimitEnv parses a default cap, ignores junk (0.068833ms)
+✔ REQ-119: estimateChatCost reserves a non-zero amount for smart+free (paid model, no bypass) (0.698ms)
+✔ estimateChatCost: smart+free reserves the same as smart+auto (0.059708ms)
+✔ REQ-114: estimateChatCost reserves for the extended-thinking budget, not just max_tokens (0.042792ms)
+✔ REQ-119: estimateChatCost keeps genuinely-free paths at $0 (0.036083ms)
+✔ REQ-119: estimateChatCost reserves the frontier worst-case for balanced/coding (0.038709ms)
+✔ REQ-119: estimateChatCost reserves the frontier worst-case for a no-mode chat (0.031958ms)
+✔ REQ-119: cheap/fast/glm stay on the cheap heuristic, below the frontier reserve (0.049709ms)
+✔ REQ-108: message is required (positional or --message) (0.111916ms)
+✔ REQ-113: max_tokens defaults to 1024, temperature defaults to 1 (0.04875ms)
+✔ REQ-113: stop accepts at most 4 sequences (0.0755ms)
+✔ REQ-114: thinking_budget_tokens must be within 1024-100000 (0.06225ms)
+✔ REQ-118: routing:smart rejects combination with messages (multi-turn) (0.3675ms)
+✔ REQ-110/REQ-112: mode and routing_profile enums are validated, routing_profile defaults to auto (0.133125ms)
+✔ REQ-108a: a bare positional argument compiles into --message, identical to the canonical form (1.415833ms)
+✔ REQ-108a: supplying BOTH the positional and --message is a conflict error (0.102584ms)
+✔ REQ-114/REQ-114a: --thinking-budget-tokens alias compiles into the canonical --thinking object, identical to supplying --thinking directly (0.115083ms)
+✔ REQ-114a: supplying BOTH --thinking and --thinking-budget-tokens is a conflict error (0.084708ms)
+✔ REQ-019a: emptyLedger seeds global.limit from a positive seed, else null; spent/calls start at 0 (2.466625ms)
+✔ REQ-019a: encode/decode round-trips the ledger shape exactly (0.154834ms)
+✔ REQ-019a: decodeBudgetLedger rejects a malformed/wrong-shape payload rather than silently coercing it (0.192375ms)
+✔ REQ-019/PROP-011: toBudgetState/fromBudgetState round-trip the agents Map<->plain-object (0.135625ms)
+✔ REQ-019c: checkPersistedBudget rejects locally when the persisted global limit would be exceeded (0.091459ms)
+✔ REQ-019c: checkPersistedBudget rejects locally when a per-agent limit would be exceeded (0.044375ms)
+✔ REQ-019c/REQ-021: applyPersistedSpend books the REAL settled cost (not the estimate) and refreshes updatedAt (0.073ms)
+✔ REQ-171: prices/* is $0.001 (0.583792ms)
+✔ REQ-171: protocols/protocol/chains/yields are $0.005 (0.049791ms)
+✔ REQ-170: path is required (0.109208ms)
+✔ REQ-200: path traversal is rejected before cost estimation or any network call (0.095833ms)
+✔ REQ-163: at least one of query/token/symbol is required (0.617542ms)
+✔ REQ-165: rankPairs sorts by 24h volume descending (0.639125ms)
+✔ REQ-165: rankPairs caps at the top 10 (0.06475ms)
+✔ REQ-165: rankPairs filters by a case-insensitive substring match on chainId (0.059167ms)
+✔ REQ-211: model-unavailable (token360) steers to a sibling model, not a generic blip (0.758625ms)
+✔ REQ-211: model-unavailable without altModels gives neutral guidance, no model named (0.267833ms)
+✔ REQ-210: generic 500 gives 'temporary API issue' guidance (0.164083ms)
+✔ REQ-210: generic 500 with altModels names same-domain alternatives (0.145958ms)
+✔ REQ-210: payment/402 gives funding guidance on Base by default (no chain passed) (0.227209ms)
+✔ REQ-210: payment/402 names Solana when chain:'solana' is passed explicitly (0.154375ms)
+✔ plain validation message gets no canned guidance appended (0.199833ms)
+✔ a dollar amount like $1.4020 is not misread as a 402 (0.121625ms)
+✔ the integer part of a decimal amount is not misread as a status code (0.134708ms)
+✔ genuine status codes still classify after the regex tightening (0.194458ms)
+✔ a non-402 probe failure is not misclassified as a funding error (0.133625ms)
+✔ REQ-210: isPaymentRejectionError matches settlement failures, not outage status text (0.132291ms)
+✔ REQ-211: extractErrorMessage surfaces message/hint/missing_params from a structured response body (0.171417ms)
+✔ extractErrorMessage falls back to the bare message when there is no response body (0.067166ms)
+✔ REQ-154a: search path — --query/--num-results/--category/--include-domains/--exclude-domains compile into body.* (1.351291ms)
+✔ REQ-154a: answer path — --query compiles into body.query (0.475334ms)
+✔ REQ-154a: contents path — --urls (array or csv) compiles into body.urls (0.199ms)
+✔ REQ-154a: find-similar path — --url/--num-results compile into body.url/body.numResults (0.172583ms)
+✔ REQ-154a: an alias conflicting with --body setting the SAME field is rejected (0.178375ms)
+✔ REQ-155: estimateExaCost('contents') = $0.002 * url count (0.739375ms)
+✔ REQ-155: estimateExaCost('contents') with no/empty urls falls back to 1 URL (0.060083ms)
+✔ REQ-155: estimateExaCost is $0.01 flat for search/answer/find-similar (0.054667ms)
+✔ REQ-154: path must be one of search/answer/contents/find-similar (0.203084ms)
+✔ REQ-154: body is required (0.056458ms)
+✔ REQ-128: estimateCost uses the per-model base price at 1024x1024 (2.242709ms)
+✔ REQ-128: estimateCost upgrades to the large-size price only when a dimension exceeds 1024 (0.176667ms)
+✔ REQ-128: isLargerThanBase only trips when max(w,h) > 1024, tolerates casing/spacing typos (0.2395ms)
+✔ REQ-126: edit action requires an image (0.384208ms)
+✔ REQ-126: edit rejects a model outside the edit-capable set (0.158625ms)
+✔ REQ-126: edit enforces the per-provider max source-image count (openai<=4, google<=3) (0.175375ms)
+✔ REQ-126: mask cannot combine with multiple source images (0.09825ms)
+✔ REQ-126: mask is rejected on non-OpenAI models (0.10325ms)
+✔ REQ-126: a valid single-image edit with mask on an OpenAI model passes (0.110583ms)
+✔ REQ-005: size/quality default when omitted (generate action) (0.185959ms)
+✔ REQ-123a: a bare positional argument compiles into --prompt, identical to the canonical form (1.688792ms)
+✔ REQ-123a: supplying BOTH the positional and --prompt is a conflict error (0.116125ms)
+✔ REQ-004: parseJsonInput parses a raw JSON string (the --param-json form) (1.147875ms)
+✔ REQ-004: parseJsonInput reads and parses a file when the value starts with '@' (the --param @file.json form) (0.383167ms)
+✔ REQ-004: parseJsonInput throws a clear error on malformed JSON (not a silent undefined) (0.116917ms)
+✔ REQ-004: parseJsonInput throws when the referenced file does not exist (0.058083ms)
+✔ REQ-157: any body-bearing (POST) call is $0.005 regardless of path (2.617958ms)
+✔ REQ-157: a GET call on a Tier-2 substring path (wallet/smart/matching-markets/markets-search/binance) is $0.005 (0.229041ms)
+✔ REQ-157: a plain GET on a Tier-1 path is $0.001 (0.406959ms)
+✔ REQ-156: path is required (0.342ms)
+✔ REQ-200: path traversal is rejected before cost estimation (0.12275ms)
+✔ REQ-173: estimateModalCost is $0.01 for sandbox/create, else $0.001 (0.678792ms)
+✔ REQ-174: modalTimeoutMs floors at the 300s sandbox default + 15s slack (0.071375ms)
+✔ REQ-174: modalTimeoutMs honors a longer requested timeout (0.044375ms)
+✔ REQ-174: modalTimeoutMs caps at 30 minutes (0.039125ms)
+✔ REQ-172: path must be one of the four sandbox lifecycle actions (0.222292ms)
+✔ REQ-200: path traversal is rejected before cost estimation (0.03875ms)
+✔ REQ-120: category defaults to 'all' (0.658917ms)
+✔ REQ-120: rejects an unknown category (0.048417ms)
+✔ REQ-120/PROP-107: filterModels('image') returns only image-typed models (0.611166ms)
+✔ REQ-120/PROP-107: filterModels('embedding') matches by id containing 'embed' (0.052875ms)
+✔ REQ-120/PROP-107: filterModels('reasoning') matches by categories array (0.049583ms)
+✔ REQ-120/PROP-107: filterModels(undefined provider) with 'all' returns everything (0.034459ms)
+✔ REQ-120/PROP-107: filterModels provider filters by id prefix, case-insensitive (0.055ms)
+✔ REQ-145: lyrics is rejected when instrumental is true (including the default) (1.868916ms)
+✔ REQ-145: lyrics is accepted when instrumental is explicitly false (0.159ms)
+✔ REQ-144: instrumental defaults to true, model defaults to minimax/music-2.5+ (0.097542ms)
+✔ REQ-147: MUSIC_COST is the flat estimate used before the real 402 quote is known (0.077542ms)
+✔ an empty/whitespace lyrics string with instrumental:true is not treated as 'lyrics provided' (0.09425ms)
+✔ REQ-144a: a bare positional argument compiles into --prompt, identical to the canonical form (1.51025ms)
+✔ REQ-144a: supplying BOTH the positional and --prompt is a conflict error (0.098541ms)
+✔ REQ-200/PROP-200: hasPathTraversal flags parent/current-dir segments that escape a namespace (0.672875ms)
+✔ REQ-200/PROP-200: hasPathTraversal catches percent-encoded and backslash traversal (0.064833ms)
+✔ REQ-200/PROP-200: hasPathTraversal tolerates a malformed percent and legit encoded chars (0.048417ms)
+✔ REQ-200/PROP-200: hasPathTraversal allows legitimate passthrough paths (0.639792ms)
+✔ PROP-180: normalizeClassifyPath strips query/fragment, leading+trailing slashes, and lowercases (0.140458ms)
+✔ REQ-201/PROP-201: isValidNetworkSlug accepts simple chain identifiers only (0.074334ms)
+✔ REQ-201/PROP-201: isValidNetworkSlug rejects traversal / path separators / empties (0.04325ms)
+✔ REQ-176: estimatePhoneCost prices the exact known tiers (2.250791ms)
+✔ REQ-176: the free voice/call/{id} status poll (GET, no body) stays free (0.155209ms)
+✔ REQ-176: not downgraded by a query string, trailing slash, or casing (0.115792ms)
+✔ REQ-177: voice/call requires a 'from' field in the body (0.316583ms)
+✔ REQ-175: path is required (0.106875ms)
+✔ REQ-200: path traversal is rejected before cost estimation (0.079125ms)
+✔ REQ-161: crypto/fx/commodity are free for price/history/list (0.604458ms)
+✔ REQ-161: stocks/usstock price+history cost $0.001; list is always free (0.049333ms)
+✔ REQ-160: category=stocks requires market (0.080125ms)
+✔ REQ-162: price action requires symbol (0.040334ms)
+✔ REQ-162: history action requires symbol and from (0.046667ms)
+✔ REQ-159: list requires only category (0.035042ms)
+✔ REQ-137/REQ-138: init requires name (1-64 chars) (0.660417ms)
+✔ REQ-139: status requires group_id (0.064042ms)
+✔ group_id must match ^legacy_rf_\d+$ (0.065625ms)
+✔ REQ-140: enroll requires name, image_url, and group_id (0.056083ms)
+✔ REQ-141: portrait requires name and image_url, no group_id/liveness needed (0.046625ms)
+✔ REQ-142: list requires nothing beyond the action (0.037ms)
+✔ image_url must be a well-formed URL (schema is z.string().url(), no protocol restriction per REQ-137) (0.052ms)
+✔ unknown action is rejected (0.03625ms)
+✔ REQ-169: estimateRpcCost is $0.002 for a single (non-array) body (0.58675ms)
+✔ REQ-169: estimateRpcCost charges per batch element (0.051333ms)
+✔ REQ-167: exactly one of method or body must be provided (12.052917ms)
+✔ REQ-168/REQ-201: network must be a well-formed chain slug before any network call (0.454917ms)
+✔ REQ-166: params defaults to an empty array when method is used without params (2.659958ms)
+✔ PROP-002: wallet schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (52.408209ms)
+✔ PROP-002: wallet schema.safeParse() rejects the documented invalid example (0.381ms)
+✔ PROP-002: chat schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (2.967792ms)
+✔ PROP-002: chat schema.safeParse() rejects the documented invalid example (0.140959ms)
+✔ PROP-002: models schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (3.112417ms)
+✔ PROP-002: models schema.safeParse() rejects the documented invalid example (0.423625ms)
+✔ PROP-002: image schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (2.828208ms)
+✔ PROP-002: image schema.safeParse() rejects the documented invalid example (0.13325ms)
+✔ PROP-002: video schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (1.458416ms)
+✔ PROP-002: video schema.safeParse() rejects the documented invalid example (0.164292ms)
+✔ PROP-002: realface schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.854417ms)
+✔ PROP-002: realface schema.safeParse() rejects the documented invalid example (5.524292ms)
+✔ PROP-002: music schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (1.166541ms)
+✔ PROP-002: music schema.safeParse() rejects the documented invalid example (0.145208ms)
+✔ PROP-002: speech schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (1.332292ms)
+✔ PROP-002: speech schema.safeParse() rejects the documented invalid example (0.112333ms)
+✔ PROP-002: search schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (5.988833ms)
+✔ PROP-002: search schema.safeParse() rejects the documented invalid example (0.830875ms)
+✔ PROP-002: exa schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (5.688917ms)
+✔ PROP-002: exa schema.safeParse() rejects the documented invalid example (0.311375ms)
+✔ PROP-002: markets schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (1.087583ms)
+✔ PROP-002: markets schema.safeParse() rejects the documented invalid example (0.110542ms)
+✔ PROP-002: price schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (4.007834ms)
+✔ PROP-002: price schema.safeParse() rejects the documented invalid example (0.205458ms)
+✔ PROP-002: dex schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (1.027292ms)
+✔ PROP-002: dex schema.safeParse() rejects the documented invalid example (0.07975ms)
+✔ PROP-002: rpc schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (2.64575ms)
+✔ PROP-002: rpc schema.safeParse() rejects the documented invalid example (0.390334ms)
+✔ PROP-002: defi schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (5.157416ms)
+✔ PROP-002: defi schema.safeParse() rejects the documented invalid example (0.329375ms)
+✔ PROP-002: modal schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (2.78075ms)
+✔ PROP-002: modal schema.safeParse() rejects the documented invalid example (0.293166ms)
+✔ PROP-002: phone schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (2.927917ms)
+✔ PROP-002: phone schema.safeParse() rejects the documented invalid example (0.161208ms)
+✔ PROP-002: surf schema.safeParse() accepts the documented valid example (fixture covers 18/18 commands) (0.928167ms)
+✔ PROP-002: surf schema.safeParse() rejects the documented invalid example (0.073792ms)
+✔ REQ-152: the canonical --body form works standalone (1.33225ms)
+✔ REQ-152a: --query alias compiles into body.query, identical to the canonical --body form (0.115917ms)
+✔ REQ-152a: --sources/--max-results/--from-date/--to-date all compile into body.* (0.109875ms)
+✔ REQ-152a: --sources also accepts a comma-separated string, normalized to the same array (0.093416ms)
+✔ REQ-152a: an alias conflicting with --body setting the SAME field is rejected (0.047417ms)
+✔ REQ-152a: an alias plus --body setting a DIFFERENT field merges without conflict (0.048166ms)
+✔ REQ-153: estimateSearchCost defaults to max_results=10 -> $0.25 with no body (0.615792ms)
+✔ REQ-153: estimateSearchCost = $0.025 * max_results (0.057333ms)
+✔ REQ-153: estimateSearchCost clamps max_results to [1,50] and floors non-integers (0.051292ms)
+✔ REQ-152: query is required (0.213833ms)
+✔ REQ-152: sources accepts any subset of web/x/news (0.090666ms)
+✔ REQ-152: max_results is bounded 1-50 (0.060666ms)
+✔ REQ-152: from_date/to_date must be YYYY-MM-DD (0.079208ms)
+✔ REQ-151: speechCost = (chars/1000) * per-model rate * 1.05 margin (0.652959ms)
+✔ REQ-151: speechCost floors at $0.001 for tiny inputs (0.049667ms)
+✔ REQ-151: SOUND_EFFECT_COST is the flat $0.05 * 1.05 margin (0.039042ms)
+✔ REQ-150: sound_effect input is capped at 1000 chars (0.119042ms)
+✔ REQ-150: speak caps input at the model's max chars (flash-v2.5: 40000, multilingual-v2: 10000, v3: 5000) (0.061583ms)
+✔ REQ-149: voices action requires no input (0.036625ms)
+✔ REQ-148: speak/sound_effect require input (0.03975ms)
+✔ REQ-148: action defaults to speak, model defaults to elevenlabs/flash-v2.5, response_format to mp3 (0.039625ms)
+✔ REQ-148a: a bare positional argument compiles into --input, identical to the canonical form (1.206792ms)
+✔ REQ-148a: supplying BOTH the positional and --input is a conflict error (0.243375ms)
+✔ REQ-148a: voices action needs no positional/input at all (0.223958ms)
+✔ REQ-179: estimateSurfCost prices the exact tier tables (0.702084ms)
+✔ REQ-180: estimateSurfCost is not downgraded by a query string or trailing slash (0.056875ms)
+✔ REQ-178: path is required (0.119459ms)
+✔ REQ-181: a body presence routes as POST; its absence routes as GET with params (0.072292ms)
+✔ REQ-200: path traversal is rejected before cost estimation (0.042583ms)
+✔ REQ-131/REQ-136: estimateVideoCost uses the text-to-video per-second rate and the model's default duration (0.644917ms)
+✔ REQ-130: estimateVideoCost respects an explicit duration_seconds (0.044916ms)
+✔ REQ-130: image-input (seed image or RealFace) uses the cheaper image-to-video per-second tier (0.0365ms)
+✔ REQ-132: azure/sora-2 rejects any duration_seconds other than 4, 8, or 12 (0.1125ms)
+✔ REQ-132: a non-sora-2 model is NOT constrained to 4/8/12 (0.039583ms)
+✔ REQ-130: real_face_asset_id and image_url are mutually exclusive (0.048834ms)
+✔ REQ-130: real_face_asset_id requires a Seedance-2.0-family model (0.056708ms)
+✔ REQ-130: last_frame_url requires image_url and excludes real_face_asset_id (0.048083ms)
+✔ REQ-130a: a bare positional argument compiles into --prompt, identical to the canonical form (0.616208ms)
+✔ REQ-130a: supplying BOTH the positional and --prompt is a conflict error (0.075667ms)
+✔ REQ-135a: --max-quote-usd must be a positive finite number when supplied (0.053083ms)
+✔ REQ-135a: --max-quote-usd is omitted from the request (no gate) when not supplied (0.034292ms)
+✔ REQ-101: action defaults to 'status' when omitted (0.642292ms)
+✔ REQ-101: rejects an unknown action (not in the enum) (0.055125ms)
+✔ REQ-106: delegate requires agent_id (0.041834ms)
+✔ REQ-106: delegate requires a positive agent_limit (0.04275ms)
+✔ REQ-106: a valid delegate call passes through (0.046125ms)
+✔ REQ-106: revoke requires agent_id (0.036958ms)
+✔ REQ-102: chain action accepts base/solana and omitting chain views current (0.047625ms)
+✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.03775ms)
+✔ schema.safeParse rejects a non-numeric agent_limit (0.674958ms)
+ℹ tests 367
+ℹ suites 0
+ℹ pass 363
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 46360.431208
+
+✖ failing tests:
+
+test at test/cli/video-max-quote-usd.test.ts:1:2208
+✖ REQ-135a: quote <= --max-quote-usd signs and completes (createPaymentPayload IS called) (15563.605709ms)
+  AssertionError [ERR_ASSERTION]: expected success when quote <= cap
+  stdout:{"error":true,"message":"Error: This operation was aborted"}
+  
+  stderr:
+  I'm your BlockRun Agent! I can access GPT-4, Grok, image generation, and more.
+  
+  Please send $1-5 USDC on Base to start:
+  
+  0x49E4949BD74a3a44aF65e334e22038A4055C2042
+  
+  What is Base? Base is Coinbase's blockchain network.
+  You can buy USDC on Coinbase and send it directly to me.
+  
+  What $1 USDC gets you:
+  - ~1,000 GPT-4o calls
+  - ~100 image generations
+  - ~10,000 DeepSeek calls
+  
+  Quick links:
+  - Check my balance: https://basescan.org/address/0x49E4949BD74a3a44aF65e334e22038A4055C2042
+  - Get USDC: https://www.coinbase.com or https://bridge.base.org
+  
+  Questions? care@blockrun.ai | Issues? github.com/BlockRunAI/blockrun-llm-ts/issues
+  
+  Key stored securely in ~/.blockrun/
+  Your private key never leaves your machine - only signatures are sent.
+  
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/video-max-quote-usd.test.ts:88:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cli/video-max-quote-usd.test.ts:3:127
+✖ REQ-135a: quote > --max-quote-usd aborts BEFORE signing (createPaymentPayload is NEVER called), nonzero exit, quote in --json output (15236.336458ms)
+  AssertionError [ERR_ASSERTION]: the exact quoted amount ($0.50) must be surfaced in the JSON error
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/video-max-quote-usd.test.ts:108:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'Error: This operation was aborted',
+    expected: /0\.5/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at test/cli/video-max-quote-usd.test.ts:3:1009
+✖ REQ-135a: quote > --max-quote-usd also surfaces the exact quote in the non-JSON human error text (15283.829583ms)
+  AssertionError [ERR_ASSERTION]: the exact quoted amount must appear in the human-readable stderr message
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/cli/video-max-quote-usd.test.ts:124:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: "\nI'm your BlockRun Agent! I can access GPT-4, Grok, image generation, and more.\n\nPlease send $1-5 USDC on Base to start:\n\n0xEeAD4b56054a38B5B9E765092d2A1cF725960524\n\nWhat is Base? Base is Coinbase's blockchain network.\nYou can buy USDC on Coinbase and send it directly to me.\n\nWhat $1 USDC gets you:\n- ~1,000 GPT-4o calls\n- ~100 image generations\n- ~10,000 DeepSeek calls\n\nQuick links:\n- Check my balance: https://basescan.org/address/0xEeAD4b56054a38B5B9E765092d2A1cF725960524\n- Get USDC: https://www.coinbase.com or https://bridge.base.org\n\nQuestions? care@blockrun.ai | Issues? github.com/BlockRunAI/blockrun-llm-ts/issues\n\nKey stored securely in ~/.blockrun/\nYour private key never leaves your machine - only signatures are sent.\n\nError: This operation was aborted\n",
+    expected: /0\.5/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at test/integration/video.test.ts:1:2182
+✖ REQ-133: Solana chain rejects video with an actionable chain-switch message, before any call (0.493708ms)
+  TypeError: Cannot assign to read only property 'getChain' of object '[object Module]'
+      at TestContext.<anonymous> (/Users/anicca/blockrun-cli/test/integration/video.test.ts:60:24)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+==================================================================
+KNOWN TEST-FILE DEFECTS (not implementation bugs) — 4 failing tests
+==================================================================
+
+1) test/cli/video-max-quote-usd.test.ts — ALL 3 sub-tests fail due to a
+   spawnSync/event-loop deadlock in the test itself, not the CLI:
+
+   The test starts a local `node:http` stub server (async) in the SAME
+   process, then calls `spawnSync(...)` to launch the CLI as a child process
+   and wait for it. `child_process.spawnSync` blocks the parent's Node.js
+   event loop synchronously until the child exits — so the just-started
+   http server can NEVER actually run its request handler while spawnSync is
+   blocking. The child CLI's fetch() to the stub server hangs until its own
+   15s fetchWithTimeout aborts it, producing "This operation was aborted" —
+   exactly what all 3 failures show, after ~15s each.
+
+   Verified with a minimal, unrelated repro (same architecture: http.createServer
+   in-process + spawnSync child fetching it) — confirms the server's request
+   handler never fires; the child is killed by the spawnSync timeout with no
+   stdout/stderr at all. This is a structural bug: spawnSync can never work
+   with an in-process async stub server no matter what the child does.
+
+   Additionally, the stub server's fixture PAYMENT-REQUIRED header hardcodes
+   `payTo: "0x0000000000000000000000000000000000dEaD"`, which is only 38 hex
+   chars (one "0" short of a valid 20-byte / 40-hex-char address — the
+   well-known "dead address" is `0x000000000000000000000000000000000000dEaD`,
+   40 hex chars). viem's own `getAddress()` rejects it outright:
+     `Address "0x0000000000000000000000000000000000dEaD" is invalid.`
+   This means even if the deadlock above were fixed, the "cheap" (quote <=
+   cap, signs successfully) sub-test would still fail at the real signing
+   step, since REQ-221/REQ-222 require calling the SDK's own
+   createPaymentPayload() (which validates the recipient address) rather than
+   hand-rolling a payment payload.
+
+   MANUAL VERIFICATION (bypassing the deadlocked test harness, using async
+   `spawn` + `await` instead of `spawnSync`, and the real fixture payTo fixed
+   to the correct 40-char dead address) confirms the CLI's actual REQ-135a
+   behavior is correct in both directions:
+     - quote $0.05 <= --max-quote-usd $0.10 → signs, submits, completes,
+       exit 0, `{"url":".../fake.mp4", ...}`.
+     - quote $0.50 >  --max-quote-usd $0.10 → aborts BEFORE
+       createPaymentPayload is ever called (stub's `signedSubmit` stays
+       false), exit 1, both the --json message and the non-json stderr text
+       contain "Error: Quote $0.5000 exceeds --max-quote-usd $0.10 —
+       aborting before signing." — matching /0\.5/ exactly as the test
+       asserts.
+
+2) test/integration/video.test.ts — "REQ-133" sub-test:
+   `(chainModule as any).getChain = () => "solana";` attempts to reassign a
+   property on an ES module namespace object obtained via `await import(...)`.
+   ES module namespace objects are non-configurable/non-writable by the
+   language specification (this holds for node:test's module-mock objects
+   too, confirmed empirically: `TypeError: Cannot assign to read only
+   property 'getChain'`). No source-side change can make an ESM namespace
+   object mutable in strict mode; this is a test-authoring bug (the earlier
+   `mock.module(...)` call at the top of the file is the correct way to stub
+   getChain, and does work correctly for the file's OTHER video/wallet
+   integration tests — this one sub-test's ad-hoc re-mutation attempt is the
+   defect).
+
+Per the project's rule ("NEVER weaken, skip, or delete a test to make it
+pass. If a test contradicts the spec, STOP and report to main"), these 4
+tests were left unmodified and are reported here for a human/architectural
+decision, rather than silently worked around.

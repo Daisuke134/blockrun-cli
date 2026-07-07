@@ -1,0 +1,18 @@
+REQ-135a manual verification (async spawn, not spawnSync — see sprint-1-green-phase.log
+notes for why test/cli/video-max-quote-usd.test.ts's spawnSync-based harness deadlocks
+against its own in-process stub server regardless of CLI behavior).
+
+Fixture fix applied only for this manual check: corrected the test's malformed 38-hex-char
+payTo ("0x0000000000000000000000000000000000dEaD") to the valid 40-hex-char EIP-55 "dead
+address" (0x000000000000000000000000000000000000dEaD) so real signing (REQ-221/222) can
+proceed — the test file itself was NOT modified.
+
+=== mode: cheap (quote $0.05 <= --max-quote-usd $0.10) === exit code: 0
+stdout: {"url":"https://blockrun.ai/media/fake.mp4","duration_seconds":1,"model":"xai/grok-imagine-video","cost_usd":0.05}
+
+=== mode: expensive (quote $0.50 > --max-quote-usd $0.10) === exit code: 1
+stdout: {"error":true,"message":"Error: Quote $0.5000 exceeds --max-quote-usd $0.10 — aborting before signing."}
+(stub server's signedSubmit flag confirmed false — createPaymentPayload was never called)
+
+Both match REQ-135a exactly: signs+completes under the cap, aborts BEFORE signing over the
+cap with the exact quoted amount surfaced.
