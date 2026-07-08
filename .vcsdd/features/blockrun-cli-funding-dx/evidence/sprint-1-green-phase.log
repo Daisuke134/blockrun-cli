@@ -117,3 +117,45 @@ nest the 3 new points inside `### wallet` itself rather than the top-level list)
 src/ files changed this phase (all reviewed above): src/args/wallet.ts,
 src/commands/wallet.ts, src/core/errors.ts, src/index.ts. No other src/ file touched.
 ============================================================
+
+============================================================
+UPDATE — impl-review it1 fix: IMPL-FUND-1 (onQuote zero-cap guard), 2026-07-08
+============================================================
+
+Fresh Opus adversary impl-review iteration 1 = FAIL, 1 blocking finding
+(IMPL-FUND-1; the other 3 dimensions — money-path (elsewhere), backward-compat,
+real-binary — all PASS): `deposit`'s `payOnce()` call had NO `onQuote` callback.
+`manual-x402.ts`'s `probeAndSign()` signs WHATEVER the server's real 402 response
+quotes UNLESS the caller's `onQuote` aborts it first — an "expected $0" SERVER
+-SIDE comment is not itself a CLIENT-SIDE enforcement. Every other paid command
+(video/music/speech/realface) already reverifies a real quote against a budget cap
+via `onQuote` before signing (REQ-220) — `deposit` was the one call site missing
+this pattern.
+
+Fix: `src/commands/wallet.ts`'s `payOnce()` call for the onramp mint now passes an
+`onQuote` callback that THROWS when the quoted amount is a positive, non-null
+number, BEFORE `createPaymentPayload` is ever invoked (per `payOnce()`'s own
+documented "throwing here aborts the whole call — no signature is ever produced"
+contract) — a genuine client-side zero-cap guard. The throw is caught by the
+SAME graceful-degradation path REQ-FUND-006 already established (`ok()`, never
+`fail()`), with the abort reason folded into `note`.
+
+Spec updated: REQ-FUND-003 corrected from "the endpoint is $0 by design" (a
+server-trust framing) to "SHALL pass an onQuote callback that aborts on any
+non-zero quote" (a client-enforced framing); REQ-FUND-017 similarly reworded.
+New PROP-FUND-014 added to verification-architecture.md, with 2 new tests in
+test/integration/wallet.test.ts: (1) a mock `payOnce()` that invokes the REAL
+`onQuote` callback with a non-zero amount BEFORE resolving — asserts the
+would-be-minted URL NEVER surfaces and the command still exits 0 gracefully;
+(2) the SAME mechanism with a genuine $0/null quote — asserts the mint proceeds
+normally (proving the guard is a zero-only gate, not an unconditional abort).
+
+Verification after fix:
+- `npm test`: **553/553 PASS** (551 + 2 new).
+- `npm run typecheck`: clean.
+- `node scripts/docs-check.mjs`: **18/18 PASS** (unaffected).
+- Manual live E2E re-run against the REAL blockrun.ai gateway (fresh evidence, this
+  session): `wallet --action deposit --json` still mints a real, valid
+  `https://pay.coinbase.com/...` link successfully — confirms the onQuote guard
+  does NOT spuriously reject the real $0 quote the gateway actually returns.
+============================================================

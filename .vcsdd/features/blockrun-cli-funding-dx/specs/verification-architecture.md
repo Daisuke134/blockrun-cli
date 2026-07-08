@@ -96,6 +96,15 @@ This feature's ONE live network surface (`payOnce()` against `/v1/onramp/token`)
   already established): assert README.md's `## Fund your wallet` section mentions `--action deposit` and
   `--open`; assert PARITY.md's `wallet` section contains all 3 non-parity bullets from REQ-FUND-015
   (`onramp_url`/`url` rename, `--open`-gating, no-auto-mint-on-failure) as substrings.
+- **PROP-FUND-014** (REQ-FUND-003, -017; Tier 1, mocked — added per impl-review it1 IMPL-FUND-1) — proves
+  the `onQuote` zero-cap guard actually runs and actually aborts, not merely that the field is present in
+  the call args: mocks `payOnce()` so that its OWN implementation invokes the REAL `onQuote` callback
+  `deposit` passed it (simulating exactly what the REAL `probeAndSign()` does) with a NON-ZERO quoted
+  amount (e.g. `0.5`) BEFORE ever resolving with mint data. Asserts: the mock's data (a would-be-real URL)
+  is NEVER surfaced in the output (`url` absent from the JSON), `exitCode === 0` (REQ-FUND-006's graceful
+  -degradation path, not `fail()`), and `note` explains the abort. A SECOND case passes a genuinely `$0`
+  /`null` quote to the SAME `onQuote` callback and asserts the mint proceeds normally (`url` present) —
+  proving the guard is a real ZERO-only gate, not an unconditional abort.
 
 ---
 

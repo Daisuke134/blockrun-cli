@@ -142,13 +142,22 @@ export async function run(
       // REQ-FUND-001/002/003: mint a one-time Coinbase Onramp URL via the SAME
       // submit->402->sign->resubmit flow already used by image/video/music/speech/
       // realface (src/shell/manual-x402.ts's payOnce()) — never a hand-rolled x402
-      // implementation. The endpoint's own quoted amount is $0 (wallet-ownership
-      // proof only), so this never touches gatePaidCall/the budget ledger.
+      // implementation. This endpoint is EXPECTED to quote $0 (wallet-ownership
+      // proof only, no settlement) — but probeAndSign() signs whatever the server
+      // quotes UNLESS onQuote aborts it first (IMPL-FUND-1, impl-review it1): a
+      // client-side zero-cap guard, exactly like every other paid command's onQuote
+      // -based budget reverify, so a server that ever quoted a non-zero amount could
+      // NEVER be blindly signed here.
       try {
         const result = await payOnce({
           endpoint: "/v1/onramp/token",
           body: { address: info.address, network: "base", asset: "USDC" },
           resourceDescription: "Mint a Coinbase Onramp link to fund this wallet",
+          onQuote: (quotedUsd) => {
+            if (quotedUsd !== null && quotedUsd > 0) {
+              throw new Error(`Expected a $0 quote to mint a Coinbase Onramp link, got $${quotedUsd.toFixed(4)} — aborting before signing.`);
+            }
+          },
         });
         const url = result.data.url;
         if (typeof url !== "string" || !url.startsWith("https://pay.coinbase.com/")) {

@@ -108,9 +108,18 @@ non-goal and REQ-FUND-010's own rationale below.
   response missing this shape is treated identically to a network/gateway failure (REQ-FUND-006).
 - REQ-FUND-003: THE mint request in REQ-FUND-001 SHALL NOT call `gatePaidCall` or touch the ephemeral
   `BudgetState`/persisted `~/.blockrun/cli-budget.json` ledger in any way — ground truth: the endpoint is
-  $0 by design (`onramp.ts`'s own comment: "the x402 signature is used purely as wallet authentication...
-  nothing settles"), and `wallet`'s OTHER 8 actions already never call `gatePaidCall` either (REQ-107,
-  REQ-FUND-NG-003).
+  EXPECTED to quote $0 by design (`onramp.ts`'s own comment: "the x402 signature is used purely as
+  wallet authentication... nothing settles"), and `wallet`'s OTHER 8 actions already never call
+  `gatePaidCall` either (REQ-107, REQ-FUND-NG-003). **Correction (impl-review it1 IMPL-FUND-1)**: an
+  "expected $0" server-side CLAIM is NOT itself a client-side enforcement mechanism —
+  `manual-x402.ts`'s `probeAndSign()` signs WHATEVER amount the server's real 402 response quotes
+  UNLESS the caller's `onQuote` callback aborts it first (the SAME mechanism `video`/`music`/`speech`/
+  `realface` already use to reverify a real quote against a budget cap before signing, REQ-220 of the
+  base CLI's own spec). THE mint request in REQ-FUND-001 SHALL therefore pass an `onQuote` callback that
+  THROWS (aborting BEFORE `createPaymentPayload` is ever invoked, per `payOnce()`'s own documented
+  contract) WHEN the quoted amount is a positive, non-null number — a genuine client-side zero-cap
+  enforcement, not a trust-the-server assumption. A throw here is caught by REQ-FUND-006's existing
+  graceful-degradation path (the abort reason folded into `note`), never `fail()`.
 - REQ-FUND-004: `wallet --action deposit --json`'s output SHALL gain a NEW, OPTIONAL top-level `url`
   field — present ONLY when REQ-FUND-001's mint succeeds AND passes REQ-FUND-002's validation — alongside
   the EXISTING `chain`/`address`/`note` fields, which SHALL NOT change type or meaning (this action's
@@ -223,8 +232,9 @@ non-goal and REQ-FUND-010's own rationale below.
 
 ## 4. Cross-cutting / regression
 
-- REQ-FUND-017: THIS FEATURE introduces NO new required spend — REQ-FUND-001's mint is $0 by construction
-  (REQ-FUND-003), verified by confirming `~/.blockrun/cli-budget.json`'s `spent`/`calls` counters are
+- REQ-FUND-017: THIS FEATURE introduces NO new required spend — REQ-FUND-001's mint is $0-enforced BY
+  THE CLIENT (REQ-FUND-003's `onQuote` zero-cap guard, not merely a server-side "expected $0" claim
+  trusted blindly), verified by confirming `~/.blockrun/cli-budget.json`'s `spent`/`calls` counters are
   UNCHANGED before/after a `wallet --action deposit` invocation (the SAME money-safety verification
   pattern `blockrun-cli-docs`/`blockrun-cli-agent-dx` already established for their own $0-by-construction
   live calls).

@@ -43,7 +43,12 @@ mock.module("../../src/shell/budget-store.js", {
 // PROP-FUND-001..006: mutable so the deposit/onramp tests below can vary payOnce()'s
 // success/failure/URL-shape behavior and capture its call args, same
 // mutable-module-level-variable pattern already established above for wallet.js.
-type PayOnceCall = { endpoint: string; body: Record<string, unknown>; resourceDescription: string };
+type PayOnceCall = {
+  endpoint: string;
+  body: Record<string, unknown>;
+  resourceDescription: string;
+  onQuote?: (quotedUsd: number | null) => void;
+};
 let payOnceCalls: PayOnceCall[] = [];
 let payOnceImpl: (req: PayOnceCall) => Promise<{ data: Record<string, unknown>; billedUsd: number | null }> =
   async () => ({ data: { url: "https://pay.coinbase.com/buy/default-mock" }, billedUsd: null });
@@ -319,4 +324,35 @@ test("PROP-FUND-009/REQ-FUND-009: the NON-`--json` human `--action deposit` text
   const solana = await run({ action: "deposit", chain: "solana" }, { json: false }, newBudget());
   assert.equal(solana.exitCode, 0);
   assert.match(solana.stdout, /base/i, "Solana's human text must explain the Base-only limitation");
+});
+
+test("PROP-FUND-014/IMPL-FUND-1/REQ-FUND-003: a NON-ZERO quote aborts BEFORE any signature/URL is produced — deposit's onQuote guard, not a blind trust-the-server assumption", async () => {
+  resetDepositMocks();
+  payOnceImpl = async (req) => {
+    // Simulates the REAL probeAndSign(): invokes the caller's onQuote with the real
+    // 402-quoted amount BEFORE ever resolving with mint data — proves deposit's own
+    // onQuote callback aborts here, not that the mock happens to look safe.
+    req.onQuote?.(0.5);
+    // If onQuote failed to throw (the bug this guards against), execution would
+    // reach here and mint a REAL, would-be-signed link — the money-safety failure
+    // this test exists to catch.
+    return { data: { url: "https://pay.coinbase.com/buy/should-never-surface" }, billedUsd: 0.5 };
+  };
+  const res = await run({ action: "deposit" }, { json: true }, newBudget());
+  assert.equal(res.exitCode, 0, "a non-zero quote must degrade gracefully (REQ-FUND-006), not fail()");
+  const parsed = JSON.parse(res.stdout);
+  assert.equal("url" in parsed, false, "the would-be-signed URL must NEVER surface — the abort must happen before payOnce() ever resolves with it");
+  assert.match(parsed.note, /0\.5|quote/i, "note should explain the abort reason");
+});
+
+test("PROP-FUND-014/IMPL-FUND-1: a genuine $0/null quote passes the onQuote guard and mints normally", async () => {
+  resetDepositMocks();
+  payOnceImpl = async (req) => {
+    req.onQuote?.(null); // matches amountToUsd()'s real behavior for a $0 amount
+    return { data: { url: "https://pay.coinbase.com/buy/zeroquote" }, billedUsd: null };
+  };
+  const res = await run({ action: "deposit" }, { json: true }, newBudget());
+  assert.equal(res.exitCode, 0);
+  const parsed = JSON.parse(res.stdout);
+  assert.equal(parsed.url, "https://pay.coinbase.com/buy/zeroquote", "a genuinely $0 quote must still mint — the guard is a zero-only gate, not an unconditional abort");
 });
