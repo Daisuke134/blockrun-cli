@@ -88,7 +88,7 @@ const program = new Command();
 program
   .name("blockrun")
   .description("CLI for the 18 blockrun-mcp tools, backed by @blockrun/llm (x402 micropayments on Base/Solana).")
-  .version("1.0.0");
+  .version("1.1.0");
 
 function withCommon(cmd: Command): Command {
   return cmd

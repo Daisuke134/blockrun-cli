@@ -22,7 +22,18 @@ in-process tool call. Works equally well from any other agent or script with she
 
 ## Install
 
-`blockrun-cli` is not yet published to npm — install from source:
+```bash
+npm install -g blockrun-cli
+blockrun wallet --action status
+```
+
+Or run it without installing anything:
+
+```bash
+npx -y blockrun-cli wallet --action status
+```
+
+**For development** — install from source instead:
 
 ```bash
 git clone https://github.com/Daisuke134/blockrun-cli
@@ -30,14 +41,6 @@ cd blockrun-cli
 npm install
 npm run build
 node dist/index.js wallet --action status
-```
-
-To get a `blockrun` binary on your `PATH` (so you can drop the `node dist/index.js` prefix), install
-the built package globally from your clone:
-
-```bash
-npm install -g .
-blockrun wallet --action status
 ```
 
 ## Fund your wallet

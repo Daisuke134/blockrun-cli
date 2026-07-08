@@ -575,8 +575,11 @@ function checkProp011() {
     failures.push(`bin field changed from required {"blockrun":"./dist/index.js"}: ${JSON.stringify(pkg.bin)}`);
   }
 
-  if (pkg.version !== "1.0.0") {
-    failures.push(`version !== "1.0.0" (got: ${JSON.stringify(pkg.version)})`);
+  // 1.1.0 as of the agent-dx feature's release (blockrun-cli-agent-dx REQ-DX-001..034
+  // shipped as a semver-minor bump: 3 new, additive agent-DX capabilities, no breaking
+  // change).
+  if (pkg.version !== "1.1.0") {
+    failures.push(`version !== "1.1.0" (got: ${JSON.stringify(pkg.version)})`);
   }
 
   if (pkg.bugs?.url !== "https://github.com/Daisuke134/blockrun-cli/issues") {

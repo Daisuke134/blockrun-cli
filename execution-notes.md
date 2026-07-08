@@ -158,3 +158,33 @@ scoping, so a bare name would be genuinely ambiguous about which chain it refers
 covering both the null (`reason` present) and real-number-including-zero (`reason` key absent) cases
 for the `chain` action was added to `test/integration/wallet.test.ts` (previously ZERO tests, at any
 tier, covered this field — the gap the adversary caught).
+
+## Release 1.1.0 — packaging/publish prep (Feature C, 2026-07-08)
+
+`blockrun-cli-agent-dx` converged (adversary review PASS) — its 3 shipped capabilities (commands
+catalog / machine-readable error `code` + exit codes / `balanceUnavailableReason`) are additive,
+non-breaking → semver **minor** bump, `1.0.0` → `1.1.0`.
+
+Prep done (publish itself intentionally NOT done here — team-lead runs `npm publish`, already
+`npm whoami`-authenticated as `daisuke134-dev` with publish rights; this session stops at commit, no
+push):
+- `package.json` `version` → `1.1.0`; `src/index.ts`'s `.version("1.0.0")` → `"1.1.0"` (the SAME narrow
+  DOC-CONSTRAINT-001a-style version-literal exception the agent-dx feature already used — PROP-016/016b's
+  FROZEN historical range, established earlier today, is unaffected by this since it diffs a fixed past
+  commit range, not the current working tree).
+- `package.json` gains `"prepublishOnly": "npm run build"` — guards against publishing a stale `dist/`.
+- `CHANGELOG.md` gains a `## 1.1.0` section (newest-first, above `## 1.0.0`) with 3 bullets matching the
+  established `- **area — headline.** ...` format, one per agent-dx capability.
+- `README.md`'s `## Install` section rewritten: `npm install -g blockrun-cli` / `npx -y blockrun-cli
+  <cmd>` as the primary path (true the moment publish lands), clone+build kept as a "For development"
+  subsection — the stale "not yet published to npm" sentence removed.
+- `scripts/docs-check.mjs` PROP-011's hardcoded version expectation updated `"1.0.0"` → `"1.1.0"`.
+
+Verification (this session): `npm run build` → `node dist/index.js --version` = `1.1.0`. `npm run
+typecheck` clean. `npm test` 532/532. `node scripts/docs-check.mjs` 18/18 PASS. `npm pack --dry-run`:
+exactly 4 files (`LICENSE`, `README.md`, `dist/index.js`, `package.json`), tarball name
+`blockrun-cli-1.1.0.tgz`.
+
+**State**: committed, intentionally NOT pushed (team-lead publishes first, then pushes + tags
+`v1.1.0`). See `.vcsdd/features/blockrun-cli-agent-dx/evidence/` for the agent-dx feature's own
+converge evidence.
