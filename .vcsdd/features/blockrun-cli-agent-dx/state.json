@@ -66,6 +66,11 @@
     "beads": []
   },
   "gates": {
+    "3": {
+      "verdict": "FAIL",
+      "timestamp": "2026-07-08T08:30:39.445Z",
+      "reviewedBy": "adversary"
+    },
     "1c": {
       "verdict": "PASS",
       "timestamp": "2026-07-08T07:39:37.009Z",
@@ -76,5 +81,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-07-08T06:45:53.835Z",
-  "updatedAt": "2026-07-08T08:25:08.953Z"
+  "updatedAt": "2026-07-08T08:30:39.470Z"
 }

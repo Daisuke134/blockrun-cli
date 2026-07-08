@@ -1,0 +1,23 @@
+{
+  "reviewType": "implementation",
+  "iteration": 1,
+  "dimensions": {
+    "spec_coverage": "FAIL",
+    "money_path_invariance": "PASS",
+    "backward_compatibility": "PASS",
+    "real_binary_behavior": "PASS"
+  },
+  "overall": "FAIL",
+  "findings": [
+    {
+      "id": "IMPL-DX-1",
+      "dimension": "spec_coverage",
+      "severity": "blocking",
+      "requirement": "REQ-DX-023, REQ-DX-041",
+      "location": "src/commands/wallet.ts (chain action, ~lines 107-124)",
+      "description": "REQ-DX-023 requires `wallet --action chain --json`'s top-level `activeBalance` field to gain 'the SAME balanceUnavailableReason convention' when null. The implementation wires this correctly in code (`...(activeBalanceResult?.reason ? { activeBalanceUnavailableReason: activeBalanceResult.reason } : {})`), but (a) it names the field `activeBalanceUnavailableReason`, diverging from the spec's literal field name `balanceUnavailableReason` with no decision recorded in execution-notes.md explaining the deviation, and (b) there is ZERO test coverage of this wiring at any tier: grep across test/ shows no test asserts the `chain` action's JSON output contains this field when a chain balance is null, or that it is absent when a chain balance is a real number (including 0). The existing `chain`-action tests in test/integration/wallet.test.ts mock `getChainBalance` to always return `{ balance: 1.23 }` (a real number), so the null/reason branch for the `chain` action is never exercised, even indirectly. PROP-DX-010's tests cover only the underlying getChainBalance()/getBaseUsdcBalance()/getSolanaUsdcBalance() primitives (shared with the `status` action), not the `chain` action's own JSON assembly in wallet.ts. This is a direct violation of REQ-DX-041 ('EVERY new REQ in §1-§3 above SHALL have a corresponding NEW test') for REQ-DX-023 specifically.",
+      "reproduction": "grep -rn \"activeBalanceUnavailableReason\" test/ -> 0 matches. grep -n \"activeBalance\" test/integration/wallet.test.ts -> only tests where getChainBalance is mocked to a real number (1.23), never null.",
+      "remediation": "Add a test (unit or integration) that invokes wallet.ts's `chain` action with getChainBalance mocked to return `{ balance: null, reason: \"all_rpcs_failed\" }` (and separately `\"solana_client_error\"`) and asserts the JSON output's `activeBalance` is null and the reason field is present with the exact expected key name; and a companion case asserting the reason key is absent when balance is a real number (including 0). If the field name `activeBalanceUnavailableReason` (vs. literal `balanceUnavailableReason`) is intentional, record that decision explicitly in execution-notes.md so it does not read as an unreviewed drift from the spec text."
+    }
+  ]
+}

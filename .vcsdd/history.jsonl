@@ -47,3 +47,4 @@
 {"timestamp":"2026-07-08T07:56:41.444Z","event":"phase_transition","featureName":"blockrun-cli-agent-dx","from":"2a","to":"2b","iteration":1,"phase":"2b"}
 {"timestamp":"2026-07-08T08:20:49.849Z","event":"phase_transition","featureName":"blockrun-cli-agent-dx","from":"2b","to":"2c","iteration":1,"phase":"2c"}
 {"timestamp":"2026-07-08T08:25:08.954Z","event":"phase_transition","featureName":"blockrun-cli-agent-dx","from":"2c","to":"3","iteration":1,"phase":"3"}
+{"timestamp":"2026-07-08T08:30:39.493Z","event":"gate_recorded","featureName":"blockrun-cli-agent-dx","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
