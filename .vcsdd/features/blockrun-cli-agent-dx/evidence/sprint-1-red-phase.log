@@ -1,4 +1,4 @@
-target-feature-tests: FAIL
+new-feature-tests: FAIL
 regression-baseline: PASS
 
 # Phase 2a (Red phase) evidence — blockrun-cli-agent-dx

@@ -2,7 +2,7 @@
   "featureName": "blockrun-cli-agent-dx",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "2b",
   "phaseHistory": [
     {
       "from": "init",
@@ -28,13 +28,21 @@
       "timestamp": "2026-07-08T07:39:37.038Z",
       "reason": "Red phase: generating failing tests for 28 REQ-DX / 14 PROP-DX",
       "sprint": 1
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-07-08T07:56:41.425Z",
+      "reason": "Red evidence recorded (78 new-test failures, regression 408 green) — starting Green implementation",
+      "sprint": 1
     }
   ],
   "iterations": {
     "1a": 1,
     "1b": 1,
     "1c": 1,
-    "2a": 1
+    "2a": 1,
+    "2b": 1
   },
   "proofObligations": [],
   "traceability": {
@@ -52,5 +60,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-07-08T06:45:53.835Z",
-  "updatedAt": "2026-07-08T07:39:37.038Z"
+  "updatedAt": "2026-07-08T07:56:41.435Z"
 }
