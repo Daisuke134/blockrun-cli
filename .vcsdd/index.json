@@ -38,8 +38,8 @@
       "createdAt": "2026-07-08T11:08:33.832Z",
       "mode": "lean",
       "language": "typescript",
-      "currentPhase": "1b",
-      "updatedAt": "2026-07-08T11:13:40.209Z"
+      "currentPhase": "2a",
+      "updatedAt": "2026-07-08T11:17:57.864Z"
     }
   },
   "activeFeature": "blockrun-cli-pack-fix"

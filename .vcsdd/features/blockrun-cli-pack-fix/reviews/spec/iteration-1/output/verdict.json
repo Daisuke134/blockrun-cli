@@ -1,0 +1,19 @@
+{
+  "reviewType": "spec",
+  "feature": "blockrun-cli-pack-fix",
+  "iteration": 1,
+  "dimensions": {
+    "spec_fidelity": "PASS",
+    "verification_readiness": "PASS"
+  },
+  "overall": "PASS",
+  "findings": [],
+  "positiveChecks": [
+    "Grepped the entire src/ tree for readFileSync/readdirSync/import.meta.url/__dirname beyond cost-model.ts: src/core/commands-catalog.ts and src/core/introspect-schema.ts have ZERO matches (only comments in commands-render.ts mention 'src/commands/' textually, no actual runtime read). src/shell/wallet.ts and src/shell/budget-store.ts do read at runtime, but from `path.join(os.homedir(), '.blockrun')` — a user-home config dir, unrelated to the packaging bug. src/cli/json-flag.ts reads a user-supplied `@file.json` CLI arg path, also unrelated. Confirmed: cost-model.ts was the ONLY runtime src/-relative filesystem dependency in the codebase, and the spec's REQ-PACK-001/002 fully eliminate it (git diff HEAD~3 confirms cost-model.ts's old `findCommandsDir()`/`deriveCostModel()` — the exact reproduced crash's source — is now a 13-line thin re-export).",
+    "Derivation stays non-hand-written: scripts/generate-cost-model.mjs greps the REAL src/commands/*.ts for `gatePaidCall(` (identical ground truth to REQ-DX-001), not a hand-typed list — REQ-PACK-NG-001 preserved.",
+    "Staleness risk is double-covered, not just asserted: (1) package.json's `prebuild` script auto-regenerates cost-model.generated.ts on every `npm run build`/`prepublishOnly` (verified in package.json), and (2) test/unit/cost-model-generated-parity.test.ts's PROP-PACK-002 independently re-derives the grep mapping in-test and fails on any drift — ran it live, passes.",
+    "PROP-PACK-003's packed-tarball test is a REAL flow, not simulated: read test/cli/packed-tarball.test.ts and confirmed it calls the real `npm` binary (execFileSync) for `npm pack --pack-destination <tmp>`, real `tar xzf` into a separate fresh tmp dir, then spawnSync's the extracted dist/index.js for both `--version` and `commands --json`, asserting exit 0 — deliberately avoiding npm install -g .'s symlink shortcut that produced the original false-positive. $0 cost (local npm/tar/node only, no paid APIs).",
+    "Independently re-ran the fix live in this review (not trusting the spec's claim): `npm run build` (regenerates cost-model.generated.ts, tsup bundles dist/index.js), then `npx tsx --test test/cli/packed-tarball.test.ts test/unit/cost-model-generated-parity.test.ts` -> all 5 new tests PASS. Then ran the FULL `npm test` -> 558/558 pass (553 pre-existing + 5 new), satisfying REQ-PACK-007.",
+    "Confirmed the RED-phase evidence log (evidence/sprint-1-red-phase.log) shows the same 5 tests genuinely failed before the fix, with the exact crash string ('could not locate src/commands/') matching the live-reproduced bug quoted in the spec — the test suite is a real regression guard, not post-hoc theater."
+  ]
+}

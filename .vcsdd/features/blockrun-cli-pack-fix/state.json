@@ -2,7 +2,7 @@
   "featureName": "blockrun-cli-pack-fix",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "1b",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -15,19 +15,42 @@
       "to": "1b",
       "timestamp": "2026-07-08T11:13:40.209Z",
       "reason": "verification arch: PROP-PACK-001..003 incl packed-tarball execution test"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-07-08T11:17:57.852Z",
+      "reason": "spec-review PASS it1"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-07-08T11:17:57.864Z",
+      "reason": "RED already recorded by builder (5 failures, regression 553 green)",
+      "sprint": 1
     }
   ],
   "iterations": {
     "1a": 1,
-    "1b": 1
+    "1b": 1,
+    "1c": 1,
+    "2a": 1
   },
   "proofObligations": [],
   "traceability": {
     "epicId": "VCSDD-blockrun-cli-pack-fix-1783508913887",
     "beads": []
   },
-  "gates": {},
-  "sprintCount": 0,
+  "gates": {
+    "1c": {
+      "verdict": "PASS",
+      "timestamp": "2026-07-08T11:17:57.846Z",
+      "reviewedBy": "adversary",
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-07-08T11:17:57.846Z"
+    }
+  },
+  "sprintCount": 1,
   "createdAt": "2026-07-08T11:08:33.832Z",
-  "updatedAt": "2026-07-08T11:13:40.209Z"
+  "updatedAt": "2026-07-08T11:17:57.864Z"
 }

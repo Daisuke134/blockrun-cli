@@ -72,3 +72,7 @@
 {"timestamp":"2026-07-08T11:08:33.898Z","event":"feature_created","featureName":"blockrun-cli-pack-fix","mode":"lean","language":"typescript"}
 {"timestamp":"2026-07-08T11:13:40.186Z","event":"phase_transition","featureName":"blockrun-cli-pack-fix","from":"init","to":"1a","iteration":1,"phase":"1a"}
 {"timestamp":"2026-07-08T11:13:40.212Z","event":"phase_transition","featureName":"blockrun-cli-pack-fix","from":"1a","to":"1b","iteration":1,"phase":"1b"}
+{"timestamp":"2026-07-08T11:17:57.852Z","event":"gate_recorded","featureName":"blockrun-cli-pack-fix","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-07-08T11:17:57.854Z","event":"phase_transition","featureName":"blockrun-cli-pack-fix","from":"1b","to":"1c","iteration":1,"phase":"1c"}
+{"timestamp":"2026-07-08T11:17:57.865Z","event":"phase_transition","featureName":"blockrun-cli-pack-fix","from":"1c","to":"2a","iteration":1,"phase":"2a"}
+{"timestamp":"2026-07-08T11:17:57.865Z","event":"sprint_started","featureName":"blockrun-cli-pack-fix","sprintNumber":1,"phase":"2a"}
