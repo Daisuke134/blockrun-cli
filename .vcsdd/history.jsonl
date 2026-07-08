@@ -70,3 +70,5 @@
 {"timestamp":"2026-07-08T10:41:00.429Z","event":"gate_recorded","featureName":"blockrun-cli-funding-dx","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-07-08T10:41:00.432Z","event":"phase_transition","featureName":"blockrun-cli-funding-dx","from":"6","to":"complete","iteration":1,"phase":"complete"}
 {"timestamp":"2026-07-08T11:08:33.898Z","event":"feature_created","featureName":"blockrun-cli-pack-fix","mode":"lean","language":"typescript"}
+{"timestamp":"2026-07-08T11:13:40.186Z","event":"phase_transition","featureName":"blockrun-cli-pack-fix","from":"init","to":"1a","iteration":1,"phase":"1a"}
+{"timestamp":"2026-07-08T11:13:40.212Z","event":"phase_transition","featureName":"blockrun-cli-pack-fix","from":"1a","to":"1b","iteration":1,"phase":"1b"}

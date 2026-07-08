@@ -2,9 +2,25 @@
   "featureName": "blockrun-cli-pack-fix",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "init",
-  "phaseHistory": [],
-  "iterations": {},
+  "currentPhase": "1b",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-07-08T11:13:40.087Z",
+      "reason": "hotfix spec: build-time cost-model derivation"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-07-08T11:13:40.209Z",
+      "reason": "verification arch: PROP-PACK-001..003 incl packed-tarball execution test"
+    }
+  ],
+  "iterations": {
+    "1a": 1,
+    "1b": 1
+  },
   "proofObligations": [],
   "traceability": {
     "epicId": "VCSDD-blockrun-cli-pack-fix-1783508913887",
@@ -13,5 +29,5 @@
   "gates": {},
   "sprintCount": 0,
   "createdAt": "2026-07-08T11:08:33.832Z",
-  "updatedAt": "2026-07-08T11:08:33.832Z"
+  "updatedAt": "2026-07-08T11:13:40.209Z"
 }

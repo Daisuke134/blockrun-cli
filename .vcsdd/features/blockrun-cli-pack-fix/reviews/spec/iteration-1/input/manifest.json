@@ -1,0 +1,1 @@
+{"reviewType":"spec","featureName":"blockrun-cli-pack-fix","mode":"lean","iteration":1,"artifactsToReview":["specs/behavioral-spec.md","specs/verification-architecture.md"],"reviewDimensions":["spec_fidelity","verification_readiness"]}
