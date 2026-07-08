@@ -167,23 +167,50 @@ Phase 2a/2b of THIS feature (not the CLI's own 408-test suite, which is untouche
      blockrun-cli-e2e-home node dist/index.js wallet --action status --json` and parse `.base.balance`
      from stdout (verified real shape:
      `{"activeChain":"base","base":{"address":"0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804","balance":<number|null>},"solana":{...}}`).
-     A DIRECT run of this exact command on 2026-07-08 returned a numeric `0.264748`; a separate run
-     during spec-review returned `null` — both are real, observed outcomes (consistent with
-     `blockrun-mcp/README.md`'s documented Base-RPC-transient-outage behavior), so this step's output
-     is EITHER a number OR `null`/nonzero-exit, never assumed to be a number. Do NOT trust
-     `VERIFICATION.md`'s $0.264748 figure directly — it is a dated (2026-07-07) reference only,
+     A DIRECT run of this exact command on 2026-07-08 returned a numeric `0.264748`; TWO separate later
+     runs during spec-review both returned `null` (most recently confirmed by spec-review codex it-4
+     ADV-004-003 — `.base.balance` is `null` as of that check) — both outcomes are real, REPEATEDLY
+     observed (consistent with `blockrun-mcp/README.md`'s documented Base-RPC-transient-outage
+     behavior; `wallet --action status`'s own implementation, `src/shell/wallet.ts:234-255`'s
+     `getBaseUsdcBalance()`, already tries 3 free public Base RPCs before giving up and returning
+     `null`), so this step's output is EITHER a number OR `null`/nonzero-exit, never assumed to be a
+     number, and hitting the `null` branch in a real run is LIKELY, not merely hypothetical. Do NOT
+     trust `VERIFICATION.md`'s $0.264748 figure directly — it is a dated (2026-07-07) reference only,
      superseded by this live read.
-  2. **Null/unavailable handling** (DOC-EVID-002a resolution order — assert this exact chain, not an
-     ad hoc one): IF `.base.balance` is `null`/non-numeric/the process exits nonzero → (a) retry step 1
-     up to 3× with a 30s wait between attempts; (b) STILL non-numeric → fall back to
-     `HOME=/Users/anicca/blockrun-cli-e2e-home node dist/index.js rpc --network base --method eth_call
-     --params '[<Base-USDC balanceOf(0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804) call payload>,
-     "latest"]' --json` (a real, already-exercised path per `VERIFICATION.md` row #9's precedent,
-     $0.002); (c) STILL fails → derive a conservative LOWER-BOUND from `~/.blockrun/cli-budget.json`'s
-     `global.spent` subtracted from the $0.59 funding amount (tx
-     `0xccbaf5adeb67e2e144be9dd091b9533a951eb7c2ea5189dff0a02e0d33f4bbe3`, per `VERIFICATION.md`); (d)
-     STILL no usable number → STOP the entire PROP-020 run and report failure (assert: no re-run is
-     ever attempted against an unresolved balance).
+  2. **Null/unavailable handling** (DOC-EVID-002a resolution order — assert this EXACT two-path chain;
+     NO third, estimated/derived path — revised per spec-review codex it-4 FIND-004-001, which proved
+     the previously-specified ledger-derived "conservative lower bound" was not actually conservative:
+     `$0.59 − $0.316001 (recorded global.spent) = $0.273999`, HIGHER than `VERIFICATION.md`'s own
+     recorded end balance `$0.264748` — an over-estimate, exactly the unsound-fallback risk FIND-004-001
+     flagged): IF `.base.balance` is `null`/non-numeric/the process exits nonzero →
+     (a) retry step 1 up to 3× with a 30s wait between attempts; IF a retry returns a number, use it;
+     (b) STILL non-numeric after 3 retries → attempt the ON-CHAIN fallback via this EXACT invocation
+     (independently re-derives the SAME `balanceOf` call `wallet --action status` already tries for
+     free, but routed through BlockRun's PAID Tatum-backed gateway `/v1/rpc/base` instead of the 3 free
+     public RPCs that already failed — a genuinely independent upstream, not a retry of the same
+     thing):
+     ```
+     HOME=/Users/anicca/blockrun-cli-e2e-home node dist/index.js rpc --network base --method eth_call \
+       --params '[{"to":"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913","data":"0x70a08231000000000000000000000000a5cef4943c3f8f34e5138b5bcde6b88746a5c804"},"latest"]' \
+       --json
+     ```
+     Contract address `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` = the Base USDC address the CLI's
+     own `src/shell/wallet.ts:25` (`USDC_ADDRESS`) already uses; calldata = the standard ERC-20
+     `balanceOf(address)` selector `0x70a08231` + the sandbox wallet address left-zero-padded to 32
+     bytes — the EXACT construction at `src/shell/wallet.ts:238`; decode the response's `result` hex
+     as `Number(BigInt(result)) / 1e6` (6 decimals) — the EXACT logic already implemented as
+     `parseBaseUsdcCallResult()` at `src/shell/wallet.ts:229-232`. Cost: $0.002
+     (`RPC_PRICE_USD`, `src/args/rpc.ts:9`) — attempted UNCONDITIONALLY (no prior-balance gate is
+     needed: if the wallet cannot afford $0.002, the underlying x402 settlement fails cleanly as a
+     payment-rejection error rather than a false success, per the CLI's own existing REQ-220/REQ-221
+     money-safety property, so this attempt is itself safe); IF the response yields a valid decoded
+     number, use it; (c) IF the on-chain fallback in (b) ALSO fails (nonzero exit, malformed/missing
+     `result`, or a payment-rejection error) → STOP the entire PROP-020 run and report failure
+     IMMEDIATELY. `~/.blockrun/cli-budget.json`'s `global.spent` and the $0.59 funding amount MAY be
+     written to the evidence output as a REFERENCE/cross-check figure ONLY (proven not to be a safe
+     lower bound, per this step's opening note) — NEVER as a basis to proceed with any spend when (a)
+     and (b) have both failed. Assert: no re-run, top-up, or ANY further spend is ever attempted
+     against an unresolved (both-paths-failed) balance.
   3. Execute a FRESH re-run of each command WITH `--json` (required so `cost_usd` can be read from
      stdout, cross-checked against the `~/.blockrun/cli-budget.json` `global.spent` delta before/after
      — a mismatch between the two is itself treated as an indeterminate-balance case, re-entering step
@@ -238,15 +265,28 @@ spec-review codex it-2 ADV-001-SPEND-SURFACE-WORDING — PROP-005 is network-tou
   for ALL THREE of image/video/music (full-URL recovery is
   confirmed impossible per the §6a precheck, so this is not optional, and it is NOT partially
   satisfiable — see PROP-020's corrected assertion, spec-review codex it-1 FIND-001): estimated ≈$0.015
-  (image) + ≈$0.0525 (video) + ≈$0.1575 (music) ≈ **$0.225 total**, against a balance LAST OBSERVED at
-  ≈$0.2647 (2026-07-07) — **≈$0.04 estimated headroom**, to be reconfirmed by PROP-020's own live
-  preflight before any spend. THE MONEY-SAFETY MECHANISM IS THE TOP-UP LOOP, NOT A SKIP: if the live
-  balance (initial preflight, or re-checked after any re-run's real settled cost) is insufficient for
-  the next cheapest-first step, PROP-020 STOPS before that step, triggers a wallet top-up from
-  `0x810f6d61f7606deee2657d3083e150a222bc29c5` to the sandbox Base wallet (same funding route as the
-  original E2E setup), re-confirms via a fresh live preflight, and RESUMES — repeated until all three
-  artifacts are obtained. No PROP in this architecture may overspend the sandbox wallet to force a
-  PASS, AND no PROP may report a PASS with fewer than all three media artifacts obtained.
+  (image) + ≈$0.0525 (video) + ≈$0.1575 (music) ≈ **$0.225 media total**, PLUS a possible ≈$0.002 PER
+  ATTEMPT contingency from the on-chain `eth_call` balance-fallback (step 2 of PROP-020's procedure,
+  DOC-EVID-002a) — the fallback fires on EVERY step whose preflight returns `null` (spec-review codex
+  it-4 ADV-004-003 confirms `.base.balance` is CURRENTLY observed as `null`, and DOC-EVID-002's note
+  above states this branch is likely to be hit repeatedly, not a rare edge case) — so the REALISTIC
+  worst-case contingency is up to 3× $0.002 ≈ $0.006 (one fallback attempt per media step, cheapest
+  -first sequencing), making the FULL worst-case total ≈$0.231, against a balance LAST OBSERVED at
+  ≈$0.2647 (2026-07-07, itself unverified as current — see below) — **≈$0.034 estimated headroom**
+  (tightened per spec-review codex it-4 ADV-004-001, which flagged the prior ≈$0.04 figure for
+  omitting this contingency), to be reconfirmed by PROP-020's own live preflight before any spend.
+  THE MONEY-SAFETY MECHANISM IS THE TOP-UP LOOP, NOT A SKIP AND NOT A DERIVED-BALANCE ESTIMATE: if the
+  RESOLVED balance (live preflight number OR the on-chain fallback number — NEVER a
+  `cli-budget.json`-derived estimate, which spec-review codex it-4 FIND-004-001 proved is not
+  conservative: `$0.59 − $0.316001 = $0.273999`, HIGHER than the real recorded end balance
+  `$0.264748`) is insufficient for the next cheapest-first step, PROP-020 STOPS before that step,
+  triggers a wallet top-up from `0x810f6d61f7606deee2657d3083e150a222bc29c5` to the sandbox Base wallet
+  (same funding route as the original E2E setup), re-confirms via a fresh live preflight, and RESUMES
+  — repeated until all three artifacts are obtained. If BOTH the live preflight AND the on-chain
+  fallback fail to resolve a balance, PROP-020 STOPS and reports failure — no top-up decision or spend
+  is ever authorized by a derived/estimated number. No PROP in this architecture may overspend the
+  sandbox wallet to force a PASS, AND no PROP may report a PASS with fewer than all three media
+  artifacts obtained.
 
 The 18/18 paid-path evidence this feature otherwise relies on (PROP-012/013/014/018's cross-checks) is
 REUSED from the CLI feature's existing `VERIFICATION.md` for all commands EXCEPT the three full-URL

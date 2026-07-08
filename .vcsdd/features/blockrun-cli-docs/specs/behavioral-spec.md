@@ -255,10 +255,16 @@ for any of the three; a fresh re-run is REQUIRED for all three artifacts.
   status --json`, and parse the numeric field at JSON path `.base.balance` from stdout (the verified
   real output shape is `{"activeChain":"base","base":{"address":"0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804","balance":<number|null>},"solana":{...}}`
   — confirmed by direct execution of this exact command: on 2026-07-08 it returned a numeric
-  `base.balance:0.264748`; a separate execution during spec-review returned `base.balance:null` with
-  the non-`--json` form printing `(unavailable)` — BOTH outcomes are real and possible, consistent with
-  `blockrun-mcp/README.md`'s own documented "Base RPC transient outage" troubleshooting entry — so this
-  REQ and DOC-EVID-002a below MUST handle both. THAT live-read numeric value (never
+  `base.balance:0.264748`; TWO separate later executions during spec-review both returned
+  `base.balance:null` (most recently confirmed live during spec-review it-4 codex ADV-004-003 —
+  `.base.balance` is `null` as of that check) — BOTH outcomes are real and repeatedly observed,
+  consistent with `blockrun-mcp/README.md`'s own documented "Base RPC transient outage"
+  troubleshooting entry (note: `wallet --action status`'s OWN implementation, per
+  `src/shell/wallet.ts:234-255`'s `getBaseUsdcBalance()`, already tries 3 free public Base RPCs —
+  `mainnet.base.org`, `base.llamarpc.com`, `1rpc.io/base` — before giving up and returning `null`; a
+  `null` result means all three already failed) — so this REQ and DOC-EVID-002a below MUST handle
+  both outcomes, and it is LIKELY (not merely hypothetical) that a real run of this feature will hit
+  the `null` branch given the observed frequency. THAT live-read numeric value (never
   `VERIFICATION.md`'s dated $0.264748 figure, which was recorded 2026-07-07 and is a stale reference
   only) is the actual remaining-balance input for every subsequent check in this section. Re-runs
   SHALL proceed cheapest-first (image → video → music). For the settled-cost side of each check (the
@@ -267,28 +273,59 @@ for any of the three; a fresh re-run is REQUIRED for all three artifacts.
   cross-checked against the delta in `~/.blockrun/cli-budget.json`'s `global.spent` (read before and
   after that re-run) — these two SHALL agree; a mismatch is treated as an indeterminate balance (see
   DOC-EVID-002a's fallback chain).
-- DOC-EVID-002a (balance-unknown / low-balance handling — mechanically executable, no out-of-band
-  judgment): WHEN DOC-EVID-002's preflight returns `base.balance` as `null`, non-numeric, or the
-  process exits nonzero, THE FEATURE SHALL treat the balance as UNKNOWN and SHALL NOT start or continue
-  any paid re-run against an unknown balance. Resolution order: (1) retry the EXACT DOC-EVID-002
-  preflight command up to 3 times with a 30-second wait between attempts (mirrors
-  `blockrun-mcp/README.md`'s own "retry after 30s" RPC-outage guidance); (2) IF still non-numeric after
-  3 retries, fall back to an on-chain read via `HOME=/Users/anicca/blockrun-cli-e2e-home node
-  dist/index.js rpc --network base --method eth_call --params '["<Base USDC contract
-  balanceOf(0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804) call>", "latest"]' --json` (a real, already
-  -exercised path — mirrors `VERIFICATION.md` row #9's `eth_blockNumber` invocation — $0.002 real
-  cost, itself checked against balance-unknown risk: only attempted if step (1)'s LAST successful
-  numeric balance, if any, or the funding-tx-derived floor from step (3) covers the $0.002); (3) IF
-  step (2) also fails (RPC down / malformed response), derive a CONSERVATIVE lower-bound balance
-  from `~/.blockrun/cli-budget.json`'s `global.spent` subtracted from the known funding amount
-  ($0.59 USDC, tx `0xccbaf5adeb67e2e144be9dd091b9533a951eb7c2ea5189dff0a02e0d33f4bbe3`, per
-  `VERIFICATION.md`'s Environment table) — this lower bound MAY be used ONLY to decide whether to
-  attempt the NEXT cheapest step, never to justify skipping a top-up; (4) IF all three resolution
-  methods fail to produce ANY usable number, THE FEATURE SHALL STOP the entire sequence and report the
-  failure — fabricating a balance or proceeding blind is NOT permitted.
+- DOC-EVID-002a (balance-unknown handling — mechanically executable, no out-of-band judgment, and NO
+  derived/estimated value may ever authorize a paid media re-run — revised per spec-review codex it-4
+  FIND-004-001/FIND-004-002, which found the previously-specified ledger-derived "conservative lower
+  bound" was NOT actually conservative: real numbers are `$0.59` funding − `$0.316001` recorded
+  `global.spent` = `$0.273999`, which is HIGHER than `VERIFICATION.md`'s own recorded end balance of
+  `$0.264748` — an over-estimate by ~$0.0092, exactly the failure mode FIND-004-001 flagged. The
+  ledger-derived-floor branch is THEREFORE REMOVED as a basis for proceeding): WHEN DOC-EVID-002's
+  preflight returns `base.balance` as `null`, non-numeric, or the process exits nonzero, THE FEATURE
+  SHALL treat the balance as UNKNOWN and SHALL NOT start or continue any paid re-run against an
+  unknown balance. Resolution order (exactly two paths to a balance THE FEATURE MAY ACT ON — no
+  third, estimated path):
+  1. Retry the EXACT DOC-EVID-002 preflight command up to 3 times with a 30-second wait between
+     attempts (mirrors `blockrun-mcp/README.md`'s own "retry after 30s" RPC-outage guidance). IF a
+     retry returns a number, use it.
+  2. IF still non-numeric after 3 retries, attempt the ON-CHAIN fallback via THIS EXACT invocation —
+     which independently re-derives the SAME `balanceOf` call `wallet --action status` already tries
+     for free (step DOC-EVID-002's note above), but routed through BlockRun's PAID Tatum-backed
+     gateway (`/v1/rpc/base`, per `blockrun-mcp/README.md`'s `blockrun_rpc` tool description) instead
+     of the 3 free public RPCs that already failed — a genuinely independent upstream, not a retry of
+     the same thing:
+     ```
+     HOME=/Users/anicca/blockrun-cli-e2e-home node dist/index.js rpc --network base --method eth_call \
+       --params '[{"to":"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913","data":"0x70a08231000000000000000000000000a5cef4943c3f8f34e5138b5bcde6b88746a5c804"},"latest"]' \
+       --json
+     ```
+     Every component of this invocation is verified against the CLI's OWN source (not invented):
+     `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` is the Base USDC contract address the CLI's own
+     `src/shell/wallet.ts:25` (`USDC_ADDRESS` constant) already uses; `0x70a08231` is the standard
+     ERC-20 `balanceOf(address)` 4-byte selector, followed by the sandbox wallet address
+     (`0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804`, lowercased, `0x`-stripped) left-zero-padded to 32
+     bytes — the EXACT calldata construction at `src/shell/wallet.ts:238`
+     (`` `0x70a08231000000000000000000000000${address.slice(2)}` ``); DECODE the JSON-RPC response's
+     `result` hex field as `Number(BigInt(result)) / 1e6` (USDC has 6 decimals) — the EXACT decode
+     logic already implemented and exported as `parseBaseUsdcCallResult()` at
+     `src/shell/wallet.ts:229-232`. Real cost: $0.002 (`RPC_PRICE_USD`, `src/args/rpc.ts:9`) — no
+     prior balance check gates this attempt (if the wallet cannot actually afford $0.002, the
+     underlying x402 payment settlement itself fails cleanly as a payment-rejection error, not a
+     false success — this is the CLI's own existing money-safety property, REQ-220/REQ-221 — so
+     attempting it unconditionally here is safe).
+  3. IF the on-chain fallback in step 2 ALSO fails (nonzero exit, malformed/missing `result`, or a
+     payment-rejection error), THE FEATURE SHALL STOP the entire sequence and report the failure
+     immediately. `~/.blockrun/cli-budget.json`'s `global.spent` and the known $0.59 funding amount
+     (tx `0xccbaf5adeb67e2e144be9dd091b9533a951eb7c2ea5189dff0a02e0d33f4bbe3`, per `VERIFICATION.md`'s
+     Environment table) MAY be written to the evidence output as a REFERENCE/cross-check figure ONLY
+     — proven NOT to be a safe lower bound (see this REQ's opening paragraph) — and SHALL NEVER be
+     used to justify proceeding with a paid re-run, a top-up decision, or ANY spend when both step 1
+     and step 2 have failed. Fabricating a balance or proceeding blind is NOT permitted under any
+     circumstance.
 
-  WHEN a resolved (live, on-chain, or ledger-derived) balance is insufficient for the next cheapest
-  -first step's real cost (its 402 quote if already known from a prior attempt, else its cost estimate
+  WHEN a resolved balance (live preflight number, per step 1, or the on-chain fallback number, per
+  step 2 — NEVER a ledger-derived estimate, which step 3 above forbids as a spend-authorizing source)
+  is insufficient for the next cheapest-first step's real cost (its 402 quote if already known from a
+  prior attempt, else its cost estimate
   from DOC-EVID-001), THE FEATURE SHALL: (1) STOP before attempting that step; (2) the ORCHESTRATOR
   (a human operator or the agent session driving this feature — this transfer is OUTSIDE the CLI
   process itself, since the CLI has no send-funds command; whoever holds the
