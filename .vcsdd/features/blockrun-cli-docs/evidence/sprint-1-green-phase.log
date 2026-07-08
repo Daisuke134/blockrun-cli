@@ -1,0 +1,47 @@
+new-feature-tests: PASS
+regression-baseline: PASS
+
+=== 2026-07-08T05:43:41Z — Phase 2b Green-phase evidence log (blockrun-cli-docs) ===
+
+--- node scripts/docs-check.mjs (new-feature Tier-1 assertions) ---
+[PASS] PROP-001: heading order matches required sequence
+[PASS] PROP-002: 18/18 command rows present and match real subcommand set
+[PASS] PROP-003: README.md free of forbidden placeholder/MCP-framing terms
+[PASS] PROP-006: Environment Variables table has exactly 6 rows with the required member set, .chain/payment-chain separate
+[PASS] PROP-007: CHANGELOG.md preamble/1.0.0-heading/bullet-format all correct
+[PASS] PROP-008: CONTRIBUTING.md has all required script invocations, no banned skill-mechanism claims
+[PASS] PROP-009: PR checklist contains all 6 required items
+[PASS] PROP-010: LICENSE body matches blockrun-mcp/LICENSE; package.json.license === MIT
+[PASS] PROP-011: all package.json fields correct
+[PASS] PROP-012: PARITY.md has 18/18 sections, each naming both MCP tool and CLI form
+[PASS] PROP-013: all 3 known intentional non-parity points called out
+[PASS] PROP-015: execution-notes.md references 'blockrun-cli-docs' and today's date 2026-07-08
+[PASS] PROP-016: all 23 changed path(s) within allow-list, zero src/test/dist touches
+[PASS] PROP-017: CHANGELOG/CONTRIBUTING/LICENSE/PARITY.md free of forbidden placeholders
+[PASS] PROP-024: 9 DUAL-LIVE-RUN + 9 SCHEMA-ONLY partition exactly matches spec
+[PASS] PROP-025: every MCP-declared parameter for all 9 SCHEMA-ONLY commands is referenced in PARITY.md
+
+16 checks run, 16 PASS, 0 FAIL
+docs-check exit code: 0
+
+--- README.md example flags cross-checked against real --help output ---
+All flags in README.md code blocks verified against real --help output. OK. (see commit for verification script run)
+
+--- free-path README examples actually executed against the built binary (2026-07-08) ---
+blockrun price --action price --category crypto --symbol BTC-USD --json -> real Pyth quote returned
+blockrun models --category chat --json -> count:55 returned
+blockrun dex --query SOL --json -> real DexScreener pairs returned
+blockrun video --help -> exit 0
+blockrun chat "what is the capital of France?" --mode free -> real nvidia/llama-4-maverick response returned
+
+--- npm test (regression baseline — CLI's own 408-test suite, untouched per REQ-NG-001) ---
+✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.042042ms)
+✔ schema.safeParse rejects a non-numeric agent_limit (0.981167ms)
+ℹ tests 408
+ℹ suites 0
+ℹ pass 408
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10578.455709

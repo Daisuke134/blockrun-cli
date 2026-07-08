@@ -1,7 +1,7 @@
 {
   "name": "blockrun-cli",
-  "version": "0.1.0",
-  "description": "CLI wrapper exposing all 18 blockrun-mcp tools as blockrun subcommands, backed by @blockrun/llm (x402 micropayments on Base/Solana).",
+  "version": "1.0.0",
+  "description": "Command-line access to real-time markets, research, web search, and crypto data — 18 commands, no API keys, pay per call via x402 USDC micropayments on Base/Solana.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -24,10 +24,21 @@
     "blockrun",
     "x402",
     "micropayments",
-    "ai"
+    "ai",
+    "crypto",
+    "wallet",
+    "usdc"
   ],
   "author": "BlockRun",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Daisuke134/blockrun-cli"
+  },
+  "homepage": "https://github.com/Daisuke134/blockrun-cli",
+  "bugs": {
+    "url": "https://github.com/Daisuke134/blockrun-cli/issues"
+  },
   "engines": {
     "node": ">=20.19"
   },

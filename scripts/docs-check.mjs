@@ -356,10 +356,16 @@ function checkProp007() {
     return;
   }
   const lines = changelog.split("\n");
-  const firstNonBlank = lines.find((l) => l.trim().length > 0) ?? "";
-  const preambleOk = /all notable changes to .+ will be documented in this file\.?/i.test(firstNonBlank);
+  // The real blockrun-mcp/CHANGELOG.md reference structure is: `# Changelog` (H1) on the
+  // first non-blank line, then the preamble sentence on the NEXT non-blank line — not
+  // literally line 1. Check the first few non-blank lines (H1 title + preamble), not just
+  // the very first one.
+  const nonBlankLines = lines.filter((l) => l.trim().length > 0).slice(0, 3);
+  const preambleOk = nonBlankLines.some((l) =>
+    /all notable changes to .+ will be documented in this file\.?/i.test(l),
+  );
   if (!preambleOk) {
-    record("PROP-007", false, `first non-blank line does not match preamble pattern: "${firstNonBlank}"`);
+    record("PROP-007", false, `no preamble line found in the first 3 non-blank lines: ${JSON.stringify(nonBlankLines)}`);
     return;
   }
   const versionHeadings = lines.filter((l) => /^##\s+\d/.test(l));
@@ -416,8 +422,14 @@ function checkProp008() {
   const pkgRaw = readFileOpt(repoPath("package.json"));
   const pkg = pkgRaw ? JSON.parse(pkgRaw) : { scripts: {} };
   const scripts = pkg.scripts ?? {};
+  // DOC-CONTRIB-002 names a FIXED subset of scripts the Setup section must document
+  // (npm install, typecheck, build, dev, test, test:e2e) — NOT every key in
+  // package.json's scripts object (e.g. "start" is a runtime launcher, not part of
+  // the contributor setup workflow, and is intentionally not required here).
+  const SPEC_REQUIRED_SCRIPT_KEYS = ["typecheck", "build", "dev", "test", "test:e2e"];
   const requiredSubstrings = ["npm install"];
-  for (const key of Object.keys(scripts)) {
+  for (const key of SPEC_REQUIRED_SCRIPT_KEYS) {
+    if (!(key in scripts)) continue; // only require scripts that actually exist
     if (key === "test") requiredSubstrings.push("npm test");
     else requiredSubstrings.push(`npm run ${key}`);
   }
@@ -685,6 +697,15 @@ function checkProp015() {
 // PROP-016 — git diff allow-list since feature-init commit
 // ---------------------------------------------------------------------------
 
+// Widened from `.vcsdd/features/blockrun-cli-docs/` to all of `.vcsdd/**`
+// per Dais's direct instruction during Phase 2b: the VCSDD orchestrator
+// writes shared, repo-wide state-machine bookkeeping (active-feature.txt,
+// history.jsonl, index.json) OUTSIDE this feature's own directory as an
+// unavoidable side effect of running ANY vcsdd command. PROP-016's real
+// protective intent is src/test/dist-untouched (REQ-NG-001), enforced by
+// the separate srcTouched check below, not literal isolation from the
+// orchestrator's cross-feature state. See verification-architecture.md
+// PROP-016 for the full rationale.
 const ALLOWED_PATH_PATTERNS = [
   /^README\.md$/,
   /^CHANGELOG\.md$/,
@@ -695,7 +716,7 @@ const ALLOWED_PATH_PATTERNS = [
   /^VERIFICATION\.md$/,
   /^execution-notes\.md$/,
   /^scripts\/docs-check\..+$/,
-  /^\.vcsdd\/features\/blockrun-cli-docs\//,
+  /^\.vcsdd\//,
 ];
 
 function checkProp016() {
