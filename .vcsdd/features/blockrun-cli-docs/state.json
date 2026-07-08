@@ -2,7 +2,7 @@
   "featureName": "blockrun-cli-docs",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2b",
+  "currentPhase": "2c",
   "phaseHistory": [
     {
       "from": "init",
@@ -35,6 +35,13 @@
       "timestamp": "2026-07-08T05:34:33.040Z",
       "reason": "Red evidence recorded (16 FAIL, regression 408 PASS) — starting Green implementation",
       "sprint": 1
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-07-08T05:45:13.553Z",
+      "reason": "Green complete (16/16 docs-check PASS, regression 408). Docs prose consistency enforced by Tier-1 checks.",
+      "sprint": 1
     }
   ],
   "iterations": {
@@ -42,7 +49,8 @@
     "1b": 1,
     "1c": 1,
     "2a": 1,
-    "2b": 1
+    "2b": 1,
+    "2c": 1
   },
   "proofObligations": [],
   "traceability": {
@@ -60,5 +68,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-07-08T04:29:58.769Z",
-  "updatedAt": "2026-07-08T05:34:33.042Z"
+  "updatedAt": "2026-07-08T05:45:13.554Z"
 }

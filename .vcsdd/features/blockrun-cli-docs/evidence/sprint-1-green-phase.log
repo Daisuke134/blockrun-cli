@@ -1,4 +1,4 @@
-new-feature-tests: PASS
+target-feature-tests: PASS
 regression-baseline: PASS
 
 === 2026-07-08T05:43:41Z — Phase 2b Green-phase evidence log (blockrun-cli-docs) ===
