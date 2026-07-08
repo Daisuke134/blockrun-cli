@@ -158,8 +158,8 @@ $ HOME=<tmp> node dist/index.js wallet --action status --json
      present alongside a real numeric balance, including a genuine 0".
 
 ============================================================
-node scripts/docs-check.mjs — 16/18 PASS (2 known, pre-existing-design failures,
-NOT a regression from this feature's work — see caveat below)
+node scripts/docs-check.mjs — FINAL: 18/18 PASS (see UPDATE below for the fix;
+first pass in this session was 16/18, both fails resolved same session)
 ============================================================
 
 [PASS] PROP-001 heading order / [PASS] PROP-002 19/19 Commands rows / [PASS] PROP-003
@@ -171,19 +171,27 @@ execution-notes / [FAIL] PROP-016 / [FAIL] PROP-016b / [PASS] PROP-017 forbidden
 placeholders / [PASS] PROP-022 evidence cross-check / [PASS] PROP-024
 DUAL-LIVE-RUN+SCHEMA-ONLY partition / [PASS] PROP-025 MCP param coverage.
 
-CAVEAT (read before treating this as a regression): PROP-016/016b are
-blockrun-cli-docs's OWN "git diff since THAT feature's init commit is limited to an
-allow-listed set of doc/meta files, src/ untouched beyond one version-literal line"
-regression guard — `FEATURE_NAME` inside docs-check.mjs is hardcoded to
-"blockrun-cli-docs" and the diff base is that (now long-completed, v1.0.0-tagged)
-feature's own init commit. blockrun-cli-agent-dx is a DELIBERATE, separate, real
-src/ implementation feature (unlike blockrun-cli-docs) — the moment ANY such
-feature lands real src/ changes on top of blockrun-cli-docs's init commit, PROP-016/
-016b's check is mathematically guaranteed to report the new src/ files as
-"disallowed," by the design of that check, not by any omission here. This was
-expected going in (Feature 2's own spec explicitly says it is an src/
-implementation feature) and is not something a narrower allow-list edit can fix
-without defeating that check's actual regression-testing purpose for future
-re-verification of blockrun-cli-docs alone. The other 16/18 checks — which test
-REAL, still-applicable invariants (Commands table completeness, PARITY.md section
-completeness, forbidden terms, etc.) — all genuinely pass.
+UPDATE (same session, per team-lead instruction after the initial 16/18 report):
+PROP-016/016b were originally an OPEN-ENDED "since blockrun-cli-docs's init commit
+through the current working tree/HEAD" diff, which is mathematically guaranteed to
+false-fail the moment ANY later, legitimate src/ feature (agent-dx included) lands
+real changes on top of that commit. Fixed by PINNING both checks to a FROZEN,
+two-commit historical range — blockrun-cli-docs's own init commit
+(`eadc61c`, "vcsdd(docs): init blockrun-cli-docs feature (lean)") through its own
+converge-complete commit (`a38b32a`, "vcsdd(docs): converge PASS — feature
+complete") — instead of diffing against the ever-moving working tree/HEAD. This
+makes PROP-016/016b a genuinely PERMANENT, one-time-true verification of the
+COMPLETED blockrun-cli-docs feature (it touched nothing but the allow-listed
+doc/meta files + DOC-CONSTRAINT-001a's one src/index.ts version-literal line,
+within that range, forever), immune to any later feature's real src/ work.
+checkProp016b's "untracked files under src/" live-working-tree check was replaced
+with a proper historical equivalent: `git diff --name-status <range> -- src/`
+checked for git's "A" (added) marker, since "untracked" has no meaning for a
+completed, fully-committed historical range.
+
+RESULT AFTER FIX: `node scripts/docs-check.mjs` -> **18/18 PASS** (verified this
+session, same run also re-confirmed `npm test` 530/530 and `npm run typecheck`
+clean). Both docs-check.mjs functions now carry an explicit comment: "PROP-016/
+PROP-016b are a completed, permanent verification of the blockrun-cli-docs
+feature ONLY... The range is PINNED to those two commits, not 'since init through
+whatever HEAD is today.'"

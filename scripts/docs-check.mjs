@@ -737,43 +737,29 @@ const ALLOWED_PATH_PATTERNS = [
   /^src\/index\.ts$/,
 ];
 
+// FROZEN HISTORICAL RANGE (per Dais/team-lead, 2026-07-08): PROP-016/PROP-016b are a
+// completed, permanent verification of the blockrun-cli-docs feature ONLY — that it
+// touched nothing but docs/meta files (plus DOC-CONSTRAINT-001a's one-line src/index.ts
+// exception) between its own init and its own converge-complete commit. The range is
+// PINNED to those two commits, not "since init through whatever HEAD is today" — a
+// later, legitimate src/ feature (e.g. blockrun-cli-agent-dx) landing real changes on
+// top of this completed range must NOT flip these two checks to FAIL. Do not widen this
+// range to track HEAD again; that reintroduces the exact false-fail this fix closes.
+const DOCS_FEATURE_START_COMMIT = "eadc61c"; // vcsdd(docs): init blockrun-cli-docs feature (lean)
+const DOCS_FEATURE_END_COMMIT = "a38b32a"; // vcsdd(docs): converge PASS — feature complete
+
 function checkProp016() {
-  let featureInitCommit;
-  try {
-    const out = execFileSync(
-      "git",
-      ["log", "--diff-filter=A", "--format=%H", "--", `.vcsdd/features/${FEATURE_NAME}/state.json`],
-      { cwd: REPO_ROOT, encoding: "utf-8" },
-    ).trim();
-    const commits = out.split("\n").filter(Boolean);
-    featureInitCommit = commits[commits.length - 1];
-  } catch (e) {
-    record("PROP-016", false, `could not determine feature-init commit: ${e.message}`);
-    return;
-  }
-  if (!featureInitCommit) {
-    record("PROP-016", false, "could not find commit that added state.json for this feature");
-    return;
-  }
   let changedFiles;
   try {
-    // IMPORTANT: `git diff <ref>` (a SINGLE ref, not `<ref> HEAD`) diffs against the
-    // current WORKING TREE — staged AND unstaged changes to tracked files. A two-ref
-    // `git diff <ref> HEAD` only compares two COMMITS and is blind to anything not
-    // yet committed, which made this check vacuously pass on uncommitted work in
-    // earlier phases (bug found and fixed in Phase 3/4). Untracked NEW files (not
-    // yet `git add`ed) show in neither form, so they are unioned in separately below.
-    const trackedOut = execFileSync("git", ["diff", `${featureInitCommit}~1`, "--name-only"], {
-      cwd: REPO_ROOT,
-      encoding: "utf-8",
-    }).trim();
-    const trackedChanged = trackedOut.length > 0 ? trackedOut.split("\n") : [];
-    const untrackedOut = execFileSync("git", ["ls-files", "--others", "--exclude-standard"], {
-      cwd: REPO_ROOT,
-      encoding: "utf-8",
-    }).trim();
-    const untracked = untrackedOut.length > 0 ? untrackedOut.split("\n") : [];
-    changedFiles = [...new Set([...trackedChanged, ...untracked])];
+    // Two FIXED refs (not a ref-vs-working-tree diff): this is a frozen, one-time-true
+    // historical fact about the completed blockrun-cli-docs feature, not an ongoing
+    // gate against the current working tree/HEAD.
+    const out = execFileSync(
+      "git",
+      ["diff", "--name-only", `${DOCS_FEATURE_START_COMMIT}~1`, DOCS_FEATURE_END_COMMIT],
+      { cwd: REPO_ROOT, encoding: "utf-8" },
+    ).trim();
+    changedFiles = out.length > 0 ? out.split("\n") : [];
   } catch (e) {
     record("PROP-016", false, `git diff failed: ${e.message}`);
     return;
@@ -812,49 +798,36 @@ function checkProp016() {
 // ---------------------------------------------------------------------------
 
 function checkProp016b() {
-  let featureInitCommit;
+  // Same FROZEN two-commit range as PROP-016 above (blockrun-cli-docs's own
+  // init..converge-complete) — a permanent historical fact, not an ongoing gate.
+  // NEW files added under src/ within that COMPLETED range are a violation
+  // (DOC-CONSTRAINT-001a only permits modifying an existing line in an existing
+  // file, never adding a new one) — checked via `--name-status` (git's "A" marker)
+  // BEFORE the line-level diff below. This replaces the old
+  // `git ls-files --others` (current-working-tree "untracked files") check, which
+  // has no meaning for a completed, fully-committed historical range.
+  let addedSrc;
   try {
     const out = execFileSync(
       "git",
-      ["log", "--diff-filter=A", "--format=%H", "--", `.vcsdd/features/${FEATURE_NAME}/state.json`],
+      ["diff", "--name-status", `${DOCS_FEATURE_START_COMMIT}~1`, DOCS_FEATURE_END_COMMIT, "--", "src/"],
       { cwd: REPO_ROOT, encoding: "utf-8" },
     ).trim();
-    const commits = out.split("\n").filter(Boolean);
-    featureInitCommit = commits[commits.length - 1];
+    const lines = out.length > 0 ? out.split("\n") : [];
+    addedSrc = lines.filter((l) => l.startsWith("A\t")).map((l) => l.slice(2));
   } catch (e) {
-    record("PROP-016b", false, `could not determine feature-init commit: ${e.message}`);
+    record("PROP-016b", false, `git diff --name-status -- src/ failed: ${e.message}`);
     return;
   }
-  if (!featureInitCommit) {
-    record("PROP-016b", false, "could not find commit that added state.json for this feature");
-    return;
-  }
-  // Untracked NEW files under src/ are a violation on their own (DOC-CONSTRAINT-001a
-  // only permits modifying an existing line in an existing file, never adding a new
-  // file) — checked before the line-level diff below.
-  let untrackedSrc;
-  try {
-    const out = execFileSync("git", ["ls-files", "--others", "--exclude-standard", "--", "src/"], {
-      cwd: REPO_ROOT,
-      encoding: "utf-8",
-    }).trim();
-    untrackedSrc = out.length > 0 ? out.split("\n") : [];
-  } catch (e) {
-    record("PROP-016b", false, `git ls-files -- src/ failed: ${e.message}`);
-    return;
-  }
-  if (untrackedSrc.length > 0) {
-    record("PROP-016b", false, `untracked NEW file(s) under src/ (not permitted by the narrow exception): ${untrackedSrc.join(", ")}`);
+  if (addedSrc.length > 0) {
+    record("PROP-016b", false, `NEW file(s) added under src/ within the frozen range (not permitted by the narrow exception): ${addedSrc.join(", ")}`);
     return;
   }
   let diffOutput;
   try {
-    // Single-ref `git diff <ref>` diffs against the WORKING TREE (staged + unstaged),
-    // not just the last commit — see PROP-016's comment above for why `<ref> HEAD`
-    // was wrong (blind to uncommitted work).
     diffOutput = execFileSync(
       "git",
-      ["diff", `${featureInitCommit}~1`, "--unified=0", "--", "src/"],
+      ["diff", `${DOCS_FEATURE_START_COMMIT}~1`, DOCS_FEATURE_END_COMMIT, "--unified=0", "--", "src/"],
       { cwd: REPO_ROOT, encoding: "utf-8" },
     );
   } catch (e) {

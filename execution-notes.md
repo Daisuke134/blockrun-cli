@@ -128,8 +128,12 @@ consistent:
   CLI-only introspection command with NO `blockrun-mcp` tool equivalent (a "Known non-parity points"
   bullet instead of a per-command section). The 18 original commands' sections are unchanged.
 - PROP-016/016b (this feature's own src/-untouched-since-init regression guard, `FEATURE_NAME` hardcoded
-  to `"blockrun-cli-docs"`) now permanently FAIL once re-run against the current repo state, by design:
-  they diff against THIS feature's own (long-completed, v1.0.0-tagged) init commit, and agent-dx is a
-  deliberate, separate `src/` implementation feature landing real changes on top of it. This is expected
-  and not a defect in either feature — see `.vcsdd/features/blockrun-cli-agent-dx/evidence/
-  sprint-1-green-phase.log` for the full 16/18 breakdown and caveat.
+  to `"blockrun-cli-docs"`) INITIALLY appeared to permanently FAIL once re-run against the current repo
+  state, since they diffed against a SINGLE ref (this feature's own init commit) through the ever-moving
+  working tree/HEAD — any later src/ feature landing real changes would trip them forever. FIXED (same
+  day, per team-lead instruction): both checks now diff a FROZEN, two-commit historical range —
+  `eadc61c` ("vcsdd(docs): init blockrun-cli-docs feature (lean)") through `a38b32a` ("vcsdd(docs):
+  converge PASS — feature complete") — a permanent, one-time-true fact about the COMPLETED
+  blockrun-cli-docs feature, immune to any later feature's src/ work. `node scripts/docs-check.mjs` is
+  **18/18 PASS** again. See `.vcsdd/features/blockrun-cli-agent-dx/evidence/sprint-1-green-phase.log`
+  for the full before/after detail.
