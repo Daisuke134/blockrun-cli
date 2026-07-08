@@ -1,0 +1,17 @@
+{
+  "featureName": "blockrun-cli-agent-dx",
+  "mode": "lean",
+  "language": "typescript",
+  "currentPhase": "init",
+  "phaseHistory": [],
+  "iterations": {},
+  "proofObligations": [],
+  "traceability": {
+    "epicId": "VCSDD-blockrun-cli-agent-dx-1783493153836",
+    "beads": []
+  },
+  "gates": {},
+  "sprintCount": 0,
+  "createdAt": "2026-07-08T06:45:53.835Z",
+  "updatedAt": "2026-07-08T06:45:53.835Z"
+}
