@@ -2,9 +2,25 @@
   "featureName": "blockrun-cli-docs",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "init",
-  "phaseHistory": [],
-  "iterations": {},
+  "currentPhase": "1b",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-07-08T04:37:45.123Z",
+      "reason": "behavioral-spec.md written: docs/packaging parity REQs incl. DOC-EVID-001..005 media full-URL evidence"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-07-08T04:37:45.126Z",
+      "reason": "verification-architecture.md written: PROP-001..022 incl. spend-capable PROP-020 fresh media re-run"
+    }
+  ],
+  "iterations": {
+    "1a": 1,
+    "1b": 1
+  },
   "proofObligations": [],
   "traceability": {
     "epicId": "VCSDD-blockrun-cli-docs-1783484998770",
@@ -13,5 +29,5 @@
   "gates": {},
   "sprintCount": 0,
   "createdAt": "2026-07-08T04:29:58.769Z",
-  "updatedAt": "2026-07-08T04:29:58.769Z"
+  "updatedAt": "2026-07-08T04:37:45.126Z"
 }
