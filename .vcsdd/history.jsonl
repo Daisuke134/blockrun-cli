@@ -56,3 +56,7 @@
 {"timestamp":"2026-07-08T08:53:37.992Z","event":"feature_created","featureName":"blockrun-cli-funding-dx","mode":"lean","language":"typescript"}
 {"timestamp":"2026-07-08T09:02:04.651Z","event":"phase_transition","featureName":"blockrun-cli-funding-dx","from":"init","to":"1a","iteration":1,"phase":"1a"}
 {"timestamp":"2026-07-08T09:02:04.654Z","event":"phase_transition","featureName":"blockrun-cli-funding-dx","from":"1a","to":"1b","iteration":1,"phase":"1b"}
+{"timestamp":"2026-07-08T09:08:18.915Z","event":"gate_recorded","featureName":"blockrun-cli-funding-dx","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-07-08T09:08:18.919Z","event":"phase_transition","featureName":"blockrun-cli-funding-dx","from":"1b","to":"1c","iteration":1,"phase":"1c"}
+{"timestamp":"2026-07-08T09:08:18.924Z","event":"phase_transition","featureName":"blockrun-cli-funding-dx","from":"1c","to":"2a","iteration":1,"phase":"2a"}
+{"timestamp":"2026-07-08T09:08:18.924Z","event":"sprint_started","featureName":"blockrun-cli-funding-dx","sprintNumber":1,"phase":"2a"}

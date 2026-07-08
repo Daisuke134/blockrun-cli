@@ -1,0 +1,50 @@
+{
+  "reviewType": "spec",
+  "iteration": 1,
+  "dimensions": {
+    "spec_fidelity": "PASS",
+    "verification_readiness": "PASS"
+  },
+  "overall": "PASS",
+  "findings": [],
+  "advisory": [
+    {
+      "id": "ADV-FUND-1-TRACEABILITY-COUNT-OFF",
+      "location": "verification-architecture.md:111 (Traceability summary)",
+      "finding": "The traceability summary claims '28 REQs (20 numbered + 5 non-goals + this section's own 3 cross-cutting REQs already counted above)'. A mechanical recount (grep -oE '^- REQ-FUND-[A-Z0-9-]+' behavioral-spec.md | sort -u) yields exactly 25 unique REQ IDs (REQ-FUND-001..020 = 20, REQ-FUND-NG-001..005 = 5). 20+5=25, not 28; the '+3 cross-cutting already counted above' clause is self-contradictory (something already counted cannot be added again to increase the total). Coverage itself is NOT actually broken -- every one of the 25 REQs IS cited by at least one PROP-FUND-* once the document's own abbreviated citation shorthand is expanded (e.g. 'REQ-FUND-011, -012, -013' inside one PROP header cites three REQs, which a naive grep for the literal string 'REQ-FUND-013' will miss). This is a documentation-arithmetic nit in the self-reported total, not a real traceability gap.",
+      "recommendation": "Fix the traceability summary's stated count to 25 (or drop the confusing '+3 already counted' clause) before Phase 2."
+    },
+    {
+      "id": "ADV-FUND-2-PARITY-SECTION-WORDING",
+      "location": "behavioral-spec.md REQ-FUND-015 (header sentence)",
+      "finding": "REQ-FUND-015's opening clause reads \"PARITY.md's `wallet` section SHALL be updated to record THREE intentional non-parity points\", which read in isolation suggests the target is a subsection literally titled under '### wallet'. Ground-truthed against the real PARITY.md: the existing --budget-limit/--max-quote-usd bullets this REQ explicitly says to match the style of live in the GLOBAL '## Known non-parity points' section (lines 20-34), separate from the per-command '### wallet' section (line 38+) further down. The REQ's own body text disambiguates this correctly (it names 'Known non-parity points' explicitly), so this is not a functional defect, just an ambiguous header clause that could mislead a fast reader.",
+      "recommendation": "Reword REQ-FUND-015's opening clause to say \"PARITY.md's 'Known non-parity points' section\" instead of \"PARITY.md's `wallet` section\", matching the disambiguating body text."
+    },
+    {
+      "id": "ADV-FUND-3-REQ019-NO-EXPLICIT-PROP",
+      "location": "verification-architecture.md (Tier 1/Tier 2 PROP list) vs behavioral-spec.md REQ-FUND-019",
+      "finding": "REQ-FUND-019 promises the wallet costModel stays \"free\" after this feature, \"verified mechanically (the SAME gatePaidCall( source-grep... re-run against the POST-this-feature src/commands/wallet.ts)\", but no PROP-FUND-* in verification-architecture.md's Tier 1/Tier 2 lists cites REQ-FUND-019 (nor is it named in the traceability summary's cross-cutting exemption sentence, which only names REQ-FUND-018 and REQ-FUND-020). Ground-truthed: this is NOT actually an unverified gap -- an ALREADY-EXISTING test, test/unit/cost-model.test.ts (from the completed agent-dx feature), already asserts `COMMAND_COST_MODEL.wallet === \"free\"` mechanically via the identical gatePaidCall( grep mechanism (src/core/cost-model.ts), and this test is part of the mandatory REQ-FUND-018 regression gate (\"the existing 532-test suite SHALL remain 100% green\"). So REQ-FUND-019 is transitively enforced today, just not explicitly cited.",
+      "recommendation": "Add REQ-FUND-019 to the traceability summary's cross-cutting exemption sentence alongside REQ-FUND-018/020, explicitly naming test/unit/cost-model.test.ts as the inherited proof, so a future auditor doesn't have to independently discover this."
+    },
+    {
+      "id": "ADV-FUND-4-OPEN-FLAG-CATALOG-VISIBILITY-UNTESTED",
+      "location": "behavioral-spec.md REQ-FUND-008 vs src/core/commands-catalog.ts, src/args/wallet.ts",
+      "finding": "REQ-FUND-008 requires wallet to gain a new `--open` boolean flag but does not say where it must be wired. Ground-truthed: src/core/commands-catalog.ts's buildCommandsCatalog() derives each command's `flags` metadata (shown by `blockrun commands --json`) EXCLUSIVELY from the exported zod `schema` object in src/args/<name>.ts (introspectSchema(schema)) -- a SEPARATE definition from buildRequest()'s runtime flag parsing, which the wallet file already keeps in sync by convention (every existing flag appears in both `schema` and `WalletRequest`/`buildRequest`). None of REQ-FUND-004/005/008 nor any PROP-FUND-* explicitly requires or verifies that `open: z.boolean().optional()` is added to args/wallet.ts's exported `schema` (as opposed to just being wired into Commander's `.option()` registration in src/index.ts and buildRequest()). An implementer who wires `--open` functionally but forgets the parallel `schema` update would ship working behavior (PROP-FUND-001/002/012 would all still pass) while silently breaking `blockrun commands --json`'s wallet catalog completeness -- exactly the drift-free-catalog invariant the just-completed agent-dx feature (REQ-DX-007) was built to guarantee project-wide.",
+      "recommendation": "Add one Tier-1 PROP asserting buildCommandsCatalog()'s wallet entry's `flags` array includes an `open`/boolean entry after this feature ships, so the catalog-completeness invariant is mechanically protected for this new flag too."
+    }
+  ],
+  "verifiedIndependently": [
+    "onramp.ts's mintOnrampUrl() is confirmed a genuine $0 two-step x402 flow: POST https://blockrun.ai/api/v1/onramp/token -> 402 challenge -> createPaymentPayload sign -> re-POST with PAYMENT-SIGNATURE -> {url}, with an explicit code comment stating 'nothing settles... a user with an EMPTY wallet can still mint a link' -- matches REQ-FUND-001/002/003's claims verbatim, including the exact URL-shape check `!data.url.startsWith('https://pay.coinbase.com/')`.",
+    "grep -rl launchTopUp blockrun-mcp/src/tools/ confirms all 6 files the spec names (image.ts, video.ts, music.ts, speech.ts, realface.ts, wallet.ts) reference it; video.ts's isPaymentRejectionError catch branch is read in full and confirmed to call launchTopUp() automatically on every payment-rejection failure, matching REQ-FUND-010's rationale for the CLI's deliberate non-mirroring.",
+    "blockrun-mcp/src/tools/wallet.ts:34 contains the EXACT quoted sentence 'Paid tools auto-open this on an out-of-funds failure' cited by REQ-FUND-008's rationale -- verbatim match, not a paraphrase.",
+    "This repo's src/shell/manual-x402.ts payOnce() is read in full: probe (POST->402->parse PAYMENT-REQUIRED->createPaymentPayload) then resubmit with PAYMENT-SIGNATURE -- structurally identical to onramp.ts's mintOnrampUrl(), confirming REQ-FUND-001's 'payOnce() caller, not new x402 implementation' framing is sound; no new dependency needed (REQ-FUND-NG-005).",
+    "src/shell/qr.ts's openUrl() exists exactly as described: implemented, exported, currently unreferenced by any command (grep confirms), matching REQ-FUND-008/REQ-FUND-NG-005's reuse claim.",
+    "src/commands/wallet.ts's CURRENT deposit branch (lines 132-138) outputs exactly `{ chain, address, note: \"Fund your wallet with USDC on the active chain.\" }` -- matches REQ-FUND-004's 'CURRENT output shape... preserved verbatim' claim exactly, confirming the additive-only framing.",
+    "src/core/errors.ts's formatError() payment_error branch (lines 104-109) ends with the literal 'Quick fix: Send USDC to your wallet on ${network} network.' line -- confirms REQ-FUND-011's 'appended AFTER the existing Quick-fix line' placement is accurate.",
+    "test/unit/errors.test.ts read in full: every payment-error-branch assertion (lines 38-48, 66-70, 72-77) uses assert.match/assert.doesNotMatch; the only assert.equal calls in the file (lines 52,56-63,80-83,95-96) are for isPaymentRejectionError/extractErrorMessage or non-payment-classified messages (a plain validation message and dollar-amount-misread cases, which classifyKnownError() correctly returns null for) -- confirms REQ-FUND-012's 'no assert.equal against a payment-error formatError() output exists' claim exactly, including its own carve-out of the 2 unrelated assert.equal cases.",
+    "src/core/error-classification.ts's classifyErrorCode() calls classifyKnownError(message) on the RAW upstream error message BEFORE formatError() ever runs (they are independent call sites, both fed the same raw string, per errors.ts:69/104) -- so REQ-FUND-011's static hint text appended to formatError()'s OUTPUT cannot feed back into or perturb error-classification.ts's regex-based code assignment. This is correctly out of scope for the spec to mention (no requirement claims otherwise) and is not a defect.",
+    "src/core/cost-model.ts's deriveCostModel() is confirmed to grep each src/commands/*.ts file's source text for the literal substring 'gatePaidCall(' and label 'free' when absent -- `grep -c gatePaidCall src/commands/wallet.ts` returns 0 matches today, confirming REQ-FUND-NG-003's baseline and that this feature must not introduce one.",
+    "src/index.ts's wallet command registration (lines 104-121) confirms the existing one-flag-in-three-places convention (Commander .option(), the dispatch flags object literal, and src/args/wallet.ts's buildRequest()/WalletRequest) that --open must follow; src/args/wallet.ts's `deposit` action string is ALREADY present in the ACTIONS array/zod schema today, so no action-enum catalog risk exists, only the new --open flag (ADV-FUND-4).",
+    "PARITY.md's real structure confirmed: a GLOBAL '## Known non-parity points' section (existing --budget-limit/--max-quote-usd bullets) is separate from the per-command '### wallet' section further down -- grounds ADV-FUND-2."
+  ]
+}

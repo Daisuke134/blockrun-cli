@@ -2,7 +2,7 @@
   "featureName": "blockrun-cli-funding-dx",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "1b",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -15,19 +15,42 @@
       "to": "1b",
       "timestamp": "2026-07-08T09:02:04.653Z",
       "reason": "verification-architecture: 13 PROP (9 Tier1 mocked + 4 Tier2 live, all $0)"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-07-08T09:08:18.916Z",
+      "reason": "spec-review PASS iteration-1 (0 findings)"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-07-08T09:08:18.924Z",
+      "reason": "Red phase: failing tests for 13 PROP-FUND",
+      "sprint": 1
     }
   ],
   "iterations": {
     "1a": 1,
-    "1b": 1
+    "1b": 1,
+    "1c": 1,
+    "2a": 1
   },
   "proofObligations": [],
   "traceability": {
     "epicId": "VCSDD-blockrun-cli-funding-dx-1783500817990",
     "beads": []
   },
-  "gates": {},
-  "sprintCount": 0,
+  "gates": {
+    "1c": {
+      "verdict": "PASS",
+      "timestamp": "2026-07-08T09:08:18.914Z",
+      "reviewedBy": "adversary",
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-07-08T09:08:18.914Z"
+    }
+  },
+  "sprintCount": 1,
   "createdAt": "2026-07-08T08:53:37.989Z",
-  "updatedAt": "2026-07-08T09:02:04.653Z"
+  "updatedAt": "2026-07-08T09:08:18.924Z"
 }
