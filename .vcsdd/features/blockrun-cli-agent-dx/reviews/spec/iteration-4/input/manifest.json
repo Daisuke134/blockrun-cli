@@ -1,0 +1,9 @@
+{
+  "reviewType": "spec",
+  "featureName": "blockrun-cli-agent-dx",
+  "mode": "lean",
+  "iteration": 4,
+  "artifactsToReview": ["specs/behavioral-spec.md", "specs/verification-architecture.md"],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "priorFindings": "it3: spec_fidelity PASS; single blocking SPEC-DX-5 (PROP-DX-006 defi RED-gating corrupted by it2 edit) — restored to REQ-DX-015-only gating, dex case unchanged"
+}
