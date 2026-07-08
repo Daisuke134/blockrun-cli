@@ -81,3 +81,6 @@
 {"timestamp":"2026-07-08T11:20:42.930Z","event":"phase_transition","featureName":"blockrun-cli-pack-fix","from":"2c","to":"3","iteration":1,"phase":"3"}
 {"timestamp":"2026-07-08T11:26:12.269Z","event":"gate_recorded","featureName":"blockrun-cli-pack-fix","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-07-08T11:26:12.271Z","event":"phase_transition","featureName":"blockrun-cli-pack-fix","from":"3","to":"5","iteration":1,"phase":"5"}
+{"timestamp":"2026-07-08T11:31:25.160Z","event":"phase_transition","featureName":"blockrun-cli-pack-fix","from":"5","to":"6","iteration":1,"phase":"6"}
+{"timestamp":"2026-07-08T11:31:57.162Z","event":"gate_recorded","featureName":"blockrun-cli-pack-fix","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-07-08T11:31:57.193Z","event":"phase_transition","featureName":"blockrun-cli-pack-fix","from":"6","to":"complete","iteration":1,"phase":"complete"}
