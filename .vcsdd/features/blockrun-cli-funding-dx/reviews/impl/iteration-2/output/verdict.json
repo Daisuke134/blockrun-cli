@@ -1,0 +1,31 @@
+{
+  "feature": "blockrun-cli-funding-dx",
+  "phase": "impl-review",
+  "iteration": 2,
+  "reviewer": "vcsdd-adversary (fresh, Opus)",
+  "scope": "delta-only, commits 0993cfb..015fccf, fixing IMPL-FUND-1 from iteration 1",
+  "dimensions": {
+    "spec_coverage": {
+      "verdict": "PASS",
+      "notes": "REQ-FUND-003 and REQ-FUND-017 were reworded from a server-trust framing ('endpoint is $0 by design') to a client-enforced framing (onQuote zero-cap guard that THROWS before createPaymentPayload on any positive/non-null quote). New PROP-FUND-014 in verification-architecture.md accurately describes the mechanism and the 2 new tests. Diff-checked (git show 015fccf on both spec files): wording is internally consistent, cross-references REQ-FUND-006's graceful-degradation path and REQ-220's existing onQuote budget-reverify pattern used by video/music/speech/realface. No blocking spec-vs-impl mismatch found. Pre-existing REQ-FUND-018 stale test-count text ('532-test suite') was NOT touched by this delta (confirmed via git show — only REQ-FUND-003/017 and PROP-FUND-014 blocks changed) and is out of scope for this iteration."
+    },
+    "backward_compatibility": {
+      "verdict": "PASS",
+      "notes": "Change is additive/narrowing only: adds an onQuote callback parameter to one payOnce() call site (src/commands/wallet.ts deposit branch). No public API/output shape change — deposit's {chain,address,note,url,opened} JSON shape is untouched. The new abort path routes into the EXISTING catch block (line 171) and EXISTING graceful-degradation ok()-with-note response (REQ-FUND-006) — no new error/exit code introduced. Other 4 payOnce/payAndPoll call sites (video/music/speech/realface) already had onQuote wired; unaffected by this diff."
+    },
+    "real_binary_behavior": {
+      "verdict": "PASS",
+      "notes": "Traced the call order in src/shell/manual-x402.ts's probeAndSign() myself (lines 43-85): the real 402 quote is parsed at line 64, req.onQuote(quotedUsd) is invoked at line 68, and createPaymentPayload — the actual signing call — happens only afterward at line 70. A throw inside onQuote therefore genuinely aborts before any signature is produced; there is no code path between the quote parse and the onQuote call that could bypass the guard, and createPaymentPayload is not called anywhere else in probeAndSign. The wallet.ts onQuote closure (lines 156-160) correctly matches the condition described in the spec: quotedUsd !== null && quotedUsd > 0. Ran `npm test` myself: 553/553 pass, 0 fail (matches claimed 551+2)."
+    },
+    "test_quality": {
+      "verdict": "PASS",
+      "notes": "Read both new tests in test/integration/wallet.test.ts (lines ~329-357). Neither is tautological: payOnceImpl is a test-local mock of the NETWORK layer (payOnce) only — it does not reimplement or stub the onQuote guard logic itself. It invokes req.onQuote (the REAL closure defined in src/commands/wallet.ts, passed through the actual `run()` call) with a simulated quoted amount, exactly mirroring what the real probeAndSign() does per the traced call order above. Test 1 (non-zero $0.5 quote): asserts exitCode===0, 'url' key absent from JSON, and note matches /0.5|quote/ — proving the real wallet.ts onQuote closure actually throws and the throw is actually caught by the existing catch block, without ever exposing the would-be-signed URL. Test 2 (null quote): asserts the mint proceeds and url is present — proving the guard is a zero-only gate, not an unconditional abort. Both tests exercise the genuine deposit code path end-to-end (run() -> wallet.ts's deposit branch -> the real onQuote closure), with only the network I/O boundary mocked, which is the correct/standard boundary for this test tier."
+    }
+  },
+  "overall_verdict": "PASS",
+  "blocking_findings": [],
+  "non_blocking_notes": [
+    "REQ-FUND-018 in behavioral-spec.md still says '532-test suite' though the suite is now 553; this text predates this delta (git show 015fccf confirms it was not touched by the IMPL-FUND-1 fix commit) and is not a regression introduced by this iteration — flagged for a future spec pass, not blocking here."
+  ],
+  "summary": "Delta reviewed: the IMPL-FUND-1 fix wires an onQuote callback into deposit's payOnce() call that throws before any signature is produced when the 402 quote is non-zero. Traced manual-x402.ts's probeAndSign() call order myself and confirmed the onQuote invocation genuinely precedes createPaymentPayload with no bypass path. The 2 new tests exercise the real onQuote closure (not a reimplementation) through the actual deposit code path with only the network layer mocked — not tautological. npm test: 553/553 green (verified by running it myself). REQ-FUND-003/017 and PROP-FUND-014 are consistent with the implementation. No new blocking issues found in this delta."
+}
