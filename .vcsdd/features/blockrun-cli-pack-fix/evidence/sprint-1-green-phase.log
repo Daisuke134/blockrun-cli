@@ -1,0 +1,88 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+
+# Phase 2b (Green phase) evidence — blockrun-cli-pack-fix (HOTFIX)
+# Generated: 2026-07-08
+
+# Summary (node:test's own final tally, verbatim from this run):
+#   tests: 558  (553 pre-existing + 5 from Red phase, all now GREEN)
+#   pass:  558
+#   fail:  0
+# typecheck: `tsc --noEmit` — zero errors.
+# docs-check.mjs: 18/18 PASS (unaffected).
+
+============================================================
+Implementation summary (8 REQ-PACK-* satisfied: 6 numbered + 2 cross-cutting)
+============================================================
+
+- scripts/generate-cost-model.mjs (REQ-PACK-001): greps the REAL src/commands/*.ts
+  for `gatePaidCall(` (SAME ground truth as before) and writes
+  src/core/cost-model.generated.ts as a plain object literal — zero runtime
+  filesystem access in the generated file itself.
+- src/core/cost-model.generated.ts (REQ-PACK-001/004): COMMITTED to git (not
+  gitignored) — reasoning recorded in the spec and the file's own header: `npm
+  test` runs directly against TypeScript source with no prior build step, so a
+  gitignored file would be absent on a fresh clone.
+- src/core/cost-model.ts (REQ-PACK-002): rewritten to a single re-export line —
+  `export { COMMAND_COST_MODEL, type CostModel } from "./cost-model.generated.js";`
+  — no other file needed to change its own imports (commands-catalog.ts unaffected).
+- package.json (REQ-PACK-003): new `"prebuild": "node scripts/generate-cost-model.mjs"`
+  script — npm's standard convention, auto-invoked by `npm run build` (confirmed live
+  in this session's build output: "> node scripts/generate-cost-model.mjs" ran
+  automatically before tsup).
+- test/unit/cost-model-generated-parity.test.ts (REQ-PACK-005, already committed in
+  Red phase): now passes — confirms zero drift between the committed generated file
+  and a fresh in-test re-derivation from the real source.
+- test/cli/packed-tarball.test.ts (REQ-PACK-006, already committed in Red phase): now
+  passes — a REAL `npm pack` + tar extract + `node dist/index.js --version`/
+  `commands --json` both exit 0.
+
+Note: scripts/generate-cost-model.mjs, cost-model.generated.ts, and the 2 Red-phase
+test files were committed slightly ahead of this Green-phase session (visible as
+commit bbd7303 in `git log`, from the parallel spec-review/verifier process sharing
+this same repo checkout) — this evidence log's own verification below re-confirms
+the COMBINED state (that commit + this session's remaining wiring: cost-model.ts's
+re-export rewrite and package.json's prebuild script, both genuinely written and
+committed in THIS Green-phase turn) is fully correct end-to-end.
+
+============================================================
+Independent manual re-verification (SEPARATE from the automated test suite,
+mirroring the exact false-positive-avoiding method REQ-PACK-006 specifies)
+============================================================
+
+$ npm run build
+  > node scripts/generate-cost-model.mjs
+  generate-cost-model: wrote 18 entries to src/core/cost-model.generated.ts
+  > tsup src/index.ts --format esm --no-splitting --clean
+  ...
+  ESM ⚡️ Build success in 315ms
+  -> prebuild fired automatically, confirmed in the build's own console output.
+
+$ npm pack --pack-destination /tmp/pack-verify2 && cd /tmp/pack-verify2 \
+  && tar xzf blockrun-cli-1.2.0.tgz && cd package
+$ node dist/index.js --version
+  1.2.0
+  exit=0
+$ node dist/index.js commands --json | <count commands>
+  count: 18
+  exit=0
+$ HOME=<fresh temp dir> node dist/index.js wallet --action status --json
+  {"activeChain":"base","base":{"address":"0x3eF4...","balance":0},"solana":null}
+  exit=0
+
+$ npm pack --dry-run
+  total files: 4 (LICENSE, README.md, dist/index.js, package.json) — unchanged,
+  no src/ or scripts/ leakage into the published tarball.
+
+This is the EXACT reproduction method that caught the original bug (unlike `npm
+install -g .`'s symlink-into-repo false positive) — now all 3 commands (--version,
+commands --json, wallet status --json) succeed from a package extracted in complete
+isolation from this repo checkout.
+
+============================================================
+src/ files changed this phase: src/core/cost-model.ts (rewritten to a re-export).
+scripts/generate-cost-model.mjs and src/core/cost-model.generated.ts were already
+present from the parallel review-tooling commit noted above; content verified
+identical to what this feature's own design requires (byte-for-byte diffed against
+this session's own intended output).
+============================================================

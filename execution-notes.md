@@ -211,3 +211,35 @@ exactly 4 files (`LICENSE`, `README.md`, `dist/index.js`, `package.json`), tarba
 **State**: committed, intentionally NOT pushed (team-lead publishes first, then pushes + tags
 `v1.2.0`). See `.vcsdd/features/blockrun-cli-funding-dx/evidence/` for the funding-dx feature's own
 Red/Green-phase evidence.
+
+## HOTFIX: published 1.1.0/1.2.0 crashed at startup for every real npm user — root cause + the verification lesson (blockrun-cli-pack-fix, 2026-07-08)
+
+**The bug**: `src/core/cost-model.ts`'s `COMMAND_COST_MODEL` was computed via a top-level
+`deriveCostModel()` call that read `src/commands/*.ts` from disk AT RUNTIME (`readFileSync`/
+`readdirSync`, resolved relative to the running module's own location). `package.json`'s `"files":
+["dist", "README.md"]` means an npm-installed package NEVER ships `src/` — so this threw at
+module-load time, before `program.parseAsync()` ever ran, crashing EVERY command (including
+`--version`) for every real `npm install -g blockrun-cli` / `npx blockrun-cli` user. Shipped in BOTH
+1.1.0 and 1.2.0 undetected.
+
+**Why it wasn't caught before publishing (an honest process failure, not just a code bug)**: both
+prior release-prep sessions verified the packaged artifact via `npm install -g .` from within this
+repo checkout. That command creates a symlink FROM the global npm bin/lib directory BACK INTO this
+repo's own working tree — so the installed "package" could still resolve a sibling `src/` directory
+via the symlink target, masking the exact failure a REAL registry install (or a real `npm pack` +
+extract, laid out with no such symlink) exhibits. Running `blockrun --version`/`blockrun commands
+--json` against that symlinked install looked identical to success and was reported as such.
+
+**The actual lesson, for every future release**: `npm install -g .` (or `npm link`) is NOT a valid
+substitute for verifying a real packaged artifact — it tests "does this code work when `src/` happens
+to still be reachable," not "does this code work as the tarball npm actually publishes." The correct
+verification is `npm pack` → extract the real `.tgz` to an isolated temp directory (no relationship to
+the repo checkout) → run the built binary FROM THERE. This is now a permanent, automated regression
+test (`test/cli/packed-tarball.test.ts`, part of `npm test`), not just a manual release-time step —
+so this exact class of bug cannot ship again without `npm test` catching it first.
+
+**The fix**: `COMMAND_COST_MODEL`'s derivation moved from a runtime filesystem scan to a
+build-time-generated, git-committed module (`src/core/cost-model.generated.ts`, produced by
+`scripts/generate-cost-model.mjs`, auto-run via `package.json`'s new `"prebuild"` script) — a plain
+object literal with zero runtime `fs`/`import.meta.url` resolution, so the built `dist/index.js` never
+needs `src/` to exist again. See `.vcsdd/features/blockrun-cli-pack-fix/` for the full spec/evidence.
