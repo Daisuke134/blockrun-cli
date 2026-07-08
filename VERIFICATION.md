@@ -49,10 +49,10 @@ required by the project goal and `verification-architecture.md` §4.3–4.5. No 
 - **realface #17** — the first `portrait` call returned upstream `API error 502: Request failed`
   (BlockRun-side, not a CLI defect; the CLI classified it correctly and exited non-zero with no
   charge, since realface is payment-on-completion). A retry ~seconds later succeeded. Recorded, not hidden.
-- **video gate display (minor)** — the abort message formats the cap with 2 decimals, so
-  `--max-quote-usd 0.001` prints as `$0.00` in the error string. The *gate itself is correct*
-  (aborted before signing, zero charge); only the displayed number rounds. A follow-up fix is
-  in flight to show sub-cent caps at full precision. The gate's money-safety behavior is unaffected.
+- **video gate display (minor, since fixed)** — at the time of the original run the abort message
+  formatted the cap with 2 decimals, so `--max-quote-usd 0.001` printed as `$0.00` in the error
+  string. The *gate itself was always correct* (aborted before signing, zero charge). The display
+  has since been fixed to `toFixed(4)` (src/commands/video.ts:54), verified 2026-07-08.
 - **Untested-by-design (per §4.4, documented not hidden):** `realface enroll` (requires a live
   human liveness scan — `init` returned the BytePlus `h5_link` proving this real gate exists),
   `phone numbers/buy` ($5 irreversible), `phone voice/call` ($0.54); Solana-side payment paths
