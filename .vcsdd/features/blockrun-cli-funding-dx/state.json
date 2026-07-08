@@ -2,7 +2,7 @@
   "featureName": "blockrun-cli-funding-dx",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "2b",
   "phaseHistory": [
     {
       "from": "init",
@@ -28,13 +28,21 @@
       "timestamp": "2026-07-08T09:08:18.924Z",
       "reason": "Red phase: failing tests for 13 PROP-FUND",
       "sprint": 1
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-07-08T09:16:38.736Z",
+      "reason": "Red evidence recorded (8 failures, regression 532 green) — Green underway",
+      "sprint": 1
     }
   ],
   "iterations": {
     "1a": 1,
     "1b": 1,
     "1c": 1,
-    "2a": 1
+    "2a": 1,
+    "2b": 1
   },
   "proofObligations": [],
   "traceability": {
@@ -52,5 +60,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-07-08T08:53:37.989Z",
-  "updatedAt": "2026-07-08T09:08:18.924Z"
+  "updatedAt": "2026-07-08T09:16:38.737Z"
 }
