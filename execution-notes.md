@@ -188,3 +188,26 @@ exactly 4 files (`LICENSE`, `README.md`, `dist/index.js`, `package.json`), tarba
 **State**: committed, intentionally NOT pushed (team-lead publishes first, then pushes + tags
 `v1.1.0`). See `.vcsdd/features/blockrun-cli-agent-dx/evidence/` for the agent-dx feature's own
 converge evidence.
+
+## Release 1.2.0 — packaging/publish prep (funding-dx converge, 2026-07-08)
+
+`blockrun-cli-funding-dx` converged (adversary review PASS, 2 iterations — IMPL-FUND-1's onQuote
+zero-cap guard fixed in it1, 1 non-blocking wording fix in it2). Its 3 shipped capabilities (`wallet
+--action deposit`'s Coinbase Onramp card-purchase link, `--open`, the payment-error funding hint) are
+additive, non-breaking → semver **minor** bump, `1.1.0` → `1.2.0`.
+
+Same prep pattern as the 1.1.0 release (publish itself intentionally NOT done here — team-lead runs
+`npm publish`, this session stops at commit, no push):
+- `package.json` `version` → `1.2.0`; `src/index.ts`'s `.version("1.1.0")` → `"1.2.0"`.
+- `CHANGELOG.md` gains a `## 1.2.0` section (newest-first, above `## 1.1.0`) with 3 bullets: the
+  `deposit` onramp action, `--open`, and the payment-error funding hint.
+- `scripts/docs-check.mjs` PROP-011's hardcoded version expectation updated `"1.1.0"` → `"1.2.0"`.
+
+Verification (this session): `npm run build` → `node dist/index.js --version` = `1.2.0`. `npm run
+typecheck` clean. `npm test` 553/553. `node scripts/docs-check.mjs` 18/18 PASS. `npm pack --dry-run`:
+exactly 4 files (`LICENSE`, `README.md`, `dist/index.js`, `package.json`), tarball name
+`blockrun-cli-1.2.0.tgz`.
+
+**State**: committed, intentionally NOT pushed (team-lead publishes first, then pushes + tags
+`v1.2.0`). See `.vcsdd/features/blockrun-cli-funding-dx/evidence/` for the funding-dx feature's own
+Red/Green-phase evidence.

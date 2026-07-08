@@ -2,6 +2,20 @@
 
 All notable changes to blockrun-cli will be documented in this file.
 
+## 1.2.0
+
+- **`wallet --action deposit` — buy USDC with a card, on Base.** Mints a one-time Coinbase Onramp
+  card-purchase link via the CLI's existing x402 flow (no new dependency), settling straight into your
+  own Base wallet. Free to generate — a client-side quote guard aborts before any signature is ever
+  produced if the gateway ever quoted a non-zero amount, so this can never accidentally spend real
+  funds. Card top-up is Base-only; on Solana, `deposit` explains the limitation and points to the
+  existing address/QR flow instead.
+- **`--open` — opt-in browser launch for the funding link.** Default is print-only (no side effect);
+  pass `--open` to also open the minted link in your default browser.
+- **A funding hint in payment-error guidance.** When a paid command fails for balance/payment reasons
+  on Base, the error text now also points to `blockrun wallet --action deposit` as a card-based funding
+  option, alongside the existing address-based instructions.
+
 ## 1.1.0
 
 - **`blockrun commands [--json]` — machine-readable command catalog.** Lists all 18 subcommands as
