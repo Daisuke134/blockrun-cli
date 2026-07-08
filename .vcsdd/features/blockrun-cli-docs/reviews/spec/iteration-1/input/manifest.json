@@ -1,0 +1,10 @@
+{
+  "reviewType": "spec",
+  "featureName": "blockrun-cli-docs",
+  "mode": "lean",
+  "artifactsToReview": [
+    "specs/behavioral-spec.md",
+    "specs/verification-architecture.md"
+  ],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"]
+}
