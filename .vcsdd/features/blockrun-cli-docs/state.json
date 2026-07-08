@@ -2,7 +2,7 @@
   "featureName": "blockrun-cli-docs",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "2b",
   "phaseHistory": [
     {
       "from": "init",
@@ -28,13 +28,21 @@
       "timestamp": "2026-07-08T05:29:20.042Z",
       "reason": "Red phase started: docs-check.mjs Tier-1 assertion suite",
       "sprint": 1
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-07-08T05:34:33.040Z",
+      "reason": "Red evidence recorded (16 FAIL, regression 408 PASS) — starting Green implementation",
+      "sprint": 1
     }
   ],
   "iterations": {
     "1a": 1,
     "1b": 1,
     "1c": 1,
-    "2a": 1
+    "2a": 1,
+    "2b": 1
   },
   "proofObligations": [],
   "traceability": {
@@ -52,5 +60,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-07-08T04:29:58.769Z",
-  "updatedAt": "2026-07-08T05:29:20.042Z"
+  "updatedAt": "2026-07-08T05:34:33.042Z"
 }
