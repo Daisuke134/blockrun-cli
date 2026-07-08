@@ -2,9 +2,25 @@
   "featureName": "blockrun-cli-agent-dx",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "init",
-  "phaseHistory": [],
-  "iterations": {},
+  "currentPhase": "1b",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-07-08T06:56:10.256Z",
+      "reason": "behavioral-spec.md: 25 REQ-DX (commands catalog / coded errors+exit codes / balance reason)"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-07-08T06:56:10.259Z",
+      "reason": "verification-architecture.md: 12 PROP-DX (Tier1 tests x8, Tier2 real-binary x4)"
+    }
+  ],
+  "iterations": {
+    "1a": 1,
+    "1b": 1
+  },
   "proofObligations": [],
   "traceability": {
     "epicId": "VCSDD-blockrun-cli-agent-dx-1783493153836",
@@ -13,5 +29,5 @@
   "gates": {},
   "sprintCount": 0,
   "createdAt": "2026-07-08T06:45:53.835Z",
-  "updatedAt": "2026-07-08T06:45:53.835Z"
+  "updatedAt": "2026-07-08T06:56:10.259Z"
 }
