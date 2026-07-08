@@ -42,10 +42,25 @@ repo in structure and rigor, adapted from "MCP server" framing to "CLI" framing.
 ## 1. README.md
 
 - DOC-README-001: `/Users/anicca/blockrun-cli/README.md` SHALL exist and SHALL follow the same
-  top-level section order as `blockrun-mcp/README.md`, adapted from MCP-server framing to CLI framing:
-  title + badges → one-line pitch → install → prerequisites → fund-your-wallet → Commands table →
-  usage examples → environment variables → multi-agent budget delegation → troubleshooting →
-  how-it-works (x402) → contributing → license.
+  top-level section order as `blockrun-mcp/README.md`, adapted from MCP-server framing to CLI framing.
+  The real order, VERIFIED directly via `grep -n '^#' blockrun-mcp/README.md`: `## Prerequisites`
+  (line 78) → `## Install` (86) → `## Fund your wallet` (154) → `## Tools` (185) → `## Tips for
+  effective LLMs` / `## Key Use Cases` / `## Why not just use the APIs directly?` / `## When NOT to
+  use BlockRun MCP` (210-269) → `## Multi-agent budget delegation` (282) → `## Troubleshooting` (288)
+  → `## Environment Variables` (306) → `## How it works` (339) → `## Contributing` (345). Note:
+  Troubleshooting's own text links FORWARD to `[Environment Variables](#environment-variables)`,
+  confirming Environment Variables comes AFTER Troubleshooting, not before. `blockrun-mcp/README.md`
+  has NO separate `## License` heading (only a License badge in the title block linking to `LICENSE`,
+  and a closing footer line) — this CLI's README MAY still end with a short License line/section as a
+  CLI-appropriate addition (DOC-README-013), since that is standard CLI-repo practice, not because it
+  mirrors an MCP-side heading that does not exist.
+
+  THE SYSTEM'S required README order, translated to CLI framing: title + badges → one-line pitch →
+  Prerequisites → Install → Fund your wallet → Commands table → usage examples (positionally
+  corresponds to `blockrun-mcp`'s Tips/Key-Use-Cases block, adapted to a shorter CLI-appropriate form
+  per DOC-README-007/008, not a verbatim port of those MCP-tool-call-shaped sections) → Multi-agent
+  budget delegation → Troubleshooting → Environment Variables → How it works (x402) → Contributing →
+  License.
 - DOC-README-002: THE title/badge block SHALL include an MIT license badge (mirrors `blockrun-mcp`'s
   `[![License: MIT](...)](LICENSE)`) and MAY omit the npm-version badge unless/until the package is
   published to npm (REQ-NG-003).
@@ -76,14 +91,17 @@ repo in structure and rigor, adapted from "MCP server" framing to "CLI" framing.
   example, demonstrating both the machine-readable and human-readable output contracts (REQ-006/REQ-007
   of the CLI's own behavioral-spec.md).
 - DOC-README-009: THE environment variables section SHALL list ONLY environment variables that are
-  real per the CLI's `decisions.md`/`behavioral-spec.md`: `BLOCKRUN_BUDGET_LIMIT` (persisted-ledger
-  seed, REQ-019a), `~/.blockrun/.session`, `~/.blockrun/.chain` / `~/.blockrun/payment-chain`,
-  `~/.blockrun/.solana-session`, `SOLANA_WALLET_KEY` — mirroring `blockrun-mcp/README.md`'s
-  "Environment Variables" table structure (Variable/File | Default | Effect columns) with the CLI's
-  OWN variable set, not a verbatim copy of the MCP server's table. `BLOCKRUN_API_BASE_URL` (the
-  test-only override from `decisions.md` §11) SHALL NOT appear (explicitly excluded from the CLI's own
-  spec, REQ-017's sibling constraint applied via decisions.md §11: "NOT documented in the CLI's README
-  as a supported override").
+  real per the CLI's `decisions.md`/`behavioral-spec.md`, rendered as exactly SIX separate table rows
+  (one row per Variable/File member — `~/.blockrun/.chain` and `~/.blockrun/payment-chain` SHALL each
+  get their OWN row, NOT be combined into a single row/cell via a `/` separator, so the rendered table
+  has one row per distinct member PROP-006's set-equality check expects): `BLOCKRUN_BUDGET_LIMIT`
+  (persisted-ledger seed, REQ-019a), `~/.blockrun/.session`, `~/.blockrun/.chain`,
+  `~/.blockrun/payment-chain`, `~/.blockrun/.solana-session`, `SOLANA_WALLET_KEY` — mirroring
+  `blockrun-mcp/README.md`'s "Environment Variables" table structure (Variable/File | Default | Effect
+  columns) with the CLI's OWN variable set, not a verbatim copy of the MCP server's table.
+  `BLOCKRUN_API_BASE_URL` (the test-only override from `decisions.md` §11) SHALL NOT appear (explicitly
+  excluded from the CLI's own spec, REQ-017's sibling constraint applied via decisions.md §11: "NOT
+  documented in the CLI's README as a supported override").
 - DOC-README-010: THE multi-agent budget delegation section SHALL document BOTH layers the CLI
   actually implements: (a) the per-invocation ephemeral `--budget-limit` flag (REQ-018), and (b) the
   persisted cross-process ledger at `~/.blockrun/cli-budget.json` written by `blockrun wallet --action
@@ -168,10 +186,13 @@ repo in structure and rigor, adapted from "MCP server" framing to "CLI" framing.
   `description`, e.g. naming what it wraps, the payment mechanism, and "no API keys"/pay-per-call
   framing) — SHALL NOT claim MCP-server behavior.
 - DOC-PKG-002: `package.json`'s `keywords` array SHALL include AT MINIMUM: `cli`, `blockrun`, `x402`,
-  `micropayments`, `ai` (already present) PLUS entries paralleling `blockrun-mcp`'s keyword set adapted
-  to CLI framing (e.g. `crypto`, `wallet`) — SHALL NOT include `mcp`, `model-context-protocol`, or
-  `claude` (this package is not an MCP server; including those keywords would misrepresent it on an
-  npm/GitHub search, violating REQ-NG-004's "no unimplemented feature" spirit).
+  `micropayments`, `ai` (already present). MAY additionally include other CLI-appropriate keywords of
+  the author's own choosing — these are NOT required to parallel `blockrun-mcp`'s actual keyword array
+  (verified: `["mcp","claude","llm","ai","x402","micropayments","openai","anthropic","gemini",
+  "blockrun","model-context-protocol"]`, which is oriented around its MCP-server/LLM-provider identity,
+  not a generic "crypto/wallet" set). SHALL NOT include `mcp`, `model-context-protocol`, or `claude`
+  (this package is not an MCP server; including those keywords would misrepresent it on an npm/GitHub
+  search, violating REQ-NG-004's "no unimplemented feature" spirit).
 - DOC-PKG-003: `package.json` SHALL gain a `repository` field of shape `{ "type": "git", "url":
   "https://github.com/Daisuke134/blockrun-cli" }`, mirroring `blockrun-mcp`'s `repository` field shape.
 - DOC-PKG-004: `package.json` SHALL gain a `homepage` field. Since this project has no dedicated
@@ -218,20 +239,35 @@ VERIFICATION.md` contains no full media URL, the e2e sandbox HOME
 (no artifact URL), and no other log under `.vcsdd/` retains one. Recovery is therefore NOT possible
 for any of the three; a fresh re-run is REQUIRED for all three artifacts.
 
-- DOC-EVID-001: THE FEATURE SHALL obtain the FULL, non-truncated hosted URL for each of the three
-  media artifacts (`image`, `music`, `video`) via a FRESH re-run of that exact command at its
-  cheapest real path, against the SAME sandbox HOME (`/Users/anicca/blockrun-cli-e2e-home`) used by
-  the original `VERIFICATION.md` E2E pass — since recovery from existing evidence is confirmed
-  impossible (see precheck finding above): `image` (same model class, ≈$0.015), `video`
-  (`--duration-seconds 1 --resolution 360p`, ≈$0.0525, mirroring `VERIFICATION.md` row #16's exact
-  invocation), `music` (default model, ≈$0.1575).
-- DOC-EVID-002: BEFORE executing any fresh re-run under DOC-EVID-001, THE combined additional spend
-  for all three artifacts (≈$0.015 + $0.0525 + $0.1575 = ≈$0.225) SHALL be checked against the
-  sandbox wallet's remaining balance (≈$0.2647 USDC per `VERIFICATION.md`'s End balance) — it fits
-  with ≈$0.04 headroom, but if the actual quoted/settled cost of any individual re-run exceeds its
-  estimate (real 402 quote can differ from the flat estimate, per the CLI's own REQ-021), re-runs
-  SHALL proceed cheapest-first (image → video → music) and SHALL STOP before any re-run whose real
-  quote would push cumulative spend past the remaining balance, rather than overspending.
+- DOC-EVID-001: THE FEATURE SHALL obtain the FULL, non-truncated hosted URL for **ALL THREE** of the
+  media artifacts (`image`, `music`, `video`) — this REQ is satisfied ONLY when all three full URLs
+  have been obtained; obtaining fewer than three (e.g. skipping `music` for any reason, including
+  insufficient balance) does NOT satisfy DOC-EVID-001, matching the goal's Done condition (three
+  media artifacts each independently HTTP-200-verified). Each is obtained via a FRESH re-run of that
+  exact command at its cheapest real path, against the SAME sandbox HOME
+  (`/Users/anicca/blockrun-cli-e2e-home`) used by the original `VERIFICATION.md` E2E pass — since
+  recovery from existing evidence is confirmed impossible (see precheck finding above): `image` (same
+  model class, ≈$0.015), `video` (`--duration-seconds 1 --resolution 360p`, ≈$0.0525, mirroring
+  `VERIFICATION.md` row #16's exact invocation), `music` (default model, ≈$0.1575).
+- DOC-EVID-002: IMMEDIATELY BEFORE executing the fresh re-run sequence in DOC-EVID-001, THE FEATURE
+  SHALL run a LIVE balance preflight — `node dist/index.js wallet --action status` against sandbox
+  HOME `/Users/anicca/blockrun-cli-e2e-home` — and use THAT live-read Base USDC balance (not
+  `VERIFICATION.md`'s dated $0.264748 figure, which was recorded 2026-07-07 and may be stale by the
+  time this feature executes) as the actual remaining-balance input for every subsequent check in this
+  section. Re-runs SHALL proceed cheapest-first (image → video → music), checking cumulative spend
+  against the live balance before each step.
+- DOC-EVID-002a: WHEN the live balance from DOC-EVID-002's preflight (or the running balance mid
+  -sequence, re-checked after each re-run's real settled cost) is insufficient to safely attempt the
+  next re-run in the cheapest-first order, THE FEATURE SHALL: (1) STOP the sequence before attempting
+  that re-run (no blind overspend attempt), (2) request a wallet top-up to the sandbox Base wallet
+  (`0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804`) from `0x810f6d61f7606deee2657d3083e150a222bc29c5` —
+  the SAME funding route used to originally fund the sandbox for `VERIFICATION.md` (see
+  `execution-notes.md`'s "E2E 資金" section) — sized to cover the remaining re-run(s) plus a small
+  margin, (3) re-run DOC-EVID-002's live preflight to confirm the top-up landed, and (4) RESUME the
+  re-run sequence from where it stopped. DOC-EVID-001 remains UNSATISFIED (the feature is NOT done)
+  until all three full URLs have been obtained by this process — a top-up-then-resume cycle SHALL be
+  repeated as many times as needed; skipping `music` (or any artifact) and recording it as "skipped" is
+  NOT an acceptable terminal state for this REQ.
 - DOC-EVID-003: EVERY full URL obtained per DOC-EVID-001 SHALL be verified to resolve with an HTTP
   200 (or equivalent successful) status — a live network check (Tier 3, see
   verification-architecture.md).
