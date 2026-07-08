@@ -1,1 +1,1 @@
-blockrun-cli
+blockrun-cli-docs

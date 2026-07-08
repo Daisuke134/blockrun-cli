@@ -1,0 +1,17 @@
+{
+  "featureName": "blockrun-cli-docs",
+  "mode": "lean",
+  "language": "typescript",
+  "currentPhase": "init",
+  "phaseHistory": [],
+  "iterations": {},
+  "proofObligations": [],
+  "traceability": {
+    "epicId": "VCSDD-blockrun-cli-docs-1783484998770",
+    "beads": []
+  },
+  "gates": {},
+  "sprintCount": 0,
+  "createdAt": "2026-07-08T04:29:58.769Z",
+  "updatedAt": "2026-07-08T04:29:58.769Z"
+}

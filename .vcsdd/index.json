@@ -8,7 +8,15 @@
       "language": "typescript",
       "currentPhase": "complete",
       "updatedAt": "2026-07-08T04:13:47.239Z"
+    },
+    "blockrun-cli-docs": {
+      "status": "active",
+      "createdAt": "2026-07-08T04:29:58.769Z",
+      "mode": "lean",
+      "language": "typescript",
+      "currentPhase": "init",
+      "updatedAt": "2026-07-08T04:29:58.769Z"
     }
   },
-  "activeFeature": "blockrun-cli"
+  "activeFeature": "blockrun-cli-docs"
 }

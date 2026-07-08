@@ -15,3 +15,4 @@
 {"timestamp":"2026-07-07T17:14:38.254Z","event":"phase_transition","featureName":"blockrun-cli","from":"3","to":"5","iteration":1,"phase":"5"}
 {"timestamp":"2026-07-07T17:43:55.708Z","event":"phase_transition","featureName":"blockrun-cli","from":"5","to":"6","iteration":1,"phase":"6"}
 {"timestamp":"2026-07-08T04:13:47.242Z","event":"phase_transition","featureName":"blockrun-cli","from":"6","to":"complete","iteration":1,"phase":"complete"}
+{"timestamp":"2026-07-08T04:29:58.772Z","event":"feature_created","featureName":"blockrun-cli-docs","mode":"lean","language":"typescript"}
