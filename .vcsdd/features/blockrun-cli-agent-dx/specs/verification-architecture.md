@@ -100,15 +100,24 @@ suite (REQ-DX-041), not a separate check script.
      the ACTUAL `CommandOutcome` it returns (`fail()`'s real output) — NOT a direct classifier call —
      has `exitCode === 4` and (parsing `outcome.stdout` as JSON when `opts.json` is true) `code ===
      "network_error"`.
-  4. **RED-phase requirement**: `defi`'s case, run against code with REQ-DX-015 but WITHOUT REQ-DX-016
-     applied, SHALL FAIL for the reason originally described (no cause/name info reaches the
-     classifier). `dex`'s case has an ADDITIONAL, INDEPENDENT RED-phase requirement per spec-review
-     it-2 SPEC-DX-4: even AFTER REQ-DX-015 is fully implemented, `dex`'s case SHALL STILL FAIL until
+  4. **RED-phase requirement**: `defi`'s case — THIS EXACT TEST, run against today's pre-fix code
+     (before REQ-DX-015's `extractErrorMessage()` extension exists), SHALL FAIL, because
+     `extractErrorMessage()` currently collapses the stubbed error to the bare string `"fetch failed"`
+     with no cause/name information, so no classifier operating on that string alone can ever produce
+     `"network_error"`; ONCE REQ-DX-015 is applied, `defi`'s case SHALL PASS (REQ-DX-016 is UNRELATED
+     to this gating — per REQ-DX-011's classification-order clause, `network_error` is checked FIRST
+     and independently at step (a), before REQ-DX-016's `classifyKnownError` extraction is ever
+     consulted at step (b), so `defi`'s network_error RED/GREEN transition depends ONLY on REQ-DX-015,
+     never on REQ-DX-016 — corrected per spec-review it-3 SPEC-DX-5, which found an it-2 editing error
+     had incorrectly gated this sentence on REQ-DX-016's absence, a self-contradictory and ungrounded
+     condition). `dex`'s case has a SEPARATE, INDEPENDENT RED-phase requirement per spec-review it-2
+     SPEC-DX-4: even AFTER REQ-DX-015 is fully implemented, `dex`'s case SHALL STILL FAIL until
      REQ-DX-017's one-line fix (routing `dex.ts`'s catch through `extractErrorMessage()`) is ALSO
      applied — proving this PROP actually catches the exact gap SPEC-DX-4 found (a command whose catch
      block bypasses the shared classification entirely), not just the ORIGINAL SPEC-DX-1 gap. Both
-     tests passing together is therefore genuine evidence the REQ-DX-015+017 wiring works end-to-end
-     for both command shapes, not merely that an isolated classifier function is internally correct.
+     tests passing together (each gated on its OWN correct prerequisite — REQ-DX-015 for `defi`,
+     REQ-DX-015+REQ-DX-017 for `dex`) is therefore genuine evidence the wiring works end-to-end for
+     both command shapes, not merely that an isolated classifier function is internally correct.
   This canNOT be a live Tier-2 test (there is no reliable way to force a real DNS/connection failure
   against the live BlockRun API on demand) — mocking Node's own live-verified `fetch()` failure shape,
   routed through the REAL command function, is the grounded, deterministic, end-to-end alternative.
