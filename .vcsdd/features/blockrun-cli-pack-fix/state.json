@@ -2,7 +2,7 @@
   "featureName": "blockrun-cli-pack-fix",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "5",
   "phaseHistory": [
     {
       "from": "init",
@@ -49,10 +49,18 @@
       "timestamp": "2026-07-08T11:20:42.929Z",
       "reason": "Starting impl review",
       "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-07-08T11:26:12.269Z",
+      "reason": "Impl review PASS — hardening",
+      "sprint": 1
     }
   ],
   "iterations": {
     "3": 1,
+    "5": 1,
     "1a": 1,
     "1b": 1,
     "1c": 1,
@@ -66,6 +74,11 @@
     "beads": []
   },
   "gates": {
+    "3": {
+      "verdict": "PASS",
+      "timestamp": "2026-07-08T11:26:12.267Z",
+      "reviewedBy": "adversary"
+    },
     "1c": {
       "verdict": "PASS",
       "timestamp": "2026-07-08T11:17:57.846Z",
@@ -76,5 +89,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-07-08T11:08:33.832Z",
-  "updatedAt": "2026-07-08T11:20:42.929Z"
+  "updatedAt": "2026-07-08T11:26:12.269Z"
 }
