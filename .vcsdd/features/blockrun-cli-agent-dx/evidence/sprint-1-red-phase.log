@@ -1,0 +1,125 @@
+target-feature-tests: FAIL
+regression-baseline: PASS
+
+# Phase 2a (Red phase) evidence — blockrun-cli-agent-dx
+# Generated: 2026-07-08, via `npm test` (tsx --experimental-test-module-mocks --test
+# test/unit/*.test.ts test/integration/*.test.ts test/cli/*.test.ts)
+#
+# Summary (node:test's own final tally, verbatim from this run):
+#   tests: 530  (408 pre-existing + 122 new, across 13 new test files)
+#   pass:  452  (408 pre-existing all green + 44 new tests that already pass today)
+#   fail:  78   (all 78 are NEW tests, spanning 12 of the 13 new files — target-feature RED confirmed)
+#   cancelled: 0 / skipped: 0 / todo: 0
+#
+# 13 new test files created (one per PROP-DX-*/REQ-DX-* cluster, per team-lead's Phase 2a
+# instruction — 1 REQ minimum 1 test, PROP-DX-006 = defi+dex real catch-path, PROP-DX-014
+# = 18-command grep regression):
+#   test/unit/introspect-schema.test.ts               (PROP-DX-001)                — ALL fail (module absent)
+#   test/unit/cost-model.test.ts                       (PROP-DX-004)                — ALL fail (module absent)
+#   test/unit/error-classification.test.ts             (PROP-DX-005)                — ALL fail
+#   test/unit/extract-error-message-network.test.ts    (REQ-DX-015)                 — ALL fail
+#   test/unit/classify-known-error.test.ts             (PROP-DX-013 / REQ-DX-016)   — ALL fail
+#   test/unit/shared-classification-callsites.test.ts  (PROP-DX-007)                — 1/20 fails (fail()'s `code` field)
+#   test/unit/catch-blocks-extract-error-message.test.ts (PROP-DX-014)              — 1/19 fails (dex.ts ONLY — REQ-DX-NG carve-out, as predicted)
+#   test/integration/network-error-catch-path.test.ts  (PROP-DX-006, defi+dex)      — ALL 3 fail
+#   test/unit/balance-unavailable-reason.test.ts       (PROP-DX-010)                — ALL 5 fail
+#   test/cli/commands-catalog.test.ts                  (PROP-DX-002/003)            — ALL 4 fail (no `commands` subcommand yet)
+#   test/cli/error-exit-codes.test.ts                  (PROP-DX-008)                — ALL 2 fail (exit code still 1, not 2)
+#   test/cli/wallet-balance-reason-live.test.ts        (PROP-DX-009)                — 0/1 fails (conditional live test; today's live sandbox
+#                                                                                        happened to return a non-null balance for both chains,
+#                                                                                        so the "reason ABSENT" branch trivially holds — RED対象外,
+#                                                                                        per team-lead's own carve-out guidance for tests that can
+#                                                                                        legitimately already pass; this is NOT the deterministic
+#                                                                                        assertion, PROP-DX-010's mocked version covers that)
+#   test/unit/readme-parity-doc-reflection.test.ts     (PROP-DX-012)                — 2/6 fail (REQ-DX-031 exit-code/code-value doc, REQ-DX-033
+#                                                                                        PARITY.md commands bullet; the other 4 checks target
+#                                                                                        content this feature does NOT change, so they already pass)
+#
+# RED-phase exemption explicitly flagged per team-lead's instruction ("PROP-DX-014の
+# ような「今すでに通ってしまうもの」があれば、それはRED対象外として明記"):
+#   - PROP-DX-014: 17/18 command files ALREADY call extractErrorMessage() today; only
+#     dex.ts fails, which is EXACTLY the gap REQ-DX-017 exists to close — 好都合、as predicted.
+#   - PROP-DX-007's per-file negative "no duplicate classification pattern" checks (18/18)
+#     already pass today (no command file has ever duplicated this logic) — only the
+#     fail()-must-emit-`code` assertion is genuinely RED.
+#   - PROP-DX-009 (wallet-balance-reason-live, Tier 2 conditional): today's live sandbox
+#     balance happened to be non-null on both chains, so the "reason absent" branch holds
+#     trivially without any new code — this is inherent to a CONDITIONAL live test (its
+#     complementary deterministic version, PROP-DX-010, is fully RED as required).
+#   - readme-parity-doc-reflection.test.ts's REQ-DX-032/REQ-DX-034/part of REQ-DX-030
+#     assert EXISTING, unchanged content (Environment Variables section, the 18 existing
+#     PARITY.md command sections) that this feature does not touch — those pass by design,
+#     not a Red-phase violation.
+#
+# src/ verified UNTOUCHED throughout (git status --short -- src/ = empty). Only the 13
+# new test/ files are new/modified in this working tree.
+
+============================================================
+RAW `npm test` OUTPUT (tail — full raw log exceeds evidence
+file practicality; final summary block + representative
+failures preserved verbatim below; full raw log retained at
+/private/tmp/claude-501/-Users-anicca-anicca-project/05c4c78e-421a-42d4-9663-df25e2db0746/scratchpad/red-phase-full.log
+for this session's duration)
+============================================================
+
+ℹ tests 530
+ℹ suites 0
+ℹ pass 452
+ℹ fail 78
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16168.911875
+
+Representative RED failures (one per new PROP-DX-*/REQ-DX-* cluster):
+
+✖ PROP-DX-001: introspectSchema on music's schema surfaces instrumental as an optional boolean with default true
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/introspect-schema.js'
+
+✖ PROP-DX-004: wallet's costModel is "free" (zero gatePaidCall calls, verified live)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/cost-model.js'
+
+✖ PROP-DX-005: 'budget_exceeded' / exit 2 — global budget limit message (real src/core/budget.ts shape)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/anicca/blockrun-cli/src/core/error-classification.js'
+
+✖ REQ-DX-015: extractErrorMessage appends a network marker for ENOTFOUND (real DNS-failure shape)
+  AssertionError [ERR_ASSERTION]: the ENOTFOUND cause code must be discoverable in the returned string
+
+✖ PROP-DX-013: classifyKnownError returns 'model_unavailable' for a not-active-for-provider message
+  TypeError: classifyKnownError is not a function
+
+✖ PROP-DX-007: fail()'s JSON output carries `code` derived from the shared classifier — this is what makes classification 'called from every one of the 18 commands' error paths' for free, since all 18 already call fail()
+  AssertionError [ERR_ASSERTION]: fail() itself must compute code via the ONE shared classifier (REQ-DX-014), not leave it to each command
+  + actual - expected
+  + undefined
+  - 'upstream_error'
+
+✖ PROP-DX-014: src/commands/dex.ts calls extractErrorMessage( somewhere in its error path
+  (the ONLY failure among all 18 command-file checks in this test)
+
+✖ PROP-DX-006 (dex, free/ungated exemplar): a real fetchJson() rejection with the live-verified ENOTFOUND shape reaches fail() as exitCode 4 / code 'network_error' — this is the case REQ-DX-017's dex.ts fix specifically closes
+  AssertionError [ERR_ASSERTION]: dex's real catch path must classify a real ENOTFOUND fetch failure as exit code 4 (requires REQ-DX-015 AND REQ-DX-017 both applied)
+
+✖ PROP-DX-010 (base): when ALL 3 configured Base RPC URLs reject, getChainBalance returns balance:null, reason:'all_rpcs_failed'
+  AssertionError [ERR_ASSERTION]
+
+✖ PROP-DX-002: `commands --json` exits 0, produces { commands: FlagMeta[] } with exactly 18 real command entries, and makes NO network call / NO spend
+  AssertionError [ERR_ASSERTION]: expected 0, received nonzero — `commands` subcommand does not exist in today's built binary
+
+✖ PROP-DX-008 (1): `rpc --network "../bad"` (known-malformed slug, REQ-201) exits 2 with code 'usage_error' — no network call
+  AssertionError [ERR_ASSERTION]: expected exit 2 (usage_error) — got exit 1
+
+✖ REQ-DX-031: README.md documents the new 0/1/2/3/4 exit-code convention
+  AssertionError [ERR_ASSERTION]
+
+✖ REQ-DX-033: PARITY.md's Known non-parity points section gains a bullet noting `blockrun commands` has no MCP-tool equivalent
+  AssertionError [ERR_ASSERTION]: PARITY.md must document that `blockrun commands` has no MCP equivalent
+
+============================================================
+Confirmation that NO pre-existing test regressed: none of the
+408 pre-existing test files (test/unit/wallet.test.ts,
+test/unit/rpc.test.ts, test/integration/defi.test.ts,
+test/cli/help.test.ts, etc.) appear anywhere in the failing-test
+list for this run — every one of the 78 failures traces to one
+of the 13 new files listed above.
+============================================================
