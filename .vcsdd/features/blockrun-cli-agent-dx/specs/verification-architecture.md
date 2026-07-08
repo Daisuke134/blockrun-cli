@@ -18,7 +18,7 @@ suite (REQ-DX-041), not a separate check script.
 | Pure | `introspectSchema()` (zod → flag-metadata), `classifyError()` (message pattern → `code`), `costModel` derivation, kebab-case flag-name conversion | New pure functions under `src/core/` or `src/args/` (Phase 2 decides exact file) |
 | Impure (network, no spend) | Live `blockrun commands [--json]` execution (no wallet call, REQ-DX-001) | PROP-DX-002/003 |
 | Impure (network, real spend — REUSED sandbox, no NEW spend by this feature) | Live `wallet --action status --json` against the existing funded sandbox HOME (`/Users/anicca/blockrun-cli-e2e-home`, ≈$0.03 balance per the `blockrun-cli-docs` feature's Phase 3/4 evidence) — a FREE call, no spend, but exercised against a REAL environment for PROP-DX-009's conditional check | PROP-DX-009 |
-| Impure (mocked SDK, Tier 1) | Unit tests stubbing `@blockrun/llm`'s client or the RPC `fetch` calls to force `network_error`/`all_rpcs_failed`/`solana_client_error` deterministically | PROP-DX-006 (network_error), PROP-DX-010 (balance-null reasons) |
+| Impure (mocked SDK, Tier 1) | Unit tests stubbing a REAL command's underlying network call (not calling any classifier directly) to force `network_error`/`all_rpcs_failed`/`solana_client_error` deterministically, exercising the REAL catch-block path end-to-end | PROP-DX-006 (network_error, real catch-block path per spec-review it-1 SPEC-DX-2), PROP-DX-010 (balance-null reasons) |
 | Out of scope entirely | Money-path internals (`checkBudget`/`reserveBudget`/x402 signing) — READ for grounding, never modified in behavior (REQ-DX-NG-001) | n/a |
 
 ---
@@ -57,23 +57,51 @@ suite (REQ-DX-041), not a separate check script.
   - `"quote_exceeded"` / exit 3 — e.g. `src/commands/video.ts`'s real
     `` `Quote $0.06 exceeds --max-quote-usd $0.05 — aborting before signing.` `` message shape, AND
     `src/commands/shared.ts`'s `"Budget cap would be exceeded by the real quoted price."`.
-  - `"insufficient_funds"` / exit 3 — a message matching `formatError()`'s existing `isPaymentError`
-    branch (e.g. contains `"402"` or `"insufficient balance"`).
   - `"upstream_error"` / exit 4 — a message matching `isModelUnavailable` (e.g. `"not found or not
-    active"`) and a SEPARATE case matching `isServerError` (e.g. contains `"500"`).
+    active"`) and a SEPARATE case matching `isServerError` (e.g. contains `"500"`) — checked BEFORE
+    `insufficient_funds` below, per REQ-DX-011/016's corrected priority order (matching
+    `formatError()`'s REAL `if`/`else if`/`else if` chain).
+  - `"insufficient_funds"` / exit 3 — a message matching `formatError()`'s existing `isPaymentError`
+    branch (e.g. contains `"402"` or `"insufficient balance"`) AND does NOT ALSO match
+    `isModelUnavailable`/`isServerError` (a priority-conflict case, e.g. a message containing BOTH
+    `"balance"` and `"not found or not active"`, MUST classify as `upstream_error`, never
+    `insufficient_funds` — this exact conflict case is REQUIRED, not optional, since it is the precise
+    scenario spec-review it-1 SPEC-DX-3 flagged as previously unspecified).
   - `"network_error"` / exit 4 — see PROP-DX-006 below (requires simulating the actual Node `fetch`
-    failure shape, not just a message string).
+    failure shape reaching a REAL command's catch block, not just feeding a string to the classifier
+    directly).
   - **No-code fallback** / exit 1 — a message matching NONE of the above patterns SHALL classify with
     `code` OMITTED and exit code `1`, exactly like today's universal behavior — asserted by a test
     feeding a generic, unrelated error message through the classifier.
-- **PROP-DX-006** (REQ-DX-011's `network_error`) — Tier 1, MOCKED: a unit test stubs the SDK client (or
-  the raw `fetch` used by `getBaseUsdcBalance`-style code, whichever call site is chosen in Phase 2) to
-  throw the REAL Node shape — `new TypeError("fetch failed", { cause: Object.assign(new Error("..."),
-  { code: "ENOTFOUND" }) })` — and asserts the classifier returns `code: "network_error"`, exit code 4.
-  A second case with `AbortError` (client timeout) asserts the same classification. This CANNOT be a
-  live Tier-2 test (there is no reliable way to force a real DNS/connection failure against the live
-  BlockRun API on demand) — mocking Node's own documented `fetch()` failure shape is the grounded,
-  deterministic alternative.
+- **PROP-DX-006** (REQ-DX-011's `network_error`, REQ-DX-015; Tier 1, MOCKED — REWRITTEN per
+  spec-review it-1 SPEC-DX-2, which found the ORIGINAL version of this PROP would false-positive: a
+  test that constructs a raw `TypeError('fetch failed', {cause})` and calls a classification function
+  DIRECTLY proves nothing about whether that raw error can EVER reach the classifier from a real
+  command, since all 18 commands' catch blocks call `extractErrorMessage(err)` FIRST, which — before
+  REQ-DX-015's fix — silently discards `err.cause` and `err.name` entirely):
+  1. Pick ONE real command whose network call this test can cheaply stub (Phase 2's choice, e.g.
+     `defi` — it makes exactly one `getWithPaymentRaw()` call after validation/budget-gate pass).
+  2. Stub ONLY that command's underlying network call (the SDK client method or the raw `fetch`,
+     whichever this command actually uses) to REJECT with the REAL, live-verified Node shape:
+     `Object.assign(new TypeError("fetch failed"), { cause: Object.assign(new Error("..."), { code:
+     "ENOTFOUND" }) })` for the connection-failure case, and separately a rejection matching
+     `isTimeoutError()`'s real detection (e.g. an error named `"TimeoutError"`, per REQ-DX-011 item
+     6's live-corrected finding that `AbortSignal.timeout()` produces `"TimeoutError"`, NOT
+     `"AbortError"`) for the timeout case.
+  3. Invoke that command's REAL `run(flags, opts, budget)` function (or spawn the built binary — Tier
+     1 favors the in-process `run()` call for speed) with valid flags, and assert the ACTUAL
+     `CommandOutcome` it returns (`fail()`'s real output) — NOT a direct classifier call — has
+     `exitCode === 4` and (parsing `outcome.stdout` as JSON when `opts.json` is true) `code ===
+     "network_error"`.
+  4. **RED-phase requirement**: THIS EXACT TEST, run against today's pre-fix code (before REQ-DX-015's
+     `extractErrorMessage()` extension exists), SHALL FAIL — because `extractErrorMessage()` currently
+     collapses the stubbed error to the bare string `"fetch failed"` with no cause/name information,
+     so no classifier operating on that string alone can ever produce `"network_error"`. This test
+     passing is therefore genuine evidence the REQ-DX-015 wiring works end-to-end, not merely that an
+     isolated classifier function is internally correct.
+  This canNOT be a live Tier-2 test (there is no reliable way to force a real DNS/connection failure
+  against the live BlockRun API on demand) — mocking Node's own live-verified `fetch()` failure shape,
+  routed through the REAL command function, is the grounded, deterministic, end-to-end alternative.
 - **PROP-DX-007** (REQ-DX-014) — a single shared classification function is called from EVERY ONE of
   the 18 `commands/<name>.ts` error paths (not reimplemented per-command) — verified by a
   source-inspection test (import each `commands/*.ts` module and assert, via its exported `fail`
@@ -92,6 +120,24 @@ suite (REQ-DX-041), not a separate check script.
 - **PROP-DX-011** (REQ-DX-040) — the EXISTING 408-test suite passes in full, run via `npm test`, at
   every checkpoint of this feature's Green phase (not just once at the end) — this is the ongoing
   regression gate, not a one-time check.
+- **PROP-DX-013** (REQ-DX-015, -016; Tier 1, new — added per spec-review it-1 SPEC-DX-3) — TWO
+  distinct assertions, both required:
+  1. **Extraction correctness**: `formatError()`'s NEW order-preserving helper (REQ-DX-016, e.g.
+     `classifyKnownError`) is unit-tested directly with table-driven cases covering all 4 outcomes
+     (`"model_unavailable"`, `"server_error"`, `"payment_error"`, `null`) AND the priority-conflict
+     case (a message matching BOTH `isModelUnavailable` and `isPaymentError` patterns MUST return
+     `"model_unavailable"`, matching `formatError()`'s real branch order) — asserted against the EXACT
+     same branch-order `formatError()` itself uses (import and re-check `formatError()`'s OWN output
+     for the SAME conflict-case message to prove the two never disagree, not just that the new
+     function looks right in isolation).
+  2. **Non-conflation**: a test asserts the NEW `classifyKnownError`-style function and the EXISTING
+     `isPaymentRejectionError` (`src/core/errors.ts:31-34`) are DIFFERENT functions with DIFFERENT
+     pattern sets — feeding a message containing bare `"payment"` (no `"402"`, no `"balance"`, no
+     `"insufficient"`, no `"rejected"`) SHALL classify as a payment-error case via the NEW function
+     (matching `formatError()`'s `isPaymentError`'s bare-`"payment"` check) but SHALL return `false`
+     via the EXISTING `isPaymentRejectionError` (which has no bare-`"payment"` check) — proving Phase
+     2 did not accidentally wire the new `code` classifier to the narrower, wrong, already-importable
+     function.
 
 ### Tier 2 — live binary execution (real `dist/index.js`, real API where cheap/free)
 
@@ -159,13 +205,14 @@ permitted by this architecture.
 | REQ-DX-* group | REQ count | Covering PROP(s) |
 |---|---|---|
 | `blockrun commands` catalog (REQ-DX-001..008) | 8 | PROP-DX-001, 002, 003, 004 |
-| Error codes + exit codes (REQ-DX-010..014) | 5 | PROP-DX-005, 006, 007, 011 (regression) |
+| Error codes + exit codes (REQ-DX-010..016) | 7 | PROP-DX-005, 006, 007, 011 (regression), 013 |
 | Balance-unavailable reason (REQ-DX-020..024) | 5 | PROP-DX-009, 010 |
 | Documentation reflection (REQ-DX-030..034) | 5 | PROP-DX-012 |
 | Cross-cutting / regression (REQ-DX-040..041) | 2 | PROP-DX-011 (and implicitly every PROP above, each of which requires a real new test per REQ-DX-041) |
 | Non-goals (REQ-DX-NG-001..005) | 5 (separate clause type, not counted in the REQ-DX total below) | Enforced structurally by every PROP's own money-path/shape-preservation assertions, not a dedicated PROP each |
 
-**Total: 25 REQ-DX-* requirements (excluding the 5 non-goals, a separate clause type per the same
-convention the `blockrun-cli-docs` feature established for its own `REQ-NG-*`), 12 PROP-DX-*.** No
+**Total: 27 REQ-DX-* requirements (excluding the 5 non-goals, a separate clause type per the same
+convention the `blockrun-cli-docs` feature established for its own `REQ-NG-*`), 13 PROP-DX-*** (8+7+5+5+2
+= 27; REQ-DX-015/016 and PROP-DX-013 added per spec-review it-1's SPEC-DX-1/2/3 fixes). No
 REQ-DX-* is uncovered; several REQs share a PROP where one mechanical/test check proves multiple
 requirements at once (e.g. PROP-DX-002 proves REQ-DX-001 and REQ-DX-002 together).
