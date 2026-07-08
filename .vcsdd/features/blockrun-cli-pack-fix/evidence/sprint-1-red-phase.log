@@ -1,0 +1,54 @@
+new-feature-tests: FAIL
+regression-baseline: PASS
+
+# Phase 2a (Red phase) evidence — blockrun-cli-pack-fix (HOTFIX)
+# Generated: 2026-07-08, via `npm test`
+#
+# Summary (node:test's own final tally, verbatim from this run):
+#   tests: 558  (553 pre-existing + 5 new)
+#   pass:  553  (553 pre-existing all green + 0 new tests pass today — NO RED-phase
+#                exemptions this time, every new test genuinely fails against today's
+#                broken code)
+#   fail:  5    (all 5 are NEW tests — target-feature RED confirmed)
+
+## New test files (2)
+
+- test/cli/packed-tarball.test.ts — NEW (PROP-PACK-003). Runs a REAL `npm pack`,
+  extracts the tarball to a fresh temp directory (NOT `npm install -g .`'s
+  symlink-into-repo shortcut), and executes `node dist/index.js --version` /
+  `commands --json` from within that isolated directory. BOTH fail today with the
+  EXACT crash reported live: `Error: cost-model: could not locate src/commands/ from
+  <extracted-dist-dir>`.
+- test/unit/cost-model-generated-parity.test.ts — NEW (PROP-PACK-001/002). Fails on
+  import: `src/core/cost-model.generated.ts` does not exist yet.
+
+## Independent reproduction of the reported bug (before writing any test)
+
+```
+$ npm pack --pack-destination /tmp/pack-verify && cd /tmp/pack-verify \
+  && tar xzf blockrun-cli-1.2.0.tgz && cd package && node dist/index.js --version
+Error: cost-model: could not locate src/commands/ from /private/tmp/pack-verify/package/dist
+    at findCommandsDir (file:///.../dist/index.js:3375:9)
+    at deriveCostModel (file:///.../dist/index.js:3378:15)
+Node.js v25.6.1
+exit=1
+```
+Confirms team-lead's report exactly: EVERY command (including `--version`, which
+doesn't even touch cost-model logically) crashes, because `cost-model.ts`'s
+`COMMAND_COST_MODEL = deriveCostModel()` runs at MODULE TOP LEVEL, and `commands
+-catalog.ts` (imported by `index.ts`) imports `cost-model.js` unconditionally — the
+throw happens before `program.parseAsync()` is ever reached.
+
+## src/ verified UNTOUCHED throughout (git status --short -- src/ = empty). Only the
+## 2 new test files added this phase.
+
+============================================================
+RAW `npm test` final summary (verbatim)
+============================================================
+ℹ tests 558
+ℹ suites 0
+ℹ pass 553
+ℹ fail 5
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
