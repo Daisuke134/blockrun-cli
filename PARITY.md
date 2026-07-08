@@ -29,6 +29,9 @@ Every command is assigned to exactly one of two verification tiers:
   tools loaded via `--profile <name>`) are explicitly out of scope for this CLI (REQ-NG-006 of the
   CLI's own behavioral-spec.md) — the CLI always exposes all 18 commands; there is no `--profile` flag
   and no partial-command-set install.
+- **`blockrun commands`** has NO `blockrun-mcp` MCP-tool equivalent — it is a CLI-only introspection
+  command (MCP's own protocol already provides `tools/list`; there is no comparable per-tool "list all
+  tools" MCP TOOL to mirror). CLI-only by design (blockrun-cli-agent-dx behavioral-spec.md REQ-DX-033).
 
 ## Commands
 

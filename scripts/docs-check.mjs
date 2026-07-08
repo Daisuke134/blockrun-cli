@@ -257,17 +257,19 @@ function checkProp002(realNames) {
   const realSet = new Set(realNames);
   const missing = [...realSet].filter((n) => !foundNames.has(n));
   const extra = [...foundNames].filter((n) => !realSet.has(n));
-  if (rows.length !== 18 || missing.length > 0 || extra.length > 0) {
+  // 19 as of blockrun-cli-agent-dx REQ-DX-030: the README Commands table gains a row
+  // for the new `commands` subcommand itself, alongside the 18 original rows.
+  if (rows.length !== 19 || missing.length > 0 || extra.length > 0) {
     record(
       "PROP-002",
       false,
-      `expected 18 rows matching {${[...realSet].join(",")}}; got ${rows.length} rows, parsed names {${[...foundNames].join(",")}}` +
+      `expected 19 rows matching {${[...realSet].join(",")}}; got ${rows.length} rows, parsed names {${[...foundNames].join(",")}}` +
         (missing.length ? `; missing: ${missing.join(",")}` : "") +
         (extra.length ? `; extra: ${extra.join(",")}` : ""),
     );
     return;
   }
-  record("PROP-002", true, "18/18 command rows present and match real subcommand set");
+  record("PROP-002", true, "19/19 command rows present and match real subcommand set");
 }
 
 // ---------------------------------------------------------------------------
@@ -628,7 +630,13 @@ function checkProp012(realNames) {
     return;
   }
   const sections = parsePARITYSections(parity);
-  const realSet = new Set(realNames);
+  // blockrun-cli-agent-dx REQ-DX-033/034: `commands` is deliberately EXCLUDED from
+  // this per-command MCP-parity check — it has no `blockrun-mcp` tool equivalent
+  // (MCP's own protocol already provides tools/list), so PARITY.md documents it as a
+  // single "Known non-parity points" bullet instead of a `### commands` section. The
+  // 18 ORIGINAL commands still each need their own section, unchanged.
+  const parityEligibleNames = realNames.filter((n) => n !== "commands");
+  const realSet = new Set(parityEligibleNames);
   const foundSet = new Set(Object.keys(sections));
   const missing = [...realSet].filter((n) => !foundSet.has(n));
   const extra = [...foundSet].filter((n) => !realSet.has(n));
@@ -643,7 +651,7 @@ function checkProp012(realNames) {
     return;
   }
   const badNaming = [];
-  for (const name of realNames) {
+  for (const name of parityEligibleNames) {
     const body = sections[name] ?? "";
     if (!body.includes(`blockrun_${name}`)) badNaming.push(`${name}: missing blockrun_${name}`);
     if (!new RegExp(`blockrun\\s+${name}\\b`).test(body)) badNaming.push(`${name}: missing 'blockrun ${name}'`);
@@ -1043,8 +1051,13 @@ function main() {
     console.error(`FATAL: could not determine real command names: ${e.message}`);
     process.exit(1);
   }
-  if (realNames.length !== 18) {
-    console.error(`FATAL: expected 18 real commands from --help, got ${realNames.length}: ${realNames.join(",")}`);
+  // 19 as of blockrun-cli-agent-dx (REQ-DX-001): the 18 original paid/free commands
+  // PLUS the new `commands` introspection subcommand itself. `commands` is
+  // deliberately excluded from checkProp012's PARITY.md per-command section check
+  // (REQ-DX-033 — it has NO MCP-tool equivalent to mirror), so it is filtered back
+  // out there specifically, not here.
+  if (realNames.length !== 19) {
+    console.error(`FATAL: expected 19 real commands from --help, got ${realNames.length}: ${realNames.join(",")}`);
     process.exit(1);
   }
 

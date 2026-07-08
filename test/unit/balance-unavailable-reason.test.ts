@@ -10,7 +10,17 @@
 // field balanceUnavailableReason, present ONLY when balance is null"): getChainBalance()
 // returns { balance: number | null; reason?: "all_rpcs_failed" | "solana_client_error" }
 // instead of today's bare number | null.
-import { test, mock } from "node:test";
+//
+// The 2 solana cases live in their OWN sibling files
+// (balance-unavailable-reason-solana-error.test.ts /
+// -solana-success.test.ts), not here: `shell/wallet.js`'s `SolanaLLMClient` import
+// binding is established the FIRST time the module is evaluated in this process — once
+// the 3 base-fetch tests below import it (unmocked), no LATER mock.module("@blockrun
+// /llm") call in the same file can retroactively change that already-linked binding.
+// Each solana test therefore needs its OWN fresh process (a separate `node --test`
+// file), with its mock.module() call BEFORE that file's first import of
+// shell/wallet.js — the same pattern test/integration/defi.test.ts already uses.
+import { test } from "node:test";
 import assert from "node:assert/strict";
 
 const originalFetch = globalThis.fetch;
@@ -46,38 +56,3 @@ test("PROP-DX-010 (base): when a Base RPC succeeds with a real (including exactl
   assert.equal("reason" in result, false, "a real (even zero) balance must not carry a balanceUnavailableReason key at all");
 });
 
-test("PROP-DX-010 (solana): when the Solana client's getBalance() throws, getChainBalance returns balance:null, reason:'solana_client_error'", async () => {
-  const real = await import("@blockrun/llm");
-  mock.module("@blockrun/llm", {
-    namedExports: {
-      ...real,
-      SolanaLLMClient: class {
-        async getBalance(): Promise<number> {
-          throw new Error("solana rpc unreachable");
-        }
-      },
-    },
-  });
-  const { getChainBalance } = await import("../../src/shell/wallet.js");
-  const result = await getChainBalance("solana", "11111111111111111111111111111111") as { balance: number | null; reason?: string };
-  assert.equal(result.balance, null);
-  assert.equal(result.reason, "solana_client_error");
-});
-
-test("PROP-DX-010 (solana): when the Solana client's getBalance() succeeds, reason is ABSENT", async () => {
-  const real = await import("@blockrun/llm");
-  mock.module("@blockrun/llm", {
-    namedExports: {
-      ...real,
-      SolanaLLMClient: class {
-        async getBalance(): Promise<number> {
-          return 12.5;
-        }
-      },
-    },
-  });
-  const { getChainBalance } = await import("../../src/shell/wallet.js");
-  const result = await getChainBalance("solana", "11111111111111111111111111111111") as { balance: number | null; reason?: string };
-  assert.equal(result.balance, 12.5);
-  assert.equal("reason" in result, false);
-});

@@ -16,7 +16,7 @@ export async function run(
   _budget: BudgetState,
 ): Promise<CommandOutcome> {
   const built = buildRequest(flags);
-  if (!built.ok) return fail(built.error, opts.json);
+  if (!built.ok) return fail(built.error, opts.json, { code: "usage_error" });
   const { action, chain: targetChain, budgetAction, budgetAmount, agentId, agentLimit } = built.value;
 
   try {
@@ -107,9 +107,18 @@ export async function run(
       if (targetChain && targetChain !== currentChain) setChain(targetChain);
       const active = targetChain ?? currentChain;
       const activeAddress = active === "solana" ? solana?.address : base.address;
-      const activeBalance = activeAddress ? await getChainBalance(active, activeAddress) : null;
+      const activeBalanceResult = activeAddress ? await getChainBalance(active, activeAddress) : null;
+      const activeBalance = activeBalanceResult ? activeBalanceResult.balance : null;
       return ok(
-        { activeChain: active, base: base.address, solana: solana?.address ?? null, activeBalance },
+        {
+          activeChain: active,
+          base: base.address,
+          solana: solana?.address ?? null,
+          activeBalance,
+          // REQ-DX-023: same balanceUnavailableReason convention as `status` below,
+          // present ONLY when activeBalance is null.
+          ...(activeBalanceResult?.reason ? { activeBalanceUnavailableReason: activeBalanceResult.reason } : {}),
+        },
         opts.json,
         `Active chain: ${active.toUpperCase()}\nBase: ${base.address}\nSolana: ${solana?.address ?? "(not yet created — run: blockrun wallet --action chain --chain solana)"}`,
       );
@@ -148,18 +157,30 @@ export async function run(
     // reported as null rather than fabricated by creating one just to display it.
     const base = ensureBaseWallet();
     const solanaPeek = await peekSolanaWallet();
-    const [baseBal, solBal] = await Promise.all([
+    const [baseResult, solResult] = await Promise.all([
       getChainBalance("base", base.address),
       solanaPeek ? getChainBalance("solana", solanaPeek.address) : Promise.resolve(null),
     ]);
+    // REQ-DX-020/021/022: balanceUnavailableReason is present ONLY when that chain's
+    // balance is null — never alongside a real numeric balance, including a genuine 0.
     return ok(
       {
         activeChain: chain,
-        base: { address: base.address, balance: baseBal },
-        solana: solanaPeek ? { address: solanaPeek.address, balance: solBal } : null,
+        base: {
+          address: base.address,
+          balance: baseResult.balance,
+          ...(baseResult.reason ? { balanceUnavailableReason: baseResult.reason } : {}),
+        },
+        solana: solanaPeek && solResult
+          ? {
+              address: solanaPeek.address,
+              balance: solResult.balance,
+              ...(solResult.reason ? { balanceUnavailableReason: solResult.reason } : {}),
+            }
+          : null,
       },
       opts.json,
-      `Active chain: ${chain.toUpperCase()}\nBase:   ${base.address} (${baseBal !== null ? `$${baseBal.toFixed(6)} USDC` : "unavailable"})\nSolana: ${solanaPeek ? `${solanaPeek.address} (${solBal !== null ? `$${solBal.toFixed(6)} USDC` : "unavailable"})` : "(not yet created — run: blockrun wallet --action chain --chain solana)"}`,
+      `Active chain: ${chain.toUpperCase()}\nBase:   ${base.address} (${baseResult.balance !== null ? `$${baseResult.balance.toFixed(6)} USDC` : `unavailable (${baseResult.reason})`})\nSolana: ${solanaPeek && solResult ? `${solanaPeek.address} (${solResult.balance !== null ? `$${solResult.balance.toFixed(6)} USDC` : `unavailable (${solResult.reason})`})` : "(not yet created — run: blockrun wallet --action chain --chain solana)"}`,
     );
   } catch (err) {
     return fail(extractErrorMessage(err), opts.json, { chain: getChain() });

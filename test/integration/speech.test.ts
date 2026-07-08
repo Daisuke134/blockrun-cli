@@ -5,6 +5,7 @@
 import { test, mock } from "node:test";
 import assert from "node:assert/strict";
 import type { BudgetState } from "../../src/types.js";
+import { isTimeoutError as realIsTimeoutError } from "../../src/shell/http.js";
 
 // A quote higher than the speak-path estimate, used by the "over-budget-quote" mode
 // to prove REQ-220's reverify wiring.
@@ -23,7 +24,10 @@ mock.module("../../src/shell/manual-x402.js", {
   },
 });
 mock.module("../../src/shell/http.js", {
-  namedExports: { fetchJson: async () => ({ status: 200, data: { data: [{ voice_id: "v1", alias: "sarah" }] } }) },
+  namedExports: {
+    isTimeoutError: realIsTimeoutError,
+    fetchJson: async () => ({ status: 200, data: { data: [{ voice_id: "v1", alias: "sarah" }] } }),
+  },
 });
 mock.module("../../src/shell/wallet.js", { namedExports: { getChain: () => "base", getOrCreateWalletKey: () => "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d" } });
 

@@ -27,7 +27,7 @@ export async function run(
   budget: BudgetState,
 ): Promise<CommandOutcome> {
   const built = buildRequest(flags);
-  if (!built.ok) return fail(built.error, opts.json);
+  if (!built.ok) return fail(built.error, opts.json, { code: "usage_error" });
   const { action, input, voice, model, responseFormat, speed, durationSeconds, promptInfluence, agent_id } = built.value;
 
   if (action === "voices") {

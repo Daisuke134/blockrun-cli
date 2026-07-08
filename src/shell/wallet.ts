@@ -220,10 +220,22 @@ export async function getWalletInfo() {
   };
 }
 
-async function getSolanaUsdcBalance(): Promise<number | null> {
+// REQ-DX-021/022: the ONE currently-distinguishable reason for each chain's `null`
+// balance — no other code path produces a null today, so no finer granularity is
+// invented here.
+export type BalanceUnavailableReason = "all_rpcs_failed" | "solana_client_error";
+
+export interface ChainBalanceResult {
+  balance: number | null;
+  reason?: BalanceUnavailableReason;
+}
+
+async function getSolanaUsdcBalance(): Promise<ChainBalanceResult> {
   try {
-    return await buildSolanaClient().getBalance();
-  } catch { return null; }
+    return { balance: await buildSolanaClient().getBalance() };
+  } catch {
+    return { balance: null, reason: "solana_client_error" };
+  }
 }
 
 export function parseBaseUsdcCallResult(raw: unknown): number | null {
@@ -231,7 +243,7 @@ export function parseBaseUsdcCallResult(raw: unknown): number | null {
   return Number(BigInt(raw)) / 1e6;
 }
 
-async function getBaseUsdcBalance(address: string): Promise<number | null> {
+async function getBaseUsdcBalance(address: string): Promise<ChainBalanceResult> {
   const data = {
     jsonrpc: "2.0",
     method: "eth_call",
@@ -248,12 +260,12 @@ async function getBaseUsdcBalance(address: string): Promise<number | null> {
       });
       const result = await response.json() as { result?: string };
       const usd = parseBaseUsdcCallResult(result.result);
-      if (usd !== null) return usd;
+      if (usd !== null) return { balance: usd };
     } catch { continue; }
   }
-  return null;
+  return { balance: null, reason: "all_rpcs_failed" };
 }
 
-export async function getChainBalance(chain: "base" | "solana", address: string): Promise<number | null> {
+export async function getChainBalance(chain: "base" | "solana", address: string): Promise<ChainBalanceResult> {
   return chain === "solana" ? getSolanaUsdcBalance() : getBaseUsdcBalance(address);
 }

@@ -4,9 +4,11 @@
 import { test, mock } from "node:test";
 import assert from "node:assert/strict";
 import type { BudgetState } from "../../src/types.js";
+import { isTimeoutError as realIsTimeoutError } from "../../src/shell/http.js";
 
 mock.module("../../src/shell/http.js", {
   namedExports: {
+    isTimeoutError: realIsTimeoutError,
     fetchJson: async (url: string) => {
       if (url.includes("/init")) return { status: 200, data: { group_id: "legacy_rf_1", status: "pending", h5_link: "https://x/qr" } };
       if (url.includes("/status")) return { status: 200, data: { group_id: "legacy_rf_1", status: "active", ready_to_finalize: true, asset_count: 1 } };

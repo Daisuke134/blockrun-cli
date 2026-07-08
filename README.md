@@ -78,6 +78,25 @@ which one pays.
 | `blockrun modal` | Run code in a disposable Modal sandbox | $0.01 create, $0.001 exec/status/terminate |
 | `blockrun phone` | Phone intelligence, number provisioning, AI voice calls | $0–$5.54 by path |
 | `blockrun surf` | Unified crypto data (asksurf.ai), 84 endpoints | $0.001/$0.005/$0.02 tiers |
+| `blockrun commands` | List all subcommands as a machine-readable catalog: name, description, cost model, flags | Free |
+
+## Machine-readable errors: `code` and exit codes
+
+Every `--json` error output gains an optional `code` field (`{"error":true,"code":"...","message":"..."}`)
+when the failure matches one of these 6 classes — `message`'s content and meaning are unchanged either
+way, and `code` is simply omitted for anything not in this list:
+
+| `code` | Meaning | Exit code |
+|---|---|---|
+| `usage_error` | Malformed, missing, or conflicting CLI input — rejected locally before any network call | `2` |
+| `budget_exceeded` | A `--budget-limit` or persisted (`~/.blockrun/cli-budget.json`) spend cap was hit before any network call | `2` |
+| `quote_exceeded` | A real 402-quoted price was rejected (`--max-quote-usd`, or the budget re-check) AFTER a quote but BEFORE any payment signature | `3` |
+| `insufficient_funds` | A real x402 settlement attempt was rejected for balance/payment reasons | `3` |
+| `upstream_error` | The model/provider is temporarily unavailable, or returned a server error | `4` |
+| `network_error` | A raw connection/DNS/timeout failure occurred before any HTTP response was received | `4` |
+| _(omitted)_ | Any other failure — unclassified | `1` |
+
+A successful call always exits `0`.
 
 ## Usage examples
 

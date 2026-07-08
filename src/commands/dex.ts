@@ -2,6 +2,7 @@
 // src/tools/dex.ts).
 import { buildRequest, rankPairs, type DexPair } from "../args/dex.js";
 import { fetchJson } from "../shell/http.js";
+import { extractErrorMessage } from "../core/errors.js";
 import { ok, fail } from "../core/render.js";
 import type { BudgetState } from "../types.js";
 import type { CommandOutcome } from "../core/render.js";
@@ -22,7 +23,7 @@ export async function run(
   _budget: BudgetState,
 ): Promise<CommandOutcome> {
   const built = buildRequest(flags);
-  if (!built.ok) return fail(built.error, opts.json);
+  if (!built.ok) return fail(built.error, opts.json, { code: "usage_error" });
   const { query, token, symbol, chain } = built.value;
   const searchTerm = query || symbol || "";
 
@@ -50,7 +51,7 @@ export async function run(
 
     return ok({ pairs, count: pairs.length }, opts.json, `[DexScreener - FREE]\n\n${lines.join("\n\n")}`);
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
+    const msg = extractErrorMessage(err);
     return fail(msg, opts.json);
   }
 }

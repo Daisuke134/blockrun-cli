@@ -1,0 +1,189 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+
+# Phase 2b (Green phase) evidence — blockrun-cli-agent-dx
+# Generated: 2026-07-08, via `npm test` (tsx --experimental-test-module-mocks --test
+# test/unit/*.test.ts test/integration/*.test.ts test/cli/*.test.ts), `npm run
+# typecheck` (tsc --noEmit), and `node scripts/docs-check.mjs`.
+#
+# Summary (node:test's own final tally, verbatim from this run):
+#   tests: 530  (408 pre-existing + 122 from Phase 2a, all now GREEN)
+#   pass:  530
+#   fail:  0
+#   cancelled: 0 / skipped: 0 / todo: 0
+#   exit code: 0
+#
+# typecheck: `tsc --noEmit` — zero errors.
+
+============================================================
+Implementation summary (28 REQ-DX-* satisfied)
+============================================================
+
+1. `blockrun commands [--json]` (REQ-DX-001..008):
+   - src/core/introspect-schema.ts — introspectSchema(schema): FlagMeta[], pure zod
+     4.4.3 runtime introspection (no hand-maintained flag catalog).
+   - src/core/cost-model.ts — COMMAND_COST_MODEL derived by grepping each real
+     src/commands/<name>.ts source for `gatePaidCall(` at module-load time (no
+     hand-typed free/paid list).
+   - src/core/commands-catalog.ts — buildCommandsCatalog(program) reads the LIVE
+     Commander `program.commands` array for name/description (the exact --help text,
+     not a copy), joins introspectSchema() + COMMAND_COST_MODEL per command.
+   - src/core/commands-render.ts — pure --json / human-table rendering (deliberately
+     placed under src/core/, NOT src/commands/, since it is not one of the 18 REAL
+     gatePaidCall-eligible commands PROP-DX-007/014 enumerate).
+   - src/index.ts — registers `commands` last, WITHOUT withCommon() (REQ-DX-008: no
+     --budget-limit/--agent-id — meaningless for a free, local-only command).
+
+2. Error `code` + exit-code taxonomy (REQ-DX-010..017):
+   - src/core/errors.ts — extractErrorMessage() now detects err.cause.code
+     (ECONNREFUSED/ENOTFOUND/ETIMEDOUT/EAI_AGAIN) or reuses shell/http.ts's
+     isTimeoutError(), appending a "(network:...)" marker (REQ-DX-015). formatError()'s
+     3 inline classification consts extracted into exported classifyKnownError(),
+     same real branch order (REQ-DX-016).
+   - src/core/error-classification.ts — classifyErrorCode(message) pattern-matches
+     network_error / quote_exceeded / budget_exceeded / (via classifyKnownError)
+     upstream_error / insufficient_funds, else the no-code fallback (exit 1).
+   - src/core/render.ts — fail()/renderError() is the ONE shared classification
+     chokepoint (REQ-DX-014): computes code+exitCode via classifyErrorCode()
+     automatically, OR uses an explicit `opts.code` override for the ONE
+     structurally-detected case classifyErrorCode cannot derive from message text
+     alone (usage_error — validation messages are too heterogeneous across 18
+     src/args/*.ts files to share a pattern).
+   - All 18 src/commands/<name>.ts: `if (!built.ok) return fail(built.error,
+     opts.json, { code: "usage_error" });` (mechanical, identical 1-line edit per
+     file, mirroring the buildRequest-rejection line REQ-DX-011 item 1 cites).
+   - src/commands/dex.ts (REQ-DX-017): catch block now calls extractErrorMessage(err)
+     instead of the old inline `err.message`/String(err) shortcut — the ONE command
+     that needed this fix.
+
+3. `balanceUnavailableReason` (REQ-DX-020..024):
+   - src/shell/wallet.ts — getChainBalance()/getBaseUsdcBalance()/
+     getSolanaUsdcBalance() now return { balance: number | null; reason?:
+     "all_rpcs_failed" | "solana_client_error" } instead of a bare number | null.
+   - src/commands/wallet.ts — `status` action's base/solana sub-objects and `chain`
+     action's activeBalance both gain balanceUnavailableReason, present ONLY when
+     that balance is null (spread-conditionally, so a real 0 balance carries no
+     reason key at all). Human (non --json) status text appends "(reason)" for a
+     null balance.
+
+4. Docs (REQ-DX-030..034):
+   - README.md — 19th Commands-table row for `commands`; new "Machine-readable
+     errors: code and exit codes" subsection (all 6 code values + 0/1/2/3/4 mapping,
+     no invented 7th value); Environment Variables / budget-delegation sections
+     untouched.
+   - PARITY.md — new "Known non-parity points" bullet: `blockrun commands` has no
+     MCP-tool equivalent. The 18 existing `### <command>` sections unchanged.
+   - scripts/docs-check.mjs (blockrun-cli-docs feature's own regression script, owned
+     by that feature, not by agent-dx) — updated for the new REAL 19-command set:
+     the top-level gate and PROP-002 (README Commands table) now expect 19; PROP-012
+     (PARITY.md per-command MCP-parity sections) explicitly EXCLUDES `commands` from
+     its 18-section check (REQ-DX-033: `commands` has no MCP tool to mirror, so it
+     gets a non-parity bullet, not a `### commands` section — this exclusion is
+     REQUIRED, not a workaround).
+
+5. Regression / money-path (REQ-DX-040, REQ-DX-NG-001..005):
+   - No change to payment signing, budget arithmetic (checkBudget/reserveBudget/
+     recordActualSpend), or which upstream endpoint any command calls.
+   - No existing ok()-path JSON field renamed/removed; only balanceUnavailableReason
+     was ADDED (REQ-DX-NG-002).
+   - Existing error JSON's `message` field content/meaning unchanged for every case
+     except network_error, whose message gains an appended marker (REQ-DX-NG-003 —
+     enrichment of a previously-uninformative "fetch failed", not a change to
+     existing meaningful content).
+   - `commands` makes no wallet/network call (REQ-DX-NG-005) — verified live below.
+
+============================================================
+Existing-test mock fixes required (Green-phase side effects of extending shared
+modules 3 EXISTING tests already partially mock)
+============================================================
+
+- test/integration/{dex,realface,speech}.test.ts: each partially mocks
+  src/shell/http.js with ONLY `fetchJson`; since src/core/errors.ts now imports
+  isTimeoutError from that same module, these mocks needed `isTimeoutError:
+  realIsTimeoutError` added (captured via a static import of the REAL function
+  before mock.module() runs) — otherwise the mocked module lacks an export
+  errors.ts genuinely needs.
+- test/integration/wallet.test.ts: mocked `getChainBalance: async () => 1.23`
+  (bare number, the OLD contract) — updated to `async () => ({ balance: 1.23 })`
+  to match getChainBalance's new { balance, reason? } return shape.
+- test/unit/balance-unavailable-reason.test.ts's 2 solana cases were split into
+  their own sibling files (balance-unavailable-reason-solana-{error,success}.
+  test.ts): shell/wallet.js's SolanaLLMClient import binding is fixed at that
+  module's FIRST evaluation in a process — since the file's earlier base-chain
+  tests already import shell/wallet.js unmocked, no LATER mock.module("@blockrun
+  /llm") call in the SAME file/process could retroactively change that binding.
+  Each solana case now runs in its own `node --test` file/process, mocking
+  @blockrun/llm before that process's first import of shell/wallet.js (same
+  top-of-file pattern test/integration/defi.test.ts already uses). Also fixed:
+  spreading the real @blockrun/llm module's `default` export into namedExports
+  produced invalid `export let default = ...` synthesized code (SyntaxError) —
+  destructured `default` out before spreading.
+- test/integration/network-error-catch-path.test.ts (Phase 2a's own PROP-DX-006
+  test): switched from the global `mock.module()` to per-test `t.mock.module()`
+  (2 of its 3 tests mock the same "../../src/shell/wallet.js" specifier with
+  different rejection shapes — the global form throws ERR_INVALID_STATE on the
+  second call); also added the same isTimeoutError re-export fix to its dex-case
+  http.js mock.
+
+============================================================
+Manual live E2E verification (real dist/index.js, fresh temp HOME, fresh evidence
+this session — not just tests passing)
+============================================================
+
+$ HOME=<tmp> node dist/index.js commands --json
+  -> 18 entries (self-excludes `commands`), video's entry shows the real
+     --duration-seconds/--resolution/--aspect-ratio/--model flags with correct
+     type/enum/default extraction, matching `blockrun video --help`.
+
+$ HOME=<tmp> node dist/index.js commands
+  command   cost  description
+  wallet    Free  Manage the BlockRun wallet: balances, active chain, spend budgets, agent delegation.
+  chat      Paid  Chat with any AI model. $0 on mode=free / nvidia/* models.
+  models    Free  List available AI models with pricing. Free.
+  image     Paid  Generate or edit images. $0.015-$0.15/image depending on model/size.
+  ...
+
+$ HOME=<tmp> node dist/index.js rpc --network "../bad" --method eth_blockNumber --json
+  {"error":true,"code":"usage_error","message":"Error: Invalid network '../bad'. ..."}
+  exit=2
+
+$ HOME=<tmp> node dist/index.js defi --path prices/coingecko:bitcoin --budget-limit 0.0000001 --json
+  {"error":true,"code":"budget_exceeded","message":"Error: Global budget limit $0.0000 would be exceeded (...)"}
+  exit=2
+
+$ HOME=<tmp> node dist/index.js wallet --action status --json
+  {"activeChain":"base","base":{"address":"0x2F7449fD0E7c31186a9666E1785163874914EDDF","balance":0},"solana":null}
+  -> real live Base RPC call returned a real balance (0, a true zero) — no
+     balanceUnavailableReason key present, correctly, per REQ-DX-020's "never
+     present alongside a real numeric balance, including a genuine 0".
+
+============================================================
+node scripts/docs-check.mjs — 16/18 PASS (2 known, pre-existing-design failures,
+NOT a regression from this feature's work — see caveat below)
+============================================================
+
+[PASS] PROP-001 heading order / [PASS] PROP-002 19/19 Commands rows / [PASS] PROP-003
+forbidden terms / [PASS] PROP-006 env vars / [PASS] PROP-007 CHANGELOG / [PASS]
+PROP-008 CONTRIBUTING / [PASS] PROP-009 PR checklist / [PASS] PROP-010 LICENSE /
+[PASS] PROP-011 package.json / [PASS] PROP-012 PARITY 18/18 sections (commands
+excluded per REQ-DX-033) / [PASS] PROP-013 non-parity call-outs / [PASS] PROP-015
+execution-notes / [FAIL] PROP-016 / [FAIL] PROP-016b / [PASS] PROP-017 forbidden
+placeholders / [PASS] PROP-022 evidence cross-check / [PASS] PROP-024
+DUAL-LIVE-RUN+SCHEMA-ONLY partition / [PASS] PROP-025 MCP param coverage.
+
+CAVEAT (read before treating this as a regression): PROP-016/016b are
+blockrun-cli-docs's OWN "git diff since THAT feature's init commit is limited to an
+allow-listed set of doc/meta files, src/ untouched beyond one version-literal line"
+regression guard — `FEATURE_NAME` inside docs-check.mjs is hardcoded to
+"blockrun-cli-docs" and the diff base is that (now long-completed, v1.0.0-tagged)
+feature's own init commit. blockrun-cli-agent-dx is a DELIBERATE, separate, real
+src/ implementation feature (unlike blockrun-cli-docs) — the moment ANY such
+feature lands real src/ changes on top of blockrun-cli-docs's init commit, PROP-016/
+016b's check is mathematically guaranteed to report the new src/ files as
+"disallowed," by the design of that check, not by any omission here. This was
+expected going in (Feature 2's own spec explicitly says it is an src/
+implementation feature) and is not something a narrower allow-list edit can fix
+without defeating that check's actual regression-testing purpose for future
+re-verification of blockrun-cli-docs alone. The other 16/18 checks — which test
+REAL, still-applicable invariants (Commands table completeness, PARITY.md section
+completeness, forbidden terms, etc.) — all genuinely pass.

@@ -18,7 +18,7 @@ mock.module("../../src/shell/wallet.js", {
     ensureBothWallets: async () => { ensureBothCalled = true; return { base: { address: "0xBASE" }, solana: { address: "SoLTEST" } }; },
     ensureBaseWallet: () => ({ address: "0xBASE", isNew: false }),
     peekSolanaWallet: async () => peekSolanaResult,
-    getChainBalance: async () => 1.23,
+    getChainBalance: async () => ({ balance: 1.23 }),
     setChain: () => {},
   },
 });

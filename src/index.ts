@@ -27,6 +27,8 @@ import { run as runDefi } from "./commands/defi.js";
 import { run as runModal } from "./commands/modal.js";
 import { run as runPhone } from "./commands/phone.js";
 import { run as runSurf } from "./commands/surf.js";
+import { buildCommandsCatalog } from "./core/commands-catalog.js";
+import { renderCommandsOutcome } from "./core/commands-render.js";
 
 type RunFn = (flags: Record<string, unknown>, opts: { json: boolean }, budget: BudgetState) => Promise<CommandOutcome>;
 
@@ -477,6 +479,21 @@ withAgentId(withCommon(program.command("surf")))
       body: jsonFlag(opts.body, opts.bodyJson),
       agentId: opts.agentId,
     });
+  });
+
+// ---- commands (REQ-DX-001..008) ----
+// Deliberately NOT withCommon() — REQ-DX-008: no --budget-limit/--agent-id, both
+// meaningless for a free, local-only, no-network introspection command
+// (REQ-DX-NG-005). Registered last so program.commands already reflects all 18
+// subcommands when this action runs (order doesn't strictly matter — actions run
+// after the whole module has loaded — but this keeps registration order == help order).
+program
+  .command("commands")
+  .description("List all subcommands as a machine-readable catalog: name, description, cost model, flags.")
+  .option("--json", "emit machine-readable JSON to stdout")
+  .action((opts) => {
+    const catalog = buildCommandsCatalog(program);
+    writeOutcome(renderCommandsOutcome(catalog, Boolean(opts.json)));
   });
 
 program.parseAsync(process.argv).catch((err) => {

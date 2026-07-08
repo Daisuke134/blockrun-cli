@@ -3,14 +3,38 @@
 // getChain() (the CLI's pure core has no impure wallet-state import), so the chain
 // is passed explicitly via opts.chain (default "base", matching the clone's own
 // getChain() default).
+import { isTimeoutError } from "../shell/http.js";
+
+const NETWORK_TRANSPORT_CODES = new Set(["ECONNREFUSED", "ENOTFOUND", "ETIMEDOUT", "EAI_AGAIN"]);
+
+// REQ-DX-015: detects the raw Node fetch()-failure shape BEFORE any string
+// processing — a `cause.code` matching one of the 4 live-verified transport codes, or
+// (reusing src/shell/http.ts's ALREADY-CORRECT isTimeoutError() verbatim) a client
+// -side timeout/abort. Returns the greppable marker suffix to append, or null for
+// every non-network-failure case (byte-for-byte unchanged today's output).
+function detectNetworkMarker(err: unknown): string | null {
+  if (err && typeof err === "object") {
+    const cause = (err as { cause?: unknown }).cause;
+    if (cause && typeof cause === "object") {
+      const code = (cause as { code?: unknown }).code;
+      if (typeof code === "string" && NETWORK_TRANSPORT_CODES.has(code)) return code;
+    }
+  }
+  if (isTimeoutError(err)) return "timeout";
+  return null;
+}
+
 export function extractErrorMessage(err: unknown): string {
-  if (!err || typeof err !== "object") return String(err);
+  const marker = detectNetworkMarker(err);
+  const suffix = marker ? ` (network:${marker})` : "";
+
+  if (!err || typeof err !== "object") return `${String(err)}${suffix}`;
   const e = err as { message?: unknown; response?: unknown; statusCode?: unknown };
   const base = typeof e.message === "string" ? e.message : String(err);
-  if (e.response === undefined || e.response === null) return base;
+  if (e.response === undefined || e.response === null) return `${base}${suffix}`;
   try {
     const body = e.response;
-    if (typeof body === "string") return body.trim() ? `${base} — ${body}` : base;
+    if (typeof body === "string") return `${body.trim() ? `${base} — ${body}` : base}${suffix}`;
     if (typeof body === "object") {
       const b = body as Record<string, unknown>;
       const parts: string[] = [];
@@ -22,10 +46,10 @@ export function extractErrorMessage(err: unknown): string {
       if (parts.length === 0) {
         parts.push(JSON.stringify(b));
       }
-      return `${base}\n${parts.join("\n")}`;
+      return `${base}\n${parts.join("\n")}${suffix}`;
     }
   } catch { /* fall through */ }
-  return base;
+  return `${base}${suffix}`;
 }
 
 export function isPaymentRejectionError(message: string): boolean {
@@ -33,36 +57,51 @@ export function isPaymentRejectionError(message: string): boolean {
   return m.includes("insufficient") || m.includes("balance") || m.includes("rejected");
 }
 
-export function formatError(message: string, opts?: { altModels?: string; chain?: "base" | "solana" }): string {
-  const msgLower = message.toLowerCase();
+export type KnownErrorClass = "model_unavailable" | "server_error" | "payment_error";
 
+// REQ-DX-016: extracted from formatError()'s original three inline consts, preserving
+// its EXACT real branch order (isModelUnavailable -> isServerError -> isPaymentError)
+// so the human message (formatError) and the machine `code` classifier (REQ-DX-011,
+// src/core/error-classification.ts) can never disagree about which branch fired —
+// both now call THIS one function. Distinct from the narrower, pre-existing
+// isPaymentRejectionError above (no `402` check, no bare-"payment" check) — see
+// REQ-DX-016's explicit non-conflation warning; do not substitute one for the other.
+export function classifyKnownError(message: string): KnownErrorClass | null {
+  const msgLower = message.toLowerCase();
   const hasStatus = (code: string) => new RegExp(`(^|[^0-9.])${code}($|[^0-9.])`).test(msgLower);
+
+  const isModelUnavailable =
+    msgLower.includes("not active for requested provider") ||
+    msgLower.includes("not found or not active");
+  if (isModelUnavailable) return "model_unavailable";
+
+  const isServerError = hasStatus("500") || msgLower.includes("api error after payment");
+  if (isServerError) return "server_error";
 
   const isPaymentError = hasStatus("402") ||
     msgLower.includes("balance") ||
     msgLower.includes("insufficient") ||
     (msgLower.includes("payment") && !hasStatus("500"));
+  if (isPaymentError) return "payment_error";
 
-  const isModelUnavailable =
-    msgLower.includes("not active for requested provider") ||
-    msgLower.includes("not found or not active");
+  return null;
+}
 
-  const isServerError = hasStatus("500") ||
-    msgLower.includes("api error after payment");
-
+export function formatError(message: string, opts?: { altModels?: string; chain?: "base" | "solana" }): string {
+  const classification = classifyKnownError(message);
   const altHint = opts?.altModels ? ` (e.g. ${opts.altModels})` : "";
   let errorText = `Error: ${message}`;
 
-  if (isModelUnavailable) {
+  if (classification === "model_unavailable") {
     errorText += `\n\nThis model is temporarily unavailable upstream` +
       (opts?.altModels
         ? `. Try a different model${altHint} — it should work right away.`
         : `. Try a different model, or retry shortly.`);
-  } else if (isServerError) {
+  } else if (classification === "server_error") {
     errorText += `\n\nThis is a temporary API issue. The API may be experiencing problems.` +
       `\nTry again in a few minutes` +
       (opts?.altModels ? `, or use a different model${altHint}.` : `.`);
-  } else if (isPaymentError) {
+  } else if (classification === "payment_error") {
     const chain = opts?.chain ?? "base";
     const network = chain === "solana" ? "Solana" : "Base";
     errorText += `\n\nThis error usually means your wallet needs funding.\n` +

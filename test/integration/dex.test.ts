@@ -3,9 +3,11 @@
 import { test, mock } from "node:test";
 import assert from "node:assert/strict";
 import type { BudgetState } from "../../src/types.js";
+import { isTimeoutError as realIsTimeoutError } from "../../src/shell/http.js";
 
 mock.module("../../src/shell/http.js", {
   namedExports: {
+    isTimeoutError: realIsTimeoutError,
     fetchJson: async () => ({
       status: 200,
       data: {

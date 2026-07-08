@@ -19,7 +19,7 @@ export async function run(
   budget: BudgetState,
 ): Promise<CommandOutcome> {
   const built = buildRequest(flags);
-  if (!built.ok) return fail(built.error, opts.json);
+  if (!built.ok) return fail(built.error, opts.json, { code: "usage_error" });
   const { action, name, groupId, imageUrl, agent_id } = built.value;
 
   try {

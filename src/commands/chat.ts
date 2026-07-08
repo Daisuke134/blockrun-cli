@@ -59,7 +59,7 @@ export async function run(
   budget: BudgetState,
 ): Promise<CommandOutcome> {
   const built = buildRequest(flags);
-  if (!built.ok) return fail(built.error, opts.json);
+  if (!built.ok) return fail(built.error, opts.json, { code: "usage_error" });
   const { message, model, mode, routing, routingProfile, system, maxTokens, temperature, responseFormat, stop, thinking, agent_id, messages } = built.value;
 
   const estimate = estimateChatCost(maxTokens, mode, model, routing, routingProfile, thinking?.budget_tokens);

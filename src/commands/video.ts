@@ -14,7 +14,7 @@ export async function run(
   budget: BudgetState,
 ): Promise<CommandOutcome> {
   const built = buildRequest(flags);
-  if (!built.ok) return fail(built.error, opts.json);
+  if (!built.ok) return fail(built.error, opts.json, { code: "usage_error" });
   const { prompt, model, imageUrl, realFaceAssetId, durationSeconds, generateAudio, resolution, aspectRatio, lastFrameUrl, agent_id, maxQuoteUsd } = built.value;
 
   if (getChain() !== "base") {
