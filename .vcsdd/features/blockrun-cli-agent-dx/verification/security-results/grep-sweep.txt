@@ -1,0 +1,17 @@
+=== semgrep summary ===
+1 finding: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp at src/core/errors.ts:71
+
+=== manual grep: child_process/exec/spawn (command injection surface) ===
+NONE FOUND
+
+=== manual grep: hardcoded secret literals (api key/secret/password assigned to string literal) ===
+NONE FOUND
+
+=== manual grep: eval/new Function ===
+NONE FOUND
+
+=== hasStatus() call-site audit (errors.ts:71 non-literal-regexp finding context) ===
+71:  const hasStatus = (code: string) => new RegExp(`(^|[^0-9.])${code}($|[^0-9.])`).test(msgLower);
+78:  const isServerError = hasStatus("500") || msgLower.includes("api error after payment");
+81:  const isPaymentError = hasStatus("402") ||
+84:    (msgLower.includes("payment") && !hasStatus("500"));
