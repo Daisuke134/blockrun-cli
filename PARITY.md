@@ -77,16 +77,24 @@ Every command is assigned to exactly one of two verification tiers:
 - **Tier:** DUAL-LIVE-RUN
 - **Parameter mapping:** `category` → `--category`; `provider` → `--provider`. 1:1 field-name parity
   on input; OUTPUT shape differs (see finding below).
-- **Dual-run evidence (`category:"chat"`, real call, 2026-07-08):** TWO real, confirmed findings — (a)
-  field-naming: MCP returns snake_case with a nested pricing object per model (`owned_by`,
-  `context_window`, `max_output`, `billing_mode`, `pricing:{input,output}`, plus MCP-only `object`/
-  `created`); CLI returns camelCase with flat pricing (`provider`, `contextWindow`, `maxOutput`,
-  `billingMode`, `inputPrice`/`outputPrice`, plus CLI-only `available`/`type`). (b) COUNT MISMATCH: MCP
-  returned `{"count":44,...}` models for `category:"chat"`; the CLI returned `{"count":55,...}` for the
-  identical `--category chat` filter. This is recorded HONESTLY as a real discrepancy for the CLI
-  feature owner to triage — root-causing it is out of scope for this docs feature (`src/` is read-only
-  per REQ-NG-001; this file only documents facts, per DOC-CONSTRAINT-002's no-lies rule). Free ($0), no
-  funding needed.
+- **Dual-run evidence (`category:"chat"`, real calls, 2026-07-08):** TWO measurements, taken hours
+  apart, gave DIFFERENT results — recorded honestly, not smoothed over:
+  - **First measurement:** MCP returned snake_case with a nested pricing object per model (`owned_by`,
+    `context_window`, `max_output`, `billing_mode`, `pricing:{input,output}`, plus MCP-only `object`/
+    `created`) and `count:44`. CLI returned camelCase with flat pricing (`provider`, `contextWindow`,
+    `maxOutput`, `billingMode`, `inputPrice`/`outputPrice`, plus CLI-only `available`/`type`) and
+    `count:55`.
+  - **Second measurement (2026-07-08, later re-run, independently confirmed by BOTH the orchestrator
+    and this docs-feature session):** MCP's response shape had CHANGED — it now returns the SAME
+    camelCase, flat-pricing shape as the CLI (`inputPrice`/`outputPrice`/`contextWindow`/`maxOutput`/
+    `billingMode`/`available`/`type`, top-level `{count, models}`), `count:55` on BOTH surfaces, and an
+    IDENTICAL first model entry (`openai/gpt-5.5`, every field byte-for-byte equal).
+  - **Conclusion, stated plainly:** this is not a stable CLI-vs-MCP structural difference — it is the
+    live `blockrun_models` MCP tool's OWN response shape changing between calls (evidently a
+    server-side change on BlockRun's end between the two measurement times, not a client-side
+    difference this CLI introduces). At the time of the second measurement there is ZERO parity gap on
+    this command. The first measurement's finding is retained above as an honest record of what was
+    observed, not deleted — but is not evidence of an ongoing CLI defect. Free ($0), no funding needed.
 
 ### dex
 
@@ -124,14 +132,14 @@ Every command is assigned to exactly one of two verification tiers:
 - **Tier:** DUAL-LIVE-RUN
 - **Parameter mapping:** `path` → `--path`; `agent_id` → `--agent-id`. 1:1 field-name parity — both
   surfaces are a pure GET passthrough to `/v1/defillama/*`.
-- **Dual-run evidence:** PENDING — Phase 3/4. This is a PAID call ($0.001-$0.005) on the MCP-connected
-  wallet; a live check on 2026-07-08 found that wallet's balance at $0 on both Base
-  (`0x99b3fE1Ef8Fd94AfA5FF3448B3d7f05372cFa94e`) and Solana
-  (`8FpqdcCHqjqkVXR58eVJa53neXbJf9emXhvHhgeUPCV9`) — insufficient to execute this comparison right now.
-  CLI-side evidence already exists at `VERIFICATION.md` row #6 (`--path
-  prices/coingecko:bitcoin`, real result `{"coins":{"coingecko:bitcoin":{"price":63889.65,...}}}`,
-  $0.001). This cell will be filled with a real dual-invocation once the MCP wallet is funded (or a
-  schema-only fallback is recorded per DOC-PARITY-005a) — not fabricated here.
+- **Dual-run evidence (`path:"prices/coingecko:bitcoin"`, real call, 2026-07-08):** BYTE-IDENTICAL
+  output on both surfaces (including live `price`/`timestamp` fields matching exactly, per the
+  orchestrator's dual invocation). Executed after funding the MCP-connected wallet (DOC-PARITY-005a):
+  `0x810f6d61f7606deee2657d3083e150a222bc29c5` sent $0.005 USDC to
+  `0x99b3fE1Ef8Fd94AfA5FF3448B3d7f05372cFa94e` (tx
+  `0xe41ec6c19a46f0735ee17550ebf223bfb762e21ff6a090bcefe40af1b4cd1834`, recorded in
+  `.vcsdd/features/blockrun-cli-docs/evidence/topup-mcp-1.json`) to cover this and the 3 other paid
+  dual-live-run calls below. $0.001. CLI-side reference: `VERIFICATION.md` row #6.
 
 ### markets
 
@@ -141,9 +149,9 @@ Every command is assigned to exactly one of two verification tiers:
 - **Parameter mapping:** `path` → `--path`; `params` → `--params`; `body` → `--body`; `agent_id` →
   `--agent-id`. 1:1 field-name parity — both surfaces route GET-without-body through `pm(path,
   params)` and POST-with-body through `pmQuery(path, body)`.
-- **Dual-run evidence:** PENDING — Phase 3/4 (same funding precondition as `defi` above — this
-  wallet's balance is $0 as of the 2026-07-08 check). CLI-side evidence already exists at
-  `VERIFICATION.md` row #8 (`--path polymarket/events`, real live Polymarket events, $0.001).
+- **Dual-run evidence (`path:"polymarket/events"`, `limit=2`, real call, 2026-07-08):** Same structure
+  and the same leading event (id `552326`) on both surfaces — funded from the same
+  `topup-mcp-1.json` transfer as `defi` above. $0.001. CLI-side reference: `VERIFICATION.md` row #8.
 
 ### rpc
 
@@ -153,9 +161,9 @@ Every command is assigned to exactly one of two verification tiers:
 - **Parameter mapping:** `network` → `--network`; `method` → `--method`; `params` → `--params`; `body`
   → `--body`; `agent_id` → `--agent-id`. 1:1 field-name parity — both validate `network` as a
   well-formed chain slug before any network call.
-- **Dual-run evidence:** PENDING — Phase 3/4 (same funding precondition — $0 balance as of
-  2026-07-08). CLI-side evidence already exists at `VERIFICATION.md` row #9 (`--network base --method
-  eth_blockNumber`, real result `{"id":1,"jsonrpc":"2.0","result":"0x2e16c6b"}`, $0.002).
+- **Dual-run evidence (`network:"base"`, `method:"eth_blockNumber"`, real call, 2026-07-08):**
+  BYTE-IDENTICAL — both surfaces returned the SAME real Base block `0x2e1c3fe` — funded from the same
+  `topup-mcp-1.json` transfer. $0.002. CLI-side reference: `VERIFICATION.md` row #9.
 
 ### phone
 
@@ -164,10 +172,10 @@ Every command is assigned to exactly one of two verification tiers:
 - **Tier:** DUAL-LIVE-RUN
 - **Parameter mapping:** `path` → `--path`; `body` → `--body`; `agent_id` → `--agent-id`. 1:1
   field-name parity — both route a body-bearing call as POST and a bodyless call as a free GET poll.
-- **Dual-run evidence:** PENDING — Phase 3/4, cheapest sub-path only (`phone/numbers/list`, $0.001 —
-  the $5/$0.54 sub-paths are NOT part of this comparison). Same funding precondition as `defi`/
-  `markets`/`rpc` above. CLI-side evidence already exists at `VERIFICATION.md` row #18 (`--path
-  phone/numbers/list --body '{}'`, real result `{"numbers":[],"count":0}`, $0.001).
+- **Dual-run evidence (`path:"phone/numbers/list"`, `body:{}`, real call, 2026-07-08):**
+  BYTE-IDENTICAL — both surfaces returned `{"numbers":[],"count":0}` (the cheapest sub-path only; the
+  $5/$0.54 sub-paths are NOT part of this comparison) — funded from the same `topup-mcp-1.json`
+  transfer. $0.001. CLI-side reference: `VERIFICATION.md` row #18.
 
 ### image
 
@@ -180,9 +188,17 @@ Every command is assigned to exactly one of two verification tiers:
   parameter has a named CLI-flag counterpart — 1:1 parity, no CLI-only additions beyond the universal
   `--budget-limit`.
 - **CLI-side live evidence (reused from `VERIFICATION.md`, NOT re-executed against MCP to avoid double
-  spend):** row #13 — `--model zai/cogview-4 --prompt "a red cube..."`, real 1024×1024 PNG, MD5
-  `dc8a4cad2060539d2cb33392082031c3`, $0.015. Full non-truncated URL + fresh evidence record: see
-  `.vcsdd/features/blockrun-cli-docs/evidence/` (DOC-EVID-001..005, Phase 3/4).
+  spend):** row #13 — original E2E run, `--model zai/cogview-4 --prompt "a red cube..."`, real
+  1024×1024 PNG, MD5 `dc8a4cad2060539d2cb33392082031c3`, $0.015 (original URL recorded truncated and
+  unrecoverable — see `VERIFICATION.md`'s fresh-media appendix).
+- **Fresh full-URL evidence (DOC-EVID-001..005, 2026-07-08):** `--model zai/cogview-4 --prompt "a red
+  cube on a white background"` → full URL
+  `https://blockrun.ai/api/media/media/images/2026/07/08/4c8b9423-36ff-4ee3-a0b9-316e8f2a0c1a.png`,
+  HTTP 200, MD5 `53a632611b24c2daa96c3b006bb6a862`, 30149 bytes, `cost_usd` 0.015 cross-checked against
+  the `cli-budget.json` spend delta (no `txHash` in `image`'s output by design — confirmed at
+  `src/commands/image.ts:83-84`). Full record + local artifact:
+  `.vcsdd/features/blockrun-cli-docs/evidence/image.json` /
+  `.vcsdd/features/blockrun-cli-docs/evidence/image-fresh.png`.
 
 ### video
 
@@ -196,11 +212,20 @@ Every command is assigned to exactly one of two verification tiers:
   `resolution` → `resolution`. Every MCP-declared parameter has a named CLI-flag counterpart. CLI-only
   addition: `--max-quote-usd` (see non-parity points above).
 - **CLI-side live evidence (reused from `VERIFICATION.md`, NOT re-executed against MCP):** row #16 —
-  `--model xai/grok-imagine-video --duration-seconds 1 --resolution 360p --max-quote-usd 0.10`, real
-  1s MP4, quote $0.0525 ≤ cap → signed, tx
+  original E2E run, `--model xai/grok-imagine-video --duration-seconds 1 --resolution 360p
+  --max-quote-usd 0.10`, real 1s MP4, quote $0.0525 ≤ cap → signed, tx
   `0xa4625b8102c223d7733bf3d1a92a95769da7eb87d7992df5b6ef48d28f256c42`, $0.0525; plus row #16b's
-  no-charge quote-gate abort proof. Full non-truncated URL + fresh evidence record: see
-  `.vcsdd/features/blockrun-cli-docs/evidence/` (DOC-EVID-001..005, Phase 3/4).
+  no-charge quote-gate abort proof (original URL recorded truncated and unrecoverable — see
+  `VERIFICATION.md`'s fresh-media appendix).
+- **Fresh full-URL evidence (DOC-EVID-001..005, 2026-07-08):** `--model xai/grok-imagine-video
+  --prompt "a red cube rotating" --duration-seconds 1 --resolution 360p --max-quote-usd 0.10` → quote
+  $0.052501 ≤ cap → signed → full URL
+  `https://blockrun.ai/api/media/media/videos/2026/07/08/4edd85de-72c0-94e5-a443-c45a429d07d3-7f749dcc.mp4`,
+  HTTP 200, MD5 `3785635d5f8140fe4eb632f9b053bc3f`, 122581 bytes, `cost_usd` 0.052501, `txHash`
+  `0xac32089918ff53f3290c7e485f70f1d4e5929611dc28bf7f62fbd3ab080bccfe` (from the `X-Payment-Receipt`
+  header, per `src/shell/manual-x402.ts`). Full record + local artifact:
+  `.vcsdd/features/blockrun-cli-docs/evidence/video.json` /
+  `.vcsdd/features/blockrun-cli-docs/evidence/video-fresh.mp4`.
 
 ### music
 
@@ -212,10 +237,16 @@ Every command is assigned to exactly one of two verification tiers:
   `lyrics`; `model` → `model`; `prompt` → `prompt` (+ bare positional alias). Every MCP-declared
   parameter has a named CLI-flag counterpart — 1:1 parity.
 - **CLI-side live evidence (reused from `VERIFICATION.md`, NOT re-executed against MCP):** row #15 —
-  default model, `"chill lo-fi beats"`, 84s track, tx
-  `0xaf974e98fe8183a311c7a37ad68a08cf701ecee727498c4351dd301115e5eeac`, $0.1575. Full non-truncated URL
-  + fresh evidence record: see `.vcsdd/features/blockrun-cli-docs/evidence/` (DOC-EVID-001..005, Phase
-  3/4).
+  original E2E run, default model, `"chill lo-fi beats"`, 84s track, tx
+  `0xaf974e98fe8183a311c7a37ad68a08cf701ecee727498c4351dd301115e5eeac`, $0.1575 (original URL recorded
+  truncated and unrecoverable — see `VERIFICATION.md`'s fresh-media appendix).
+- **Fresh full-URL evidence (DOC-EVID-001..005, 2026-07-08):** `--prompt "chill lo-fi beats"` (default
+  model `minimax/music-2.5+`) → 92s track, full URL
+  `https://blockrun.ai/api/media/media/audios/2026/07/08/47eac713-dfd8-4969-9444-175ff7b39459.mp3`,
+  HTTP 200, MD5 `2fc782959ce3d0279c053c0d0720cd86`, 2936520 bytes, `cost_usd` 0.1575, `txHash`
+  `0xa00e6ef48ab067eb86da15911c98f78a1c508ac554e176a99191c7e02bea2784`. Full record + local artifact:
+  `.vcsdd/features/blockrun-cli-docs/evidence/music.json` /
+  `.vcsdd/features/blockrun-cli-docs/evidence/music-fresh.mp3`.
 
 ### realface
 

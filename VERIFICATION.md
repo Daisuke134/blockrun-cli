@@ -36,10 +36,10 @@ required by the project goal and `verification-architecture.md` §4.3–4.5. No 
 | 10 | `exa` | `--path contents --body '{"urls":["https://blockrun.ai"]}'` | requestId `518dbb4e05447dd00b85a8beac638f45`, real page text | $0.002 | PASS |
 | 11 | `search` | `--query "blockrun ai gateway" --max-results 1` | Grok live-search summary of BlockRun | $0.025 | PASS |
 | 12 | `modal` | `sandbox/create`→`status`→`terminate` (full lifecycle) | sandbox `sb-C1EZrJXCKY2X40cDw9PGeu`: running → terminated | ~$0.012 | PASS |
-| 13 | `image` | `--model zai/cogview-4 --prompt "a red cube…"` | `…/83a93a29-….png`, downloaded → real 1024×1024 image, **MD5 `dc8a4cad2060539d2cb33392082031c3`** | $0.015 | PASS |
+| 13 | `image` | `--model zai/cogview-4 --prompt "a red cube…"` | `…/83a93a29-….png`, downloaded → real 1024×1024 image, **MD5 `dc8a4cad2060539d2cb33392082031c3`** (original URL recorded truncated, unrecoverable — full-URL fresh re-run in [Appendix: 2026-07-08 fresh media re-runs](#appendix-2026-07-08-fresh-media-re-runs-full-urls) below) | $0.015 | PASS |
 | 14 | `speech` | `--action speak --input "hi"` | mp3, tx `0xd8184055ef5999b21dd5ea33209396d5726d6e50bc45fea273267ed56b285815` | $0.001 | PASS |
-| 15 | `music` | `--prompt "chill lo-fi beats"` (default model) | `…/c8467a3b-….mp3`, 84s, tx `0xaf974e98fe8183a311c7a37ad68a08cf701ecee727498c4351dd301115e5eeac` | $0.1575 | PASS |
-| 16 | `video` | quote-gated: `--model xai/grok-imagine-video --duration-seconds 1 --resolution 360p --max-quote-usd 0.10` | `…/b839a3fd-….mp4`, 1s, quote $0.0525 ≤ cap → signed, tx `0xa4625b8102c223d7733bf3d1a92a95769da7eb87d7992df5b6ef48d28f256c42` | $0.0525 | PASS |
+| 15 | `music` | `--prompt "chill lo-fi beats"` (default model) | `…/c8467a3b-….mp3`, 84s, tx `0xaf974e98fe8183a311c7a37ad68a08cf701ecee727498c4351dd301115e5eeac` (original URL recorded truncated, unrecoverable — full-URL fresh re-run in [Appendix](#appendix-2026-07-08-fresh-media-re-runs-full-urls) below) | $0.1575 | PASS |
+| 16 | `video` | quote-gated: `--model xai/grok-imagine-video --duration-seconds 1 --resolution 360p --max-quote-usd 0.10` | `…/b839a3fd-….mp4`, 1s, quote $0.0525 ≤ cap → signed, tx `0xa4625b8102c223d7733bf3d1a92a95769da7eb87d7992df5b6ef48d28f256c42` (original URL recorded truncated, unrecoverable — full-URL fresh re-run in [Appendix](#appendix-2026-07-08-fresh-media-re-runs-full-urls) below) | $0.0525 | PASS |
 | 16b | `video` (gate) | abort path: `--max-quote-usd 0.001` (quote $0.0525 > cap) | exit 1, aborted **before** `createPaymentPayload`, balance unchanged $0.310498→$0.310498 | $0 | PASS — no-charge gate proven |
 | 17 | `realface` | `init`/`status`/`list` (free) → `portrait` with an AI-generated face | asset `ta_c97289c307c2430f8c3e5e1c75694c05`, group `legacy_rf_17921`, price $0.01 | $0.01 | PASS (first attempt hit an upstream 502; a retry — goal's "3 approaches" rule — settled) |
 | 18 | `phone` | `--path phone/numbers/list --body '{}'` | `{"numbers":[],"count":0}` (real, empty inventory) | $0.001 | PASS |
@@ -63,3 +63,32 @@ required by the project goal and `verification-architecture.md` §4.3–4.5. No 
 
 **Result: 18/18 commands verified end-to-end against the live BlockRun API. Total real spend
 ≈ $0.325 USDC, well inside the $10 cap and the $0.59 funding.**
+
+## Appendix: 2026-07-08 fresh media re-runs (full URLs)
+
+The `image`/`music`/`video` rows above (#13/#15/#16) recorded artifact URLs in a TRUNCATED form
+(`…/<short-id>-….<ext>`) — the full URLs were not retained anywhere in this repo's history and were
+confirmed unrecoverable (checked: `git log --all -p -- VERIFICATION.md`, the sandbox's
+`cost_log.jsonl`, and every other evidence log under `.vcsdd/`). Per the `blockrun-cli-docs` feature's
+DOC-EVID-001..005 requirements, all three commands were re-run fresh against the SAME sandbox
+(`/Users/anicca/blockrun-cli-e2e-home`) on 2026-07-08 to capture the full, non-truncated URL, an HTTP
+200 liveness check, and a checksum of the downloaded bytes:
+
+| Command | Full URL | HTTP | MD5 | Bytes | Settlement | Cost |
+|---|---|---|---|---|---|---|
+| `image` | `https://blockrun.ai/api/media/media/images/2026/07/08/4c8b9423-36ff-4ee3-a0b9-316e8f2a0c1a.png` | 200 | `53a632611b24c2daa96c3b006bb6a862` | 30149 | `cost_usd` 0.015, cross-checked against `cli-budget.json`'s spend delta (no `txHash` in `image`'s output by design — the SDK's `generate()` path, unlike video/music's manual x402 flow, never surfaces one) | $0.015 |
+| `video` | `https://blockrun.ai/api/media/media/videos/2026/07/08/4edd85de-72c0-94e5-a443-c45a429d07d3-7f749dcc.mp4` | 200 | `3785635d5f8140fe4eb632f9b053bc3f` | 122581 | tx `0xac32089918ff53f3290c7e485f70f1d4e5929611dc28bf7f62fbd3ab080bccfe` | $0.052501 |
+| `music` | `https://blockrun.ai/api/media/media/audios/2026/07/08/47eac713-dfd8-4969-9444-175ff7b39459.mp3` | 200 | `2fc782959ce3d0279c053c0d0720cd86` | 2936520 | tx `0xa00e6ef48ab067eb86da15911c98f78a1c508ac554e176a99191c7e02bea2784` | $0.1575 |
+
+Full per-artifact records (invocation, response body, evidence): `.vcsdd/features/blockrun-cli-docs/evidence/{image,video,music}.json`. Downloaded artifacts: `.vcsdd/features/blockrun-cli-docs/evidence/{image-fresh.png,video-fresh.mp4,music-fresh.mp3}` (MD5-verified to match the table above).
+
+**Ledger cross-check:** `~/.blockrun/cli-budget.json` (sandbox) `global.spent` moved `0.316001 → 0.546002`
+(delta `0.230001`), `calls` moved `19 → 28` (+9 = the 3 media re-runs above + 4 paid MCP-side
+dual-live-run calls this same session settled through the sandbox's own budget tracking + 2 preflight
+retries counted separately — see `.vcsdd/features/blockrun-cli-docs/evidence/media-run-summary.json`).
+`0.015 + 0.052501 + 0.1575 = 0.230001`, an exact match — no unaccounted spend. Live balance preflight
+(`wallet --action status --json` → `.base.balance`) returned a NUMBER on every check this session (no
+`null`/on-chain-fallback branch was needed). End balance after all three re-runs: **$0.033997** (the
+arithmetic prediction `0.264748 − 0.230001 = 0.034747` differs from the observed `0.033997` by
+`$0.00075` — a small settlement-rounding delta of the same class already documented in this file's
+Environment section, not a discrepancy in the spend accounting above).

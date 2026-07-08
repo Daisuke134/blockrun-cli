@@ -1,0 +1,48 @@
+new-feature-tests: PASS
+regression-baseline: PASS
+
+=== 2026-07-08T06:02:55Z — Phase 3/4 docs-reflection evidence log (blockrun-cli-docs) ===
+Reflects orchestrator's Phase 3/4 live evidence (commits e27926d, 1045ddd) into PARITY.md/VERIFICATION.md/execution-notes.md.
+Also adds PROP-022 (3-document cross-check) to docs-check.mjs, missing since Phase 2a.
+
+--- MD5/byte-size independent re-verification of evidence/{image,video,music}-fresh.* ---
+image-fresh.png: 53a632611b24c2daa96c3b006bb6a862 (30149 bytes) — matches image.json
+video-fresh.mp4: 3785635d5f8140fe4eb632f9b053bc3f (122581 bytes) — matches video.json
+music-fresh.mp3: 2fc782959ce3d0279c053c0d0720cd86 (2936520 bytes) — matches music.json
+
+--- independent re-verification of models MCP-vs-CLI shape change (2026-07-08) ---
+MCP blockrun_models category=chat -> count:55, camelCase, matches CLI byte-for-byte on first entry (openai/gpt-5.5)
+
+--- node scripts/docs-check.mjs (new-feature Tier-1 assertions, now 17 incl. PROP-022) ---
+[PASS] PROP-001: heading order matches required sequence
+[PASS] PROP-002: 18/18 command rows present and match real subcommand set
+[PASS] PROP-003: README.md free of forbidden placeholder/MCP-framing terms
+[PASS] PROP-006: Environment Variables table has exactly 6 rows with the required member set, .chain/payment-chain separate
+[PASS] PROP-007: CHANGELOG.md preamble/1.0.0-heading/bullet-format all correct
+[PASS] PROP-008: CONTRIBUTING.md has all required script invocations, no banned skill-mechanism claims
+[PASS] PROP-009: PR checklist contains all 6 required items
+[PASS] PROP-010: LICENSE body matches blockrun-mcp/LICENSE; package.json.license === MIT
+[PASS] PROP-011: all package.json fields correct
+[PASS] PROP-012: PARITY.md has 18/18 sections, each naming both MCP tool and CLI form
+[PASS] PROP-013: all 3 known intentional non-parity points called out
+[PASS] PROP-015: execution-notes.md references 'blockrun-cli-docs' and today's date 2026-07-08
+[PASS] PROP-016: all 40 changed path(s) within allow-list, zero src/test/dist touches
+[PASS] PROP-017: CHANGELOG/CONTRIBUTING/LICENSE/PARITY.md free of forbidden placeholders
+[PASS] PROP-022: PARITY.md, VERIFICATION.md, and evidence/*.json agree on full URL + MD5 for image/video/music
+[PASS] PROP-024: 9 DUAL-LIVE-RUN + 9 SCHEMA-ONLY partition exactly matches spec
+[PASS] PROP-025: every MCP-declared parameter for all 9 SCHEMA-ONLY commands is referenced in PARITY.md
+
+17 checks run, 17 PASS, 0 FAIL
+docs-check exit code: 0
+
+--- npm test (regression baseline — CLI's own 408-test suite, untouched per REQ-NG-001) ---
+✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.043583ms)
+✔ schema.safeParse rejects a non-numeric agent_limit (4.289ms)
+ℹ tests 408
+ℹ suites 0
+ℹ pass 408
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13483.3155

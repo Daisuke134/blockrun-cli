@@ -44,10 +44,13 @@ side-by-side 比較する。
   spec-review PASS（adversary + codex 計6+4 iteration、収束）
 - [x] Phase 2a: `scripts/docs-check.mjs`（Tier-1 機械検証、16 assertion）作成、RED 確認
   （16/16 FAIL、regression `npm test` 408/408 green）
-- [>] Phase 2b: README.md / CHANGELOG.md / CONTRIBUTING.md / LICENSE / PARITY.md / package.json /
-  execution-notes.md（本セクション）実装、GREEN 化中
-- [ ] Phase 3-4: `defi`/`markets`/`rpc`/`phone` dual-live-run 実測（MCP wallet funding 待ち）、
-  image/video/music の fresh re-run（full URL evidence, DOC-EVID-001..005）
+- [x] Phase 2b: README.md / CHANGELOG.md / CONTRIBUTING.md / LICENSE / PARITY.md / package.json /
+  execution-notes.md 実装、GREEN 化完了（16/16 PASS、regression 408/408 green）。
+  PROP-016 allow-list を`.vcsdd/**`に拡張、PROP-007/008の自作scriptバグ2件修正。
+- [x] Phase 3-4: dual-live-run 9/9 完了（wallet/chat/models/dex/price/defi/markets/rpc/phone、全て
+  orchestrator実測）+ image/video/music の fresh re-run 完了（full URL + HTTP 200 + MD5 + settlement
+  evidence、DOC-EVID-001..005充足）。PARITY.md/VERIFICATION.mdへ反映、PROP-022（3文書クロスチェック、
+  Phase 2aで実装漏れだったTier-1 PROP）をdocs-check.mjsへ追加。
 - [ ] Phase 5-6: adversary review PASS + harden/converge
 
 ### Decisions
@@ -61,7 +64,15 @@ side-by-side 比較する。
   8FpqdcCHqjqkVXR58eVJa53neXbJf9emXhvHhgeUPCV9）は2026-07-08時点で残高$0。defi/markets/rpc/phone の
   dual-run はfunding後にPhase 3/4で実施。
 
-### Evidence log（Phase 2b時点）
-- MCP実測（2026-07-08、無料コマンドのみ）: wallet=構造差異あり（active-chain平坦化+wallets nest）、
-  models=構造差異+件数差異（category=chat: MCP 44 vs CLI 55）、dex=byte-identical、price=field-set
-  一致（値のみ変動）、chat(mode=free)=field-set一致（model_used値のみ変動）。詳細はPARITY.md参照。
+### Evidence log（Phase 3-4完了時点）
+- MCP実測（2026-07-08、dual-live-run 9/9）: wallet=構造差異あり（active-chain平坦化+wallets nest、
+  by design）、models=第1回測定でsnake_case+count:44 vs camelCase+count:55の差異を観測したが、後の
+  再測定ではMCP側の出力形状自体がcamelCase+count:55に変化しCLIと完全一致（BlockRun側のライブ実装が
+  測定間に変わった可能性、CLI側の問題ではない）、dex/rpc/phone/defi/markets=byte-identical、
+  price/chat=field-set一致（値のみ変動）。詳細はPARITY.md参照。
+- MCP接続walletへtop-up: 0x810f→0x99b3fE1... $0.005 USDC (tx 0xe41ec6c1...)、4件の有料dual-run
+  （defi/markets/rpc/phone）を実行。
+- media fresh re-run: image($0.015)/video($0.052501)/music($0.1575)、全てHTTP 200 + MD5検証済み。
+  sandbox cli-budget.json: spent 0.316001→0.546002 (delta 0.230001、期待値と完全一致)、
+  calls 19→28。live preflightは全てnumberを返しfallback不要だった。
+  詳細: `.vcsdd/features/blockrun-cli-docs/evidence/{image,video,music,media-run-summary,topup-mcp-1}.json`

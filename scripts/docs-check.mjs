@@ -3,9 +3,12 @@
 //
 // Implements every Tier-1 PROP from
 // .vcsdd/features/blockrun-cli-docs/specs/verification-architecture.md:
-//   PROP-001 002 003 006 007 008 009 010 011 012 013 015 016 017 024 025
+//   PROP-001 002 003 006 007 008 009 010 011 012 013 015 016 017 022 024 025
+// (PROP-022 — the 3-document cross-check between PARITY.md/VERIFICATION.md/
+//  evidence/*.json — was added in Phase 3/4; it is Tier 1 per the spec but was
+//  missing from this script's Phase 2a implementation, an oversight.)
 // (PROP-004/005/023 are Tier 2 — live execution — and are NOT run by this script;
-//  PROP-014/018/019/020/021/022 are Tier 2/3 and likewise out of scope here.)
+//  PROP-014/018/019/020/021 are Tier 2/3 and likewise out of scope here.)
 //
 // Pure/offline: no network access, no spend. Reads repo files + runs local
 // `git`/`node dist/index.js --help` (already-built binary, no network call).
@@ -850,6 +853,66 @@ function checkProp025() {
 }
 
 // ---------------------------------------------------------------------------
+// PROP-022 — 3-document cross-check: PARITY.md <-> evidence/*.json <-> VERIFICATION.md
+// (DOC-EVID-004/-005; Tier 1, cross-file, no network) — added Phase 3/4, was
+// missing from the original Phase 2a Tier-1 list despite being classified Tier 1
+// in verification-architecture.md.
+// ---------------------------------------------------------------------------
+
+const MEDIA_EVIDENCE_COMMANDS = ["image", "video", "music"];
+
+function checkProp022() {
+  const parity = readFileOpt(repoPath("PARITY.md"));
+  const verification = readFileOpt(repoPath("VERIFICATION.md"));
+  if (parity === null) {
+    record("PROP-022", false, "PARITY.md does not exist");
+    return;
+  }
+  if (verification === null) {
+    record("PROP-022", false, "VERIFICATION.md does not exist");
+    return;
+  }
+  const sections = parsePARITYSections(parity);
+  const problems = [];
+  for (const name of MEDIA_EVIDENCE_COMMANDS) {
+    const evidencePath = repoPath(".vcsdd/features/blockrun-cli-docs/evidence", `${name}.json`);
+    const evidenceRaw = readFileOpt(evidencePath);
+    if (evidenceRaw === null) {
+      problems.push(`${name}: evidence/${name}.json does not exist`);
+      continue;
+    }
+    let evidence;
+    try {
+      evidence = JSON.parse(evidenceRaw);
+    } catch (e) {
+      problems.push(`${name}: evidence/${name}.json is not valid JSON: ${e.message}`);
+      continue;
+    }
+    const fullUrl = evidence.fullUrl;
+    const md5 = evidence.md5;
+    if (typeof fullUrl !== "string" || typeof md5 !== "string") {
+      problems.push(`${name}: evidence/${name}.json missing fullUrl/md5 field`);
+      continue;
+    }
+    const body = sections[name] ?? "";
+    if (!body.includes(`evidence/${name}.json`) && !body.includes(`evidence/${name}`)) {
+      problems.push(`${name}: PARITY.md section does not reference evidence/${name}.json`);
+    }
+    if (!body.includes(md5)) {
+      problems.push(`${name}: PARITY.md section does not quote MD5 ${md5}`);
+    }
+    if (!verification.includes(fullUrl)) {
+      problems.push(`${name}: VERIFICATION.md does not contain the full URL ${fullUrl}`);
+    }
+  }
+  if (problems.length > 0) {
+    record("PROP-022", false, problems.join("; "));
+    return;
+  }
+  record("PROP-022", true, "PARITY.md, VERIFICATION.md, and evidence/*.json agree on full URL + MD5 for image/video/music");
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -880,6 +943,7 @@ function main() {
   checkProp015();
   checkProp016();
   checkProp017();
+  checkProp022();
   checkProp024();
   checkProp025();
 
