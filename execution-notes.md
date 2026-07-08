@@ -137,3 +137,24 @@ consistent:
   blockrun-cli-docs feature, immune to any later feature's src/ work. `node scripts/docs-check.mjs` is
   **18/18 PASS** again. See `.vcsdd/features/blockrun-cli-agent-dx/evidence/sprint-1-green-phase.log`
   for the full before/after detail.
+
+## Cross-feature note: blockrun-cli-agent-dx's `activeBalanceUnavailableReason` field name (IMPL-DX-1, 2026-07-08)
+
+`blockrun-cli-agent-dx`'s impl-review (fresh Opus adversary, iteration 1) found a spec/implementation
+naming mismatch: REQ-DX-023 originally said `wallet --action chain --json`'s top-level `activeBalance`
+field gains the SAME `balanceUnavailableReason` name `status`'s per-chain `base`/`solana` sub-objects
+use (REQ-DX-020) when null — but the shipped `src/commands/wallet.ts` implementation actually uses
+`activeBalanceUnavailableReason` (an `active`-prefixed sibling of `activeBalance`), undocumented as an
+intentional deviation.
+
+**Resolution (implementation kept, spec corrected to match — NOT the reverse)**: `activeBalanceUnavailableReason`
+is the correct, intentional name — it matches the `activeBalance` field it explains, and avoids any
+ambiguity a bare `balanceUnavailableReason` would have at that TOP level (unlike `status`'s per-chain
+sub-objects, where `base.balanceUnavailableReason`/`solana.balanceUnavailableReason` are already
+chain-scoped by their parent object, `chain` action's top-level `activeBalance` has no such parent
+scoping, so a bare name would be genuinely ambiguous about which chain it refers to). REQ-DX-023 in
+`.vcsdd/features/blockrun-cli-agent-dx/specs/behavioral-spec.md` updated to state
+`activeBalanceUnavailableReason` explicitly, with this rationale recorded inline. A regression test
+covering both the null (`reason` present) and real-number-including-zero (`reason` key absent) cases
+for the `chain` action was added to `test/integration/wallet.test.ts` (previously ZERO tests, at any
+tier, covered this field — the gap the adversary caught).

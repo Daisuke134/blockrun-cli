@@ -195,3 +195,48 @@ clean). Both docs-check.mjs functions now carry an explicit comment: "PROP-016/
 PROP-016b are a completed, permanent verification of the blockrun-cli-docs
 feature ONLY... The range is PINNED to those two commits, not 'since init through
 whatever HEAD is today.'"
+
+============================================================
+UPDATE — impl-review it1 fix: IMPL-DX-1 (activeBalanceUnavailableReason naming +
+missing test), 2026-07-08
+============================================================
+
+Fresh Opus adversary impl-review iteration 1 = FAIL, 1 blocking finding
+(IMPL-DX-1; the other 3 dimensions — money-path, backward-compat, real-binary — all
+PASS): REQ-DX-023 (behavioral-spec.md) said the `chain` action's null `activeBalance`
+gains the SAME `balanceUnavailableReason` name `status`'s per-chain sub-objects use,
+but the SHIPPED src/commands/wallet.ts implementation actually emits
+`activeBalanceUnavailableReason` instead — an undocumented spec/impl deviation — AND
+zero tests at any tier asserted this field's null/non-null behavior for the `chain`
+action at all.
+
+Resolution (implementation kept as the correct, intentional name; spec corrected to
+match — not the reverse, per team-lead's explicit direction):
+- `.vcsdd/features/blockrun-cli-agent-dx/specs/behavioral-spec.md` REQ-DX-023 —
+  updated to state `activeBalanceUnavailableReason` explicitly, with the naming
+  rationale (avoids ambiguity a bare `balanceUnavailableReason` would have at the
+  TOP level, unlike `status`'s chain-scoped `base`/`solana` sub-objects) recorded
+  inline.
+- `.vcsdd/features/blockrun-cli-agent-dx/specs/verification-architecture.md`
+  PROP-DX-010 — updated to name BOTH real field names explicitly instead of implying
+  one shared name for both action shapes.
+- `execution-notes.md` — new dated cross-feature entry recording the deviation and
+  its resolution (per team-lead's explicit request).
+- `test/integration/wallet.test.ts` — 2 NEW tests added (the previously-missing
+  coverage): `chain` action's `activeBalanceUnavailableReason` is present with the
+  correct reason string when `activeBalance` is null, and ABSENT (key genuinely not
+  present) when `activeBalance` is a real number including exactly 0. Uses the SAME
+  mock-and-mutate-a-module-level-variable pattern already established for
+  `peekSolanaResult`/`ensureBothCalled` in that file (new `chainBalanceResult`
+  variable feeding the mocked `getChainBalance`).
+
+Verification after fix:
+- `npx tsx --experimental-test-module-mocks --test test/integration/wallet.test.ts`
+  in isolation: 10/10 PASS (8 pre-existing + 2 new) — confirms the ALREADY-SHIPPED
+  implementation was correct all along; only the spec text and test coverage were
+  missing, not the code.
+- Full `npm test`: **532/532 PASS** (530 + 2 new).
+- `npm run typecheck`: clean.
+- `node scripts/docs-check.mjs`: **18/18 PASS** (unaffected by this fix).
+- src/ NOT touched by this fix (only specs/, execution-notes.md, and the ONE test
+  file were changed) — confirmed via `git status --short -- src/` (empty).

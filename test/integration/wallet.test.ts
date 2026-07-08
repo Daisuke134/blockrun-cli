@@ -11,6 +11,9 @@ import type { BudgetState } from "../../src/types.js";
 // module namespace object — same pattern used elsewhere in this suite.
 let peekSolanaResult: { address: string } | null = null;
 let ensureBothCalled = false;
+// IMPL-DX-1: mutable so the activeBalanceUnavailableReason tests below (REQ-DX-023)
+// can vary getChainBalance()'s null/non-null return, same pattern as peekSolanaResult.
+let chainBalanceResult: { balance: number | null; reason?: string } = { balance: 1.23 };
 mock.module("../../src/shell/wallet.js", {
   namedExports: {
     getChain: () => "base",
@@ -18,7 +21,7 @@ mock.module("../../src/shell/wallet.js", {
     ensureBothWallets: async () => { ensureBothCalled = true; return { base: { address: "0xBASE" }, solana: { address: "SoLTEST" } }; },
     ensureBaseWallet: () => ({ address: "0xBASE", isNew: false }),
     peekSolanaWallet: async () => peekSolanaResult,
-    getChainBalance: async () => ({ balance: 1.23 }),
+    getChainBalance: async () => chainBalanceResult,
     setChain: () => {},
   },
 });
@@ -115,10 +118,33 @@ test("REQ-016a: `wallet --action chain` (view-only) reports the Solana address W
 test("REQ-016a: `wallet --action chain --chain solana` (explicit switch) DOES create the Solana wallet via ensureBothWallets()", async () => {
   peekSolanaResult = null;
   ensureBothCalled = false;
+  chainBalanceResult = { balance: 1.23 };
   const res = await run({ action: "chain", chain: "solana" }, { json: true }, newBudget());
   assert.equal(res.exitCode, 0);
   assert.equal(ensureBothCalled, true, "an explicit --chain solana switch legitimately requires creating the Solana wallet");
   const parsed = JSON.parse(res.stdout);
   assert.equal(parsed.activeChain, "solana");
   assert.equal(parsed.solana, "SoLTEST");
+});
+
+test("REQ-DX-023/IMPL-DX-1: `wallet --action chain --json`'s top-level activeBalance null gains activeBalanceUnavailableReason (the field name the SHIPPED implementation actually uses, not status's per-chain balanceUnavailableReason)", async () => {
+  peekSolanaResult = null;
+  ensureBothCalled = false;
+  chainBalanceResult = { balance: null, reason: "all_rpcs_failed" };
+  const res = await run({ action: "chain" }, { json: true }, newBudget());
+  assert.equal(res.exitCode, 0);
+  const parsed = JSON.parse(res.stdout);
+  assert.equal(parsed.activeBalance, null);
+  assert.equal(parsed.activeBalanceUnavailableReason, "all_rpcs_failed");
+});
+
+test("REQ-DX-023/IMPL-DX-1: `wallet --action chain --json`'s activeBalanceUnavailableReason is ABSENT when activeBalance is a real number (including exactly 0)", async () => {
+  peekSolanaResult = null;
+  ensureBothCalled = false;
+  chainBalanceResult = { balance: 0 };
+  const res = await run({ action: "chain" }, { json: true }, newBudget());
+  assert.equal(res.exitCode, 0);
+  const parsed = JSON.parse(res.stdout);
+  assert.equal(parsed.activeBalance, 0);
+  assert.equal("activeBalanceUnavailableReason" in parsed, false, "a real (even zero) activeBalance must not carry the reason key at all");
 });

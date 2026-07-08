@@ -336,10 +336,17 @@ Every requirement is a MUST. There are no optional/recommended items in this doc
   currently preserve finer detail than "it threw," so this is the one grounded value.
 - REQ-DX-023: `wallet --action chain --json`'s TOP-LEVEL `activeBalance` field (a SEPARATE null
   -capable balance field used by the `chain` action, `src/commands/wallet.ts` line ~110-112 — distinct
-  from `status`'s per-chain `base`/`solana` sub-objects) SHALL gain the SAME
-  `balanceUnavailableReason` convention when `activeBalance` is `null`, using the SAME
-  `"all_rpcs_failed"`/`"solana_client_error"` values keyed to whichever chain is active — for
-  consistency across EVERY place this CLI can report a null balance, not just `status`.
+  from `status`'s per-chain `base`/`solana` sub-objects) SHALL gain a sibling field
+  `activeBalanceUnavailableReason` (NOT the bare `balanceUnavailableReason` name `status`'s per-chain
+  sub-objects use — deliberately `active`-prefixed, matching the `activeBalance` field it explains, and
+  avoiding ANY ambiguity about which chain a bare `balanceUnavailableReason` at this TOP level would
+  refer to) when `activeBalance` is `null`, using the SAME `"all_rpcs_failed"`/`"solana_client_error"`
+  values keyed to whichever chain is active — for consistency across EVERY place this CLI can report a
+  null balance, not just `status`. **Naming correction (impl-review IMPL-DX-1, 2026-07-08)**: this
+  spec's earlier draft used the bare `balanceUnavailableReason` name here too, which the Green-phase
+  implementation deviated from (using `activeBalanceUnavailableReason` instead) without recording the
+  deviation — this REQ is now corrected to match the shipped, intentional name; see execution-notes.md
+  for the rationale.
 - REQ-DX-024: The NON-`--json` human `wallet --action status` output, which today prints literally
   `"unavailable"` for a null balance (`src/commands/wallet.ts`'s template string, `` `$${baseBal !==
   null ? ... : "unavailable"}` ``), SHALL be updated to append the reason in parentheses, e.g.

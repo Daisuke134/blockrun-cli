@@ -130,12 +130,14 @@ suite (REQ-DX-041), not a separate check script.
 - **PROP-DX-010** (REQ-DX-021, -022, -023) — Tier 1, MOCKED: unit tests force
   `getBaseUsdcBalance`/`getSolanaUsdcBalance`-equivalent code paths to their real null-producing state
   (all 3 Base RPC fetches rejected/return unparseable data; the Solana client's `getBalance()` throws)
-  and assert `balanceUnavailableReason` is EXACTLY `"all_rpcs_failed"` / `"solana_client_error"`
-  respectively, in BOTH the `status` action's per-chain shape (REQ-DX-020) and the `chain` action's
-  `activeBalance` shape (REQ-DX-023). A THIRD case asserts that when the mock returns a real numeric
-  balance (including exactly `0`), `balanceUnavailableReason` is ABSENT from the output entirely (not
-  `null`, not an empty string — the KEY genuinely absent, per REQ-DX-020's "never present alongside a
-  real numeric balance" rule).
+  and assert the reason field is EXACTLY `"all_rpcs_failed"` / `"solana_client_error"` respectively, in
+  BOTH the `status` action's per-chain shape (REQ-DX-020's `base.balanceUnavailableReason`/
+  `solana.balanceUnavailableReason`) AND the `chain` action's TOP-LEVEL `activeBalance` shape
+  (REQ-DX-023's `activeBalanceUnavailableReason` — a DIFFERENT field NAME than the `status` shape uses,
+  by design: see REQ-DX-023's naming rationale, corrected per impl-review IMPL-DX-1). A THIRD case
+  asserts that when the mock returns a real numeric balance (including exactly `0`), the reason field is
+  ABSENT from the output entirely (not `null`, not an empty string — the KEY genuinely absent, per
+  REQ-DX-020's "never present alongside a real numeric balance" rule) — for BOTH field names.
 - **PROP-DX-011** (REQ-DX-040) — the EXISTING 408-test suite passes in full, run via `npm test`, at
   every checkpoint of this feature's Green phase (not just once at the end) — this is the ongoing
   regression gate, not a one-time check.
