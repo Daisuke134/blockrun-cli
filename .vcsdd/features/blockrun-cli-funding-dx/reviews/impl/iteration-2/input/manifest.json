@@ -1,0 +1,9 @@
+{
+  "reviewType": "implementation",
+  "featureName": "blockrun-cli-funding-dx",
+  "mode": "lean",
+  "iteration": 2,
+  "artifactsToReview": ["src/commands/wallet.ts", "test/integration/wallet.test.ts", "specs/"],
+  "reviewDimensions": ["spec_coverage", "money_path_invariance", "backward_compatibility", "real_binary_behavior"],
+  "priorFindings": "it1: single blocking IMPL-FUND-1 (deposit mint lacked onQuote zero-cap) — fixed: onQuote throws pre-signature on quote>0, graceful degrade, 2 tests (nonzero-abort + zero-pass), spec reframed to client-enforced (553/553)"
+}
