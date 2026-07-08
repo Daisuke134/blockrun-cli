@@ -1,0 +1,9 @@
+{
+  "reviewType": "spec",
+  "featureName": "blockrun-cli-agent-dx",
+  "mode": "lean",
+  "iteration": 2,
+  "artifactsToReview": ["specs/behavioral-spec.md", "specs/verification-architecture.md"],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "priorFindings": "it1: SPEC-DX-1 CRITICAL (network_error unreachable), SPEC-DX-2 HIGH (false-positive test path), SPEC-DX-3 MEDIUM (precedence divergence + wrong-function trap) — all addressed"
+}
