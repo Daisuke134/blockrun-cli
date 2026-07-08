@@ -1,0 +1,12 @@
+{
+  "reviewType": "implementation",
+  "featureName": "blockrun-cli-docs",
+  "mode": "lean",
+  "iteration": 1,
+  "artifactsToReview": [
+    "README.md", "CHANGELOG.md", "CONTRIBUTING.md", "LICENSE", "PARITY.md", "VERIFICATION.md",
+    "package.json", "scripts/docs-check.mjs", "execution-notes.md",
+    ".vcsdd/features/blockrun-cli-docs/evidence/"
+  ],
+  "reviewDimensions": ["spec_coverage", "apple_to_apple_parity", "evidence_integrity", "honesty"]
+}
