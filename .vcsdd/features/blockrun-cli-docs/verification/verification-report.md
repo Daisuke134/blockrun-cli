@@ -1,4 +1,4 @@
-# blockrun-cli-docs — Verification Report (Phase 5, Formal Hardening)
+# Verification Report — blockrun-cli-docs (Phase 5, Formal Hardening)
 
 Feature: `blockrun-cli-docs` · Mode: lean · Phase: 5 · Date: 2026-07-08
 

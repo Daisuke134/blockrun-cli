@@ -1,4 +1,4 @@
-# blockrun-cli-docs — Purity Boundary Audit (Phase 5, Formal Hardening)
+# Purity Boundary Audit — blockrun-cli-docs (Phase 5)
 
 Feature: `blockrun-cli-docs` · Mode: lean · Phase: 5 · Date: 2026-07-08
 

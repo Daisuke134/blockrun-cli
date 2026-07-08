@@ -1,4 +1,4 @@
-# blockrun-cli-docs — Security Report (Phase 5, Formal Hardening)
+# Security Hardening Report — blockrun-cli-docs (Phase 5)
 
 Feature: `blockrun-cli-docs` · Mode: lean · Phase: 5 · Date: 2026-07-08
 
