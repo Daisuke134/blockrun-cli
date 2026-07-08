@@ -1,0 +1,23 @@
+{
+  "reviewType": "spec",
+  "iteration": 4,
+  "dimensions": {
+    "spec_fidelity": "PASS",
+    "verification_readiness": "PASS"
+  },
+  "overall": "PASS",
+  "priorFindingsStatus": [
+    {
+      "id": "SPEC-DX-5",
+      "status": "RESOLVED",
+      "note": "Verified via `git show 76fddc7` that the it3 fix commit touches ONLY verification-architecture.md's PROP-DX-006 step 4 (15 insertions, 6 deletions; no other file, section, or line changed). The restored text now reads: defi's case, run against today's pre-fix code (before REQ-DX-015's extractErrorMessage() extension exists), SHALL FAIL because extractErrorMessage() currently collapses the stubbed error to the bare string \"fetch failed\" with no cause/name information; ONCE REQ-DX-015 is applied, defi's case SHALL PASS. REQ-DX-016 is explicitly marked UNRELATED to this gating, with the stated reason matching REQ-DX-011's own classification-order clause verbatim: network_error (item 6) is checked FIRST and independently at step (a), before REQ-DX-016's classifyKnownError extraction is ever consulted at step (b) (confirmed by re-reading REQ-DX-011 lines 141-154 of behavioral-spec.md, which is byte-identical to before — behavioral-spec.md was not touched by this commit, consistent with the corruption having been isolated to the PROP text). dex's case remains unchanged and correctly gated on REQ-DX-017 alone (SEPARATE, INDEPENDENT RED-phase requirement, unaffected by this edit). The closing sentence now reads '(each gated on its OWN correct prerequisite — REQ-DX-015 for defi, REQ-DX-015+REQ-DX-017 for dex)', which is strictly more precise than the pre-it3 wording and introduces no new inconsistency. No other text in PROP-DX-006 (steps 1-3, the RED-phase requirement's surrounding Tier-1/Tier-2 framing, or its cross-references to REQ-DX-011/015/016/017) was altered by this edit."
+    }
+  ],
+  "findings": [],
+  "totalsCheck": {
+    "reqDxCount": 28,
+    "propDxCount": 14,
+    "verified": true,
+    "note": "Recounted directly from behavioral-spec.md (REQ-DX-001..008=8, 010..017=8, 020..024=5, 030..034=5, 040..041=2 => 28, excluding the 5 separately-typed REQ-DX-NG-* non-goals) and verification-architecture.md (PROP-DX-001..014 => 14). Matches the document's own stated totals in both the body text and the traceability summary table; unchanged from iteration-3."
+  }
+}
