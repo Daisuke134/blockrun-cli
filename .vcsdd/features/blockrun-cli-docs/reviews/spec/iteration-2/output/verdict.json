@@ -1,0 +1,27 @@
+{
+  "reviewType": "spec",
+  "iteration": 2,
+  "dimensions": {
+    "spec_fidelity": "PASS",
+    "verification_readiness": "FAIL"
+  },
+  "overall": "FAIL",
+  "findings": [
+    {
+      "id": "FIND-001",
+      "severity": "blocking",
+      "dimension": "verification_readiness",
+      "description": "PROP-016 (verification-architecture.md lines 102-106) asserts that `git diff <feature-start-commit>..HEAD --name-only` contains ONLY paths matching an allow-list of: README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE, package.json, PARITY.md, execution-notes.md, scripts/docs-check.*, .vcsdd/features/blockrun-cli-docs/**. `VERIFICATION.md` is NOT in this allow-list. However, DOC-EVID-005 (behavioral-spec.md lines 279-282) states 'VERIFICATION.md SHALL be updated (rows #13/#15/#16, or a dated appendix) to record the full non-truncated URL obtained per DOC-EVID-001' -- a hard MUST, not optional -- and PROP-022(b) (verification-architecture.md lines 180-184) independently asserts as a REQUIRED Tier-1 check that 'VERIFICATION.md's rows #13/#15/#16 (or a dated appendix) contain the SAME full URL as the matching evidence/ record.' VERIFICATION.md is a git-tracked file (confirmed via `git log --oneline -- VERIFICATION.md`, committed at f764fc5/0e545a1, predating this feature's start), so any edit DOC-EVID-005/PROP-022 requires will necessarily appear in `git diff <feature-start-commit>..HEAD --name-only` as a changed path outside PROP-016's allow-list. As written, PROP-016 and PROP-022 cannot both PASS: satisfying PROP-022's required VERIFICATION.md update makes PROP-016 fail (an out-of-allow-list path changed), and keeping PROP-016 green by never touching VERIFICATION.md makes PROP-022 and DOC-EVID-005 unsatisfiable. This is a self-contradictory proof-obligation set within the SAME artifact (verification-architecture.md), not merely a stale figure -- it will deterministically fail Phase 2b/3 regardless of how carefully the implementer follows the spec. This is a genuinely new issue not caught in iteration-1 (iteration-1's findings concerned README section order and the media-evidence skip loophole/stale balance/purity-boundary contradiction, all of which are correctly resolved in this revision).",
+      "suggestedFix": "Add `VERIFICATION.md` to PROP-016's allow-list in verification-architecture.md (e.g. `... PARITY.md, VERIFICATION.md, execution-notes.md, scripts/docs-check.*, .vcsdd/features/blockrun-cli-docs/**`). Optionally also add VERIFICATION.md to behavioral-spec.md's DOC-CONSTRAINT-001/allow-list framing if it enumerates permitted files anywhere else, so the two artifacts stay consistent."
+    }
+  ],
+  "resolvedFromIteration1": [
+    "FIND-001 (adversary, README section order contradiction) — verified resolved: DOC-README-001 now states the real verified order (Prerequisites -> Install -> Fund your wallet -> Tools -> Tips/Key-Use-Cases/Why-not/When-not -> Multi-agent budget delegation -> Troubleshooting -> Environment Variables -> How it works -> Contributing), matching ground-truth `grep -n '^#' blockrun-mcp/README.md` output re-verified directly in this review.",
+    "FIND-002 (adversary, PROP-001 encoded wrong order) — verified resolved: PROP-001 now encodes the same corrected order as DOC-README-001.",
+    "FIND-003 (adversary, minor, DOC-PKG-002 invented crypto/wallet parallel) — verified resolved: DOC-PKG-002 now explicitly states additional keywords are 'NOT required to parallel blockrun-mcp's actual keyword array' and quotes the real array.",
+    "FIND-004 (adversary, minor, DOC-README-009/PROP-006 grouping ambiguity) — verified resolved: DOC-README-009 and PROP-006 now explicitly require 6 SEPARATE rows, with .chain and payment-chain each getting their own row, not combined via '/'.",
+    "codex FIND-001 (music-skip evidence loophole) — verified resolved: DOC-EVID-001/002a and PROP-020 now explicitly forbid partial completion ('skipping music ... is NOT an acceptable terminal state'; 'this path is REMOVED') and replace it with a mandatory top-up-then-resume loop with no cap on retries.",
+    "codex FIND-002 (stale balance without live preflight) — verified resolved: DOC-EVID-002 and PROP-020 step 1 now require a live `wallet --action status` preflight immediately before spend, explicitly superseding VERIFICATION.md's dated $0.264748 figure.",
+    "codex FIND-003 (spend-model contradiction in architecture intro) — verified resolved: the §1 intro paragraph now explicitly names PROP-005, PROP-019, PROP-020, PROP-021 as network-touching and both PROP-005 and PROP-020 as spend-capable, consistent with the Purity boundary table and §3 Budget guard."
+  ]
+}

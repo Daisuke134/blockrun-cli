@@ -101,9 +101,12 @@ Phase 2a/2b of THIS feature (not the CLI's own 408-test suite, which is untouche
   Tier-1 run. Assert: substring + date-pattern match, run at Phase 3 (not a stale historical mention).
 - **PROP-016** (DOC-CONSTRAINT-001, DOC-NG-001) — `git diff <feature-start-commit>..HEAD --name-only`
   contains ONLY paths matching one of: `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`,
-  `package.json`, `PARITY.md`, `execution-notes.md`, `scripts/docs-check.*`,
-  `.vcsdd/features/blockrun-cli-docs/**`. Assert: every changed path matches the allow-list; zero paths
-  under `src/`, `test/`, `dist/`.
+  `package.json`, `PARITY.md`, `VERIFICATION.md`, `execution-notes.md`, `scripts/docs-check.*`,
+  `.vcsdd/features/blockrun-cli-docs/**`. `VERIFICATION.md` is explicitly in the allow-list because
+  DOC-EVID-005/PROP-022(b) REQUIRE this feature to update it with the recovered full media URLs —
+  omitting it here would make PROP-016 FAIL against the feature's own required work (spec-review
+  iteration-2 FIND-001; an earlier draft omitted it, contradicting DOC-EVID-005). Assert: every changed
+  path matches the allow-list; zero paths under `src/`, `test/`, `dist/`.
 - **PROP-017** (DOC-CONSTRAINT-002) — every produced doc file (README/CHANGELOG/CONTRIBUTING/LICENSE/
   PARITY.md) is free of the forbidden-placeholder set from PROP-003, re-checked across ALL files (PROP
   -003 is README-only; this PROP covers the rest). Assert: zero matches across the file set minus
