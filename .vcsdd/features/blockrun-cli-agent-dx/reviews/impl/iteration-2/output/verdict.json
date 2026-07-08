@@ -1,0 +1,23 @@
+{
+  "reviewType": "implementation",
+  "iteration": 2,
+  "dimensions": {
+    "spec_coverage": "PASS",
+    "money_path_invariance": "PASS",
+    "backward_compatibility": "PASS",
+    "real_binary_behavior": "PASS"
+  },
+  "overall": "PASS",
+  "findings": [
+    {
+      "id": "IMPL-DX-2",
+      "dimension": "spec_coverage",
+      "severity": "minor",
+      "requirement": "REQ-DX-023",
+      "location": "src/commands/wallet.ts:118-120 (code comment, pre-existing — not touched by commit f78baa9)",
+      "description": "The inline code comment above the `activeBalanceUnavailableReason` wiring still reads \"REQ-DX-023: same balanceUnavailableReason convention as `status` below\", which is now stale: the corrected REQ-DX-023 (behavioral-spec.md) explicitly documents that `activeBalanceUnavailableReason` is a DIFFERENT, deliberately-active-prefixed field name from `status`'s bare `balanceUnavailableReason`, not the 'same convention'. This is a documentation-only drift (src/ was correctly left untouched by this fix, and the shipped behavior is correct and now spec-matched/tested), not a behavioral or spec-coverage defect.",
+      "reproduction": "sed -n '117,121p' src/commands/wallet.ts",
+      "remediation": "Non-blocking. Optionally update the comment wording in a future touch of this file to match the corrected REQ-DX-023 rationale (active-prefixed name is intentional, not 'the same' as status's)."
+    }
+  ]
+}
