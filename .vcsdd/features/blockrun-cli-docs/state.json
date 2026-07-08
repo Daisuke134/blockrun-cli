@@ -2,7 +2,7 @@
   "featureName": "blockrun-cli-docs",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "5",
   "phaseHistory": [
     {
       "from": "init",
@@ -49,10 +49,18 @@
       "timestamp": "2026-07-08T06:11:30.629Z",
       "reason": "Phase 3/4 verification complete (9/9 dual-runs, 3 media fresh re-runs, docs-check 18/18) — starting adversary implementation review",
       "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-07-08T06:18:11.834Z",
+      "reason": "Phase 3 impl review PASS (4/4 dims, 0 blocking) — proceeding to formal hardening",
+      "sprint": 1
     }
   ],
   "iterations": {
     "3": 1,
+    "5": 1,
     "1a": 1,
     "1b": 1,
     "1c": 1,
@@ -66,6 +74,11 @@
     "beads": []
   },
   "gates": {
+    "3": {
+      "verdict": "PASS",
+      "timestamp": "2026-07-08T06:18:11.832Z",
+      "reviewedBy": "adversary"
+    },
     "1c": {
       "verdict": "PASS",
       "timestamp": "2026-07-08T05:28:20.411Z",
@@ -76,5 +89,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-07-08T04:29:58.769Z",
-  "updatedAt": "2026-07-08T06:11:30.630Z"
+  "updatedAt": "2026-07-08T06:18:11.834Z"
 }
