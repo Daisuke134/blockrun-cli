@@ -79,8 +79,15 @@ suite (REQ-DX-041), not a separate check script.
   DIRECTLY proves nothing about whether that raw error can EVER reach the classifier from a real
   command, since all 18 commands' catch blocks call `extractErrorMessage(err)` FIRST, which — before
   REQ-DX-015's fix — silently discards `err.cause` and `err.name` entirely):
-  1. Pick ONE real command whose network call this test can cheaply stub (Phase 2's choice, e.g.
-     `defi` — it makes exactly one `getWithPaymentRaw()` call after validation/budget-gate pass).
+  1. Pick TWO real commands whose network call this test can cheaply stub — REQUIRED, per
+     spec-review it-2 SPEC-DX-4 (NOT optional; a single-command test would give false confidence,
+     exactly the failure mode SPEC-DX-4 found in the ORIGINAL single-command version of this PROP):
+     `defi` (it makes exactly one `getWithPaymentRaw()` call after validation/budget-gate pass — the
+     PAID-path exemplar, catch block already routes through `extractErrorMessage()`) AND `dex` (it
+     makes exactly one `fetchJson()` call, no budget gate at all — the FREE-but-networked exemplar,
+     whose catch block did NOT route through `extractErrorMessage()` until REQ-DX-017's fix). Testing
+     BOTH proves the wiring holds for a paid, gated command AND a free, ungated one — the two
+     structurally different shapes among the 18 commands.
   2. Stub ONLY that command's underlying network call (the SDK client method or the raw `fetch`,
      whichever this command actually uses) to REJECT with the REAL, live-verified Node shape:
      `Object.assign(new TypeError("fetch failed"), { cause: Object.assign(new Error("..."), { code:
@@ -88,17 +95,20 @@ suite (REQ-DX-041), not a separate check script.
      `isTimeoutError()`'s real detection (e.g. an error named `"TimeoutError"`, per REQ-DX-011 item
      6's live-corrected finding that `AbortSignal.timeout()` produces `"TimeoutError"`, NOT
      `"AbortError"`) for the timeout case.
-  3. Invoke that command's REAL `run(flags, opts, budget)` function (or spawn the built binary — Tier
-     1 favors the in-process `run()` call for speed) with valid flags, and assert the ACTUAL
-     `CommandOutcome` it returns (`fail()`'s real output) — NOT a direct classifier call — has
-     `exitCode === 4` and (parsing `outcome.stdout` as JSON when `opts.json` is true) `code ===
+  3. FOR EACH of the two commands, invoke its REAL `run(flags, opts, budget)` function (or spawn the
+     built binary — Tier 1 favors the in-process `run()` call for speed) with valid flags, and assert
+     the ACTUAL `CommandOutcome` it returns (`fail()`'s real output) — NOT a direct classifier call —
+     has `exitCode === 4` and (parsing `outcome.stdout` as JSON when `opts.json` is true) `code ===
      "network_error"`.
-  4. **RED-phase requirement**: THIS EXACT TEST, run against today's pre-fix code (before REQ-DX-015's
-     `extractErrorMessage()` extension exists), SHALL FAIL — because `extractErrorMessage()` currently
-     collapses the stubbed error to the bare string `"fetch failed"` with no cause/name information,
-     so no classifier operating on that string alone can ever produce `"network_error"`. This test
-     passing is therefore genuine evidence the REQ-DX-015 wiring works end-to-end, not merely that an
-     isolated classifier function is internally correct.
+  4. **RED-phase requirement**: `defi`'s case, run against code with REQ-DX-015 but WITHOUT REQ-DX-016
+     applied, SHALL FAIL for the reason originally described (no cause/name info reaches the
+     classifier). `dex`'s case has an ADDITIONAL, INDEPENDENT RED-phase requirement per spec-review
+     it-2 SPEC-DX-4: even AFTER REQ-DX-015 is fully implemented, `dex`'s case SHALL STILL FAIL until
+     REQ-DX-017's one-line fix (routing `dex.ts`'s catch through `extractErrorMessage()`) is ALSO
+     applied — proving this PROP actually catches the exact gap SPEC-DX-4 found (a command whose catch
+     block bypasses the shared classification entirely), not just the ORIGINAL SPEC-DX-1 gap. Both
+     tests passing together is therefore genuine evidence the REQ-DX-015+017 wiring works end-to-end
+     for both command shapes, not merely that an isolated classifier function is internally correct.
   This canNOT be a live Tier-2 test (there is no reliable way to force a real DNS/connection failure
   against the live BlockRun API on demand) — mocking Node's own live-verified `fetch()` failure shape,
   routed through the REAL command function, is the grounded, deterministic, end-to-end alternative.
@@ -138,6 +148,18 @@ suite (REQ-DX-041), not a separate check script.
      via the EXISTING `isPaymentRejectionError` (which has no bare-`"payment"` check) — proving Phase
      2 did not accidentally wire the new `code` classifier to the narrower, wrong, already-importable
      function.
+- **PROP-DX-014** (REQ-DX-014, -017; Tier 1, mechanical grep-in-test-harness — added per spec-review
+  it-2 SPEC-DX-4's own suggested fix, as a REGRESSION GUARD complementing PROP-DX-006's two
+  end-to-end command tests): a test reads the SOURCE TEXT of all 18 `src/commands/<name>.ts` files
+  and asserts EVERY ONE contains the literal substring `extractErrorMessage(` inside its `catch`
+  block region (a textual/AST check, Phase 2's choice of exact mechanism) — INCLUDING `dex.ts`, which
+  did NOT satisfy this before REQ-DX-017. This is DELIBERATELY a static, mechanical check (not just
+  the 2 live command tests in PROP-DX-006) so that a FUTURE command's catch block (a 19th command
+  added later, or a regression re-introducing an inline `err.message` shortcut like `dex.ts`'s
+  original one) is caught by `npm test` immediately, without needing a dedicated new PROP-DX-006-style
+  end-to-end test for every individual command — this is the SAME class of gap SPEC-DX-4 found (a
+  false sense of universal coverage from a claim that was never mechanically verified across all 18)
+  but closed with a check that scales to future commands, not just the two PROP-DX-006 already covers.
 
 ### Tier 2 — live binary execution (real `dist/index.js`, real API where cheap/free)
 
@@ -205,14 +227,15 @@ permitted by this architecture.
 | REQ-DX-* group | REQ count | Covering PROP(s) |
 |---|---|---|
 | `blockrun commands` catalog (REQ-DX-001..008) | 8 | PROP-DX-001, 002, 003, 004 |
-| Error codes + exit codes (REQ-DX-010..016) | 7 | PROP-DX-005, 006, 007, 011 (regression), 013 |
+| Error codes + exit codes (REQ-DX-010..017) | 8 | PROP-DX-005, 006, 007, 011 (regression), 013, 014 |
 | Balance-unavailable reason (REQ-DX-020..024) | 5 | PROP-DX-009, 010 |
 | Documentation reflection (REQ-DX-030..034) | 5 | PROP-DX-012 |
 | Cross-cutting / regression (REQ-DX-040..041) | 2 | PROP-DX-011 (and implicitly every PROP above, each of which requires a real new test per REQ-DX-041) |
 | Non-goals (REQ-DX-NG-001..005) | 5 (separate clause type, not counted in the REQ-DX total below) | Enforced structurally by every PROP's own money-path/shape-preservation assertions, not a dedicated PROP each |
 
-**Total: 27 REQ-DX-* requirements (excluding the 5 non-goals, a separate clause type per the same
-convention the `blockrun-cli-docs` feature established for its own `REQ-NG-*`), 13 PROP-DX-*** (8+7+5+5+2
-= 27; REQ-DX-015/016 and PROP-DX-013 added per spec-review it-1's SPEC-DX-1/2/3 fixes). No
-REQ-DX-* is uncovered; several REQs share a PROP where one mechanical/test check proves multiple
-requirements at once (e.g. PROP-DX-002 proves REQ-DX-001 and REQ-DX-002 together).
+**Total: 28 REQ-DX-* requirements (excluding the 5 non-goals, a separate clause type per the same
+convention the `blockrun-cli-docs` feature established for its own `REQ-NG-*`), 14 PROP-DX-*** (8+8+5+5+2
+= 28; REQ-DX-015/016 + PROP-DX-013 added per spec-review it-1's SPEC-DX-1/2/3 fixes; REQ-DX-017 +
+PROP-DX-014 added per spec-review it-2's SPEC-DX-4 fix). No REQ-DX-* is uncovered; several REQs share
+a PROP where one mechanical/test check proves multiple requirements at once (e.g. PROP-DX-002 proves
+REQ-DX-001 and REQ-DX-002 together).

@@ -236,16 +236,24 @@ Every requirement is a MUST. There are no optional/recommended items in this doc
   classification function (extending `src/core/render.ts`'s `fail()`/`renderError()`, or a new function
   they call) — NOT reimplemented separately inside each `commands/<name>.ts` — so all 18 commands gain
   the SAME `code`/exit-code behavior from ONE change, with no risk of 18 independently-drifting
-  copies. **Clarification (added per spec-review it-1 SPEC-DX-1)**: this REQ's "one shared
-  classification function" operates on the STRING each of the 18 catch blocks ALREADY produces via
-  `extractErrorMessage(err)` before calling `fail(...)` (verified: every `commands/<name>.ts`'s catch
-  block is `const msg = extractErrorMessage(err); return fail(msg, opts.json, ...);` or the direct
-  `fail(extractErrorMessage(err), opts.json)` equivalent — zero of the 18 catch sites need to change).
-  This is possible ONLY because REQ-DX-015 makes `extractErrorMessage()` itself preserve the
+  copies. **Clarification (added per spec-review it-1 SPEC-DX-1, CORRECTED per spec-review it-2
+  SPEC-DX-4)**: this REQ's "one shared classification function" operates on the STRING each catch
+  block produces via `extractErrorMessage(err)` before calling `fail(...)`. Grep-verified across ALL
+  18 `commands/<name>.ts` files: 17 of 18 (`chat`/`rpc`/`video`/`wallet`/`models`/`realface`/`music`/
+  `speech`/`markets`/`image`/`search`/`surf`/`exa`/`modal`/`phone`/`price`/`defi`) already have a
+  catch block of the shape `const msg = extractErrorMessage(err); return fail(msg, opts.json, ...);`
+  or the direct `fail(extractErrorMessage(err), opts.json)` equivalent — needing ZERO changes. The
+  18th, `src/commands/dex.ts`, is the SOLE EXCEPTION (its catch block is
+  `` `const msg = err instanceof Error ? err.message : String(err); return fail(msg, opts.json);` `` —
+  it never calls `extractErrorMessage()` at all) — see REQ-DX-017, which fixes this ONE site. This
+  spec's earlier draft incorrectly claimed "zero of the 18 catch sites need to change"; that claim is
+  now corrected to "17 of 18 need zero changes; `dex.ts` needs the one-line fix in REQ-DX-017."
+  This design is possible ONLY because REQ-DX-015 makes `extractErrorMessage()` itself preserve the
   network-failure signal that today it silently discards — the classification function this REQ
   describes still never touches the raw `err` object directly at any of the 18 call sites; it
   classifies the (now-enriched) STRING, exactly like `formatError()` already does today for every
-  other case.
+  other case — PROVIDED every one of the 18 catch blocks actually calls `extractErrorMessage()` first,
+  which REQ-DX-017 makes true for all 18, not just 17.
 - REQ-DX-015 (closes spec-review it-1 SPEC-DX-1 — the network_error classification's ONLY viable
   wiring, per the adversary's suggested option (a)): `src/core/errors.ts`'s `extractErrorMessage(err)`
   SHALL be extended so that, BEFORE returning its string, it checks the RAW `err` object for a
@@ -284,6 +292,22 @@ Every requirement is a MUST. There are no optional/recommended items in this doc
   substitute one for the other; the new `code` classifier requires the FULL `isPaymentError` logic
   from `formatError()` (the one with the `402` check and the `!hasStatus("500")` guard), not
   `isPaymentRejectionError`'s narrower subset.
+- REQ-DX-017 (closes spec-review it-2 SPEC-DX-4 — `dex.ts` is the ONE catch site that DOES need to
+  change): `src/commands/dex.ts`'s catch block SHALL be updated to match the SAME pattern as the
+  other 17 commands, replacing its current inline
+  `` `const msg = err instanceof Error ? err.message : String(err); return fail(msg, opts.json);` ``
+  with `` `const msg = extractErrorMessage(err); return fail(msg, opts.json);` `` — a ONE-LINE change
+  (plus the corresponding import). This is BEHAVIOR-PRESERVING for every non-network-failure case:
+  `dex.ts` only ever throws a bare `Error` (`` `DexScreener API error: ${status}` `` on a non-2xx
+  response, per its own source) with no `.response` property, so `extractErrorMessage()`'s
+  `.response`-handling branch (lines 10-27 of `src/core/errors.ts`) is a complete no-op for every
+  error `dex.ts` can produce today — its output is IDENTICAL to `err.message` for every existing case,
+  differing ONLY by gaining REQ-DX-015's new network-failure marker when applicable. WITHOUT this fix,
+  `dex` — which DOES make a real network call (`fetchJson()` against `api.dexscreener.com`, per
+  `src/commands/dex.ts`'s import of `../shell/http.js`) and can genuinely suffer a `network_error` —
+  would be PERMANENTLY unable to ever receive the `network_error` code, since REQ-DX-015's fix lives
+  entirely inside `extractErrorMessage()`, which `dex.ts` never calls. This REQ makes REQ-DX-014's
+  "every one of the 18 pre-existing commands' error paths" claim actually true for all 18, not 17.
 
 ---
 
