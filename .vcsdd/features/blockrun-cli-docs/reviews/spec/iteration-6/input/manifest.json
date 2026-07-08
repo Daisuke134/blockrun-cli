@@ -1,0 +1,9 @@
+{
+  "reviewType": "spec",
+  "featureName": "blockrun-cli-docs",
+  "mode": "lean",
+  "iteration": 6,
+  "artifactsToReview": ["specs/behavioral-spec.md", "specs/verification-architecture.md"],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "priorFindings": "it5: adversary PASS + codex ok:true on prior text. This iteration reviews ONLY the delta added per user directive: Claude-only review gate note, DOC-PARITY-004..007 dual-live-run/schema-only split, DOC-README-003a Claude Code framing, PROP-023..025, dual-wallet budget accounting"
+}
