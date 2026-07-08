@@ -1,4 +1,8 @@
-# Security Audit — blockrun-cli (Phase 5, sprint 1)
+# Security Hardening Report — blockrun-cli (Phase 5, sprint 1)
+
+## Tooling
+
+No dedicated SAST/DAST toolchain is installed for this small TS CLI (blockrun-mcp itself ships none by convention). Hardening is done by: `npm run typecheck` (type-level soundness), targeted `grep` audits over `src/`, and a runnable assertion harness for the SSRF guard (output captured under `security-results/`). All commands were executed this session; outputs are quoted verbatim below.
 
 ## 1. SSRF guard (`src/core/ssrf.ts::isBlockedFetchHost`)
 
@@ -161,3 +165,8 @@ overshoot is bounded by the size of one call's cost (not unbounded), and hardeni
 rewrite now. Recorded here as a known/accepted limitation, not silently omitted.
 
 ## Overall security verdict: **PASS.** No blocking findings.
+
+
+## Summary
+
+Overall security verdict: PASS. No blocking findings. SSRF guard blocks loopback/private/link-local/CGNAT/IPv6 on every local fetch incl. redirect hops (verified, see security-results/ssrf-guard.txt); zero hand-rolled signing (REQ-221/222, all payloads via @blockrun/llm); path-safety guards traversal; no private key is ever logged; all three budget caps gate before signing (known non-blocking millisecond TOCTOU on the persisted ledger recorded as an accepted limitation).

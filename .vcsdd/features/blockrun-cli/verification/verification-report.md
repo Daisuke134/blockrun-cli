@@ -64,7 +64,7 @@ just described as fixed).
 
 Environment this was run in: Node `v25.6.1`, npm `11.9.0`, macOS (Darwin).
 
-## Proof obligations (`state.json::proofObligations`)
+## Proof Obligations (`state.json::proofObligations`)
 
 ```json
 []
@@ -95,3 +95,11 @@ already cover.
 
 **Phase 5 (Formal Hardening) PASSES.** No findings route back to impl-builder. Ready for Phase 6
 (`vcsdd-converge`).
+
+## Summary
+
+Phase 5 verification for blockrun-cli PASSES. `npm run typecheck` clean (TS type-soundness proof),
+`npm run build` clean (single-file ESM), `npm test` 407/407 (later 408/408 after the video display
+fix) across Tier-1 pure-unit, Tier-2 mocked-SDK integration, and Tier-2b built-binary subprocess.
+Zero `required:true` proof obligations exist; the automated suite plus the purity and security
+audits constitute the verification evidence. No findings route back to impl-builder.

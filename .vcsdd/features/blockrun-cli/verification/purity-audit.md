@@ -1,4 +1,10 @@
-# Purity Audit — blockrun-cli (Phase 5, sprint 1)
+# Purity Boundary Audit — blockrun-cli (Phase 5, sprint 1)
+
+## Declared Boundaries
+
+Per verification-architecture.md §1: PURE CORE = `src/core/*` and `src/args/*` (arg→request mapping, cost estimation, output formatting, error classification, ledger schema) — no fs, no network, no SDK, no process/env, no I/O. IMPURE SHELL = `src/shell/*` (SDK calls, network, fs config, qr, manual-x402) and `src/commands/*` (orchestration, process.exit). The audit below verifies the OBSERVED code matches these declared boundaries.
+
+## Observed Boundaries
 
 Scope: `verification-architecture.md` §1 purity boundary. Method: `grep -rn` over the pure-core
 tree for every impurity signal named in the task brief, cross-checked line-by-line against each
@@ -106,3 +112,8 @@ each produces identical outputs — no clock, RNG, environment, or filesystem de
 deterministic.
 
 ## Overall purity verdict: **CLEAN — no violations.** Nothing routes back to impl-builder.
+
+
+## Summary
+
+Purity boundary holds: CLEAN, no violations. `src/core/*` and `src/args/*` perform zero I/O (no fs/net/http/undici/@blockrun/process reads, no Date.now/Math.random) — verified by grep. All impurity is correctly fenced into `src/shell/*` and `src/commands/*`. Signing is 100% delegated to @blockrun/llm (no hand-rolled EIP-712/secp256k1). Nothing routes back to impl-builder.

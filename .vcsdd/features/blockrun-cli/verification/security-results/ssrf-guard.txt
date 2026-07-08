@@ -1,0 +1,17 @@
+PASS  isBlockedFetchHost("127.0.0.1") = true (expected true)
+PASS  isBlockedFetchHost("localhost") = true (expected true)
+PASS  isBlockedFetchHost("169.254.169.254") = true (expected true)   # cloud metadata endpoint
+PASS  isBlockedFetchHost("10.0.0.1") = true (expected true)
+PASS  isBlockedFetchHost("172.16.0.5") = true (expected true)
+PASS  isBlockedFetchHost("192.168.1.1") = true (expected true)
+PASS  isBlockedFetchHost("100.64.0.1") = true (expected true)        # CGNAT
+PASS  isBlockedFetchHost("::1") = true (expected true)
+PASS  isBlockedFetchHost("[::1]") = true (expected true)
+PASS  isBlockedFetchHost("fe80::1") = true (expected true)
+PASS  isBlockedFetchHost("fc00::1") = true (expected true)
+PASS  isBlockedFetchHost("metadata.google.internal") = true (expected true)
+PASS  isBlockedFetchHost("metadata.google.internal.") = true (expected true)  # trailing-dot bypass attempt
+PASS  isBlockedFetchHost("blockrun.ai") = false (expected false)
+PASS  isBlockedFetchHost("8.8.8.8") = false (expected false)
+PASS  isBlockedFetchHost("api.blockrun.ai") = false (expected false)
+**Verdict: PASS.** Blocks all required hosts (loopback, `169.254.169.254` metadata, RFC1918, `::1`)
