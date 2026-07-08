@@ -70,6 +70,15 @@ repo in structure and rigor, adapted from "MCP server" framing to "CLI" framing.
   possible once installed globally (`npm install -g .` then `blockrun <command>`), clearly labeled as
   local-install paths (not a published-registry `npx blockrun@latest` claim, which would violate
   REQ-NG-004 since the package is not published).
+- DOC-README-003a (primary-reader framing, per Dais's instruction): THE README SHALL frame its PRIMARY
+  reader as a **Claude Code user invoking this CLI from Claude Code's Bash tool** — the CLI-side
+  equivalent of how `blockrun-mcp/README.md` frames ITS primary reader as someone registering the MCP
+  server INTO Claude Code (`claude mcp add blockrun ...`). This CLI is NOT registered as an MCP server;
+  instead, its README's install/usage sections SHALL show Claude Code (or any agent with shell access)
+  invoking `blockrun <command>` directly via Bash, mirroring the SAME "agent gets pay-per-call data
+  access" value proposition `blockrun-mcp`'s README leads with, adapted from "MCP tool call" framing to
+  "shell command" framing. This is a POSITIONING requirement (how the README frames its audience), not
+  a NEW technical requirement — it does not add or change any installed capability.
 - DOC-README-004: THE prerequisites section SHALL state Node.js `>=20.19` (verbatim from
   `package.json` `engines.node`) and note the wallet auto-creates at `~/.blockrun/.session` on first
   use (mirrors `blockrun-mcp` README's Prerequisites section, ported 1:1 since both share the same
@@ -211,12 +220,23 @@ repo in structure and rigor, adapted from "MCP server" framing to "CLI" framing.
 
 ## 6. PARITY.md (new evidence artifact)
 
+Per Dais's direct instruction: the intended verifier and primary consumer of this whole feature is
+**Claude Code itself** — this session already has all 18 corresponding MCP tools connected
+(`mcp__blockrun__blockrun_wallet` … `mcp__blockrun__blockrun_surf`, confirmed present in this session's
+tool list) — so "apple-to-apple with blockrun-mcp" is not just a structural README/CONTRIBUTING
+comparison (§1-§5 above); it also means Claude Code can, and SHALL, directly execute the SAME input
+through BOTH the connected MCP tool and the CLI command and compare real outputs side-by-side, for the
+subset where this is cheap/free. This section defines that dual-execution requirement precisely,
+grounded in ACTUAL calls already made during spec-writing (not hypothetical):
+
 - DOC-PARITY-001: `/Users/anicca/blockrun-cli/PARITY.md` SHALL exist as a new file mapping all 18 CLI
   commands to their corresponding `blockrun-mcp` tool, one row/section per command, each stating: the
   MCP tool name (`blockrun_<name>`), the CLI command (`blockrun <name>`), the parameter-mapping rule
   (1:1 field names per REQ-022/REQ-003 of the CLI's own spec, noting any CLI-only additive flag such as
-  `--budget-limit` or `video`'s `--max-quote-usd`), and a live-run evidence pointer (the matching row
-  number in `VERIFICATION.md`'s 18-command ledger, or a fresh command output if a gap is found).
+  `--budget-limit` or `video`'s `--max-quote-usd`), and an evidence pointer whose SOURCE depends on the
+  command's tier (DOC-PARITY-004): a DUAL-LIVE-RUN record (DOC-PARITY-005) for the 9 free/cheap
+  commands, or the matching row number in `VERIFICATION.md`'s 18-command ledger plus a schema-mapping
+  comparison (DOC-PARITY-006) for the 9 paid/expensive commands.
 - DOC-PARITY-002: `PARITY.md` SHALL explicitly flag any INTENTIONAL non-parity point already recorded
   in the CLI's own spec/decisions (e.g. `--budget-limit`/persisted ledger being CLI-only per decisions
   §8-9, `--max-quote-usd` being CLI-only per decisions §11, tool *profiles* being out of scope per
@@ -226,6 +246,85 @@ repo in structure and rigor, adapted from "MCP server" framing to "CLI" framing.
   and evidence reference in `PARITY.md` SHALL match the corresponding row in `VERIFICATION.md` exactly
   (same command, same cost, same evidence id/tx), verified mechanically (Tier-1 automated check, see
   verification-architecture.md).
+- DOC-PARITY-004: THE 18 commands SHALL be partitioned into exactly two verification tiers (an
+  exhaustive, non-overlapping partition, per Dais's instruction and mirroring the exact examples given):
+  **DUAL-LIVE-RUN tier** (9: `wallet`, `chat`, `models`, `dex`, `price`, `defi`, `markets`, `rpc`,
+  `phone`) — cheap enough ($0 to $0.002/call) to actually execute through BOTH surfaces without
+  meaningful spend; **SCHEMA-ONLY tier** (9: `image`, `video`, `music`, `realface`, `modal`, `speech`,
+  `search`, `exa`, `surf`) — expensive/variable-cost enough that this feature SHALL NOT re-execute them
+  against the MCP side (avoiding double real-money spend on top of the CLI-side fresh re-runs already
+  required by DOC-EVID-001/PROP-020).
+- DOC-PARITY-005 (DUAL-LIVE-RUN tier): for each of the 9 commands in that tier, THE FEATURE SHALL
+  invoke the connected `mcp__blockrun__blockrun_<name>` tool AND the CLI's `<name> --json` with the SAME
+  semantic input, and record BOTH raw JSON outputs plus a structural comparison in `PARITY.md`. The
+  comparison standard is NOT "byte-identical" — it is "same underlying facts, explain any structural
+  difference" — grounded in four ALREADY-PERFORMED comparisons (real calls made 2026-07-08, not
+  hypothetical, captured here so Phase 3/4 does not need to re-derive the expected shapes from
+  scratch):
+  - `dex --query SOL` (MCP) vs `dex --query SOL --json` (CLI): output is BYTE-IDENTICAL — both proxy
+    the same DexScreener API directly, no wallet/formatting divergence. This is the BASELINE case: a
+    pure-passthrough command SHOULD show zero structural difference.
+  - `price --action price --category crypto --symbol BTC-USD` (MCP) vs the equivalent CLI `--json`
+    call: IDENTICAL field set (`symbol, price, publishTime, confidence, feedId, timestamp, assetType,
+    category, source, free`), including an identical `feedId`; only the live `price`/`publishTime`
+    values differ (a few seconds apart on the same Pyth feed) — EXPECTED, not a finding.
+  - `chat --message "what is 2+2?" --mode free` (MCP) vs the equivalent CLI call: IDENTICAL field set
+    (`model_used, response`) — matches the shape `VERIFICATION.md` row #5 already captured for the CLI
+    side; only `model_used`'s VALUE differs (the free tier auto-picks any currently-healthy free NVIDIA
+    model — MCP returned `nvidia/deepseek-v4-flash`, `VERIFICATION.md`'s CLI run returned
+    `nvidia/llama-4-maverick`) — EXPECTED, not a finding.
+  - `wallet --action status` (MCP) vs `wallet --action status --json` (CLI): a REAL, ALREADY-CONFIRMED
+    structural DIFFERENCE — MCP flattens the ACTIVE chain's `address`/`balance` to top-level fields and
+    ADDS `network`, `chainId`, `isNew`, `explorerUrl`, `explorerLabel`, plus a nested `wallets:{base,
+    solana}` sub-object; the CLI instead exposes `base`/`solana` as top-level keys directly with NO
+    extra metadata fields. Both represent the SAME underlying `@blockrun/llm` wallet data — this is
+    each side's OWN independent rendering/formatting code, not a functional gap — but `PARITY.md`
+    SHALL record this as an EXPLICIT structural-difference finding (not silently normalized away),
+    per DOC-PARITY-002's "different by design, not missing" principle.
+  - `models --category chat` (MCP) vs `models --category chat --json` (CLI): a REAL, ALREADY-CONFIRMED
+    finding with TWO distinct dimensions: (a) field-naming differs — MCP uses snake_case
+    (`owned_by`, `context_window`, `max_output`, `billing_mode`, nested `pricing:{input,output}`); CLI
+    uses camelCase (`provider`, `contextWindow`, `maxOutput`, `billingMode`, flat `inputPrice`/
+    `outputPrice`) — and MCP additionally carries `object`/`created` fields the CLI omits, while CLI
+    carries `available`/`type` fields MCP omits; (b) the RESULT COUNT differs for the identical
+    `category:"chat"` filter — MCP returned 44 models, CLI returned 55 — a genuine count mismatch,
+    not merely a formatting difference. `PARITY.md` SHALL record BOTH the field-naming divergence and
+    the count divergence verbatim (with the actual counts, 44 vs 55) as a finding for the CLI feature
+    owner to triage (this docs feature does NOT investigate or fix the root cause — REQ-NG-001 forbids
+    touching `src/`; it only documents the finding honestly, per DOC-CONSTRAINT-002's no-lies rule).
+  For the remaining 5 of the 9 DUAL-LIVE-RUN commands not yet exercised at spec-writing time (`defi`,
+  `markets`, `rpc`, `phone`, plus re-confirming `wallet`/`models`/`chat`/`price`/`dex` at execution
+  time), Phase 3/4 SHALL perform the same dual-invocation-and-compare procedure and record real,
+  freshly-captured results — not assume the four cost-bearing ones ($0.001-$0.002 each) behave like
+  the already-tested $0 ones.
+- DOC-PARITY-005a (funding precondition, ALREADY-CONFIRMED, mechanically checkable): the MCP wallet
+  connected to THIS session (checked live 2026-07-08 via `mcp__blockrun__blockrun_wallet` action
+  `status`) reported Base address `0x99b3fE1Ef8Fd94AfA5FF3448B3d7f05372cFa94e` balance `0` and Solana
+  address `8FpqdcCHqjqkVXR58eVJa53neXbJf9emXhvHhgeUPCV9` balance `0` (active chain: solana) — meaning
+  the 4 PAID members of the DUAL-LIVE-RUN tier (`defi` $0.001, `markets` $0.001, `rpc` $0.002, `phone`
+  numbers/list $0.001) CANNOT be dual-executed against THIS wallet without funding it first, while the
+  5 genuinely-`$0` members (`wallet`, `chat` mode=free, `models`, `dex`, `price` crypto/fx/commodity)
+  require NO funding and are executable immediately. THE FEATURE SHALL check this MCP wallet's live
+  balance (same `blockrun_wallet` status call) BEFORE attempting any of the 4 paid dual-live-run
+  commands, and SHALL request funding (or fall back to schema-only comparison for that specific command,
+  recorded as such in `PARITY.md`) rather than silently skip the comparison if funding is unavailable.
+- DOC-PARITY-006 (SCHEMA-ONLY tier): for each of the 9 commands in that tier, `PARITY.md`'s comparison
+  SHALL consist of (a) the connected MCP tool's declared JSON-schema parameters (retrievable via this
+  session's own tool definitions — no network call needed, since these tools are already loaded) mapped
+  field-by-field against the CLI's `src/args/<command>.ts` schema (already required by DOC-PARITY-001's
+  parameter-mapping rule), and (b) the CLI-side real-execution evidence already required by
+  DOC-EVID-001..005/PROP-020 (for `image`/`video`/`music`) or `VERIFICATION.md`'s existing 18-row ledger
+  (for the other 6: `realface`, `modal`, `speech`, `search`, `exa`, `surf`) — THE MCP side of these 9
+  commands SHALL NOT be independently re-executed by this feature; parameter-schema comparison is
+  sufficient evidence for this tier, and re-running a paid command through both surfaces would be
+  redundant spend for the same verification purpose.
+- DOC-PARITY-007 (verifier identity, review-process framing): THE PRIMARY verifier for both tiers is
+  Claude Code itself — the SAME agent/session driving this feature, using its own connected MCP tools
+  — not an external human reviewer and not `codex-review` (a prior draft of this spec cited
+  `codex-review` gate findings from spec-review history; those citations are RETAINED as factual
+  records of past spec-review iterations per Dais's instruction, but `codex-review` is NOT a required
+  gate for any future phase of this feature — the sole review mechanism going forward is a
+  fresh-context Claude adversary instance, per PROP-018 in verification-architecture.md).
 
 ---
 

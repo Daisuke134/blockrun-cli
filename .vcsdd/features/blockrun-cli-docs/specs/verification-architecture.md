@@ -3,15 +3,20 @@
 Feature: `blockrun-cli-docs` · Mode: lean · Phase 1b
 
 Maps `specs/behavioral-spec.md`'s DOC-* requirements to proof obligations (PROP-*). Docs are static
-artifacts — most checks are Tier-1 (mechanical, no network, no spend). FOUR proof obligations are
-network-touching: **PROP-005** (a free-path, `$0` command — network-touching, NOT a real spend
-surface), **PROP-019** and **PROP-021** (HTTP resolution checks — network-touching, no spend), and
-**PROP-020** (image/video/music fresh re-runs — network-touching AND the ONLY real-spend proof
-obligation in this architecture, ≈$0.225 total, gated by a live wallet-balance preflight — see §3,
-Budget guard, corrected per spec-review codex it-1 FIND-002/FIND-003 and it-2 ADV-001-SPEND-SURFACE
--WORDING).
+artifacts — most checks are Tier-1 (mechanical, no network, no spend). Per Dais's direct instruction,
+the primary verifier is Claude Code itself, driving BOTH the CLI (Bash) and the 18 connected
+`mcp__blockrun__blockrun_*` MCP tools to compare real outputs side-by-side for the cheap/free command
+subset (PROP-023) — this ADDS a second real-spend proof obligation on a wallet SEPARATE from the CLI
+sandbox. FIVE proof obligations are network-touching: **PROP-005** (a free-path, `$0` CLI command —
+network-touching, NOT a real spend surface), **PROP-019** and **PROP-021** (HTTP resolution checks —
+network-touching, no spend), **PROP-020** (image/video/music fresh re-runs against the CLI sandbox
+wallet — network-touching AND a real-spend proof obligation, ≈$0.225-$0.231 total, gated by a live
+wallet-balance preflight — see §3, Budget guard, corrected per spec-review codex it-1 FIND-002/FIND-003
+and it-2 ADV-001-SPEND-SURFACE-WORDING), and **PROP-023** (the MCP-side dual-live-run comparisons — up
+to ≈$0.008 total on the SEPARATE MCP-connected wallet, distinct from and not netted against PROP-020's
+sandbox budget).
 
-Kept intentionally lean: 22 PROPs covering the 44 DOC-* requirements in behavioral-spec.md by grouping
+Kept intentionally lean: 25 PROPs covering the 50 DOC-* requirements in behavioral-spec.md by grouping
 requirements that share one mechanical check (e.g. "18 rows present," "these 6 env vars and no others")
 into a single PROP rather than one PROP per REQ — no padding.
 
@@ -21,13 +26,15 @@ into a single PROP rather than one PROP per REQ — no padding.
 
 | Layer | Nature | Examples |
 |---|---|---|
-| Pure | Docs-check script's parsing/comparison logic (markdown section extraction, JSON field diff, table-row counting, forbidden-term grep) | `scripts/docs-check.*` internals |
+| Pure | Docs-check script's parsing/comparison logic (markdown section extraction, JSON field diff, table-row counting, forbidden-term grep); static MCP-tool-schema vs CLI-args-schema diff (PROP-025, no tool call) | `scripts/docs-check.*` internals |
 | Impure (network, no spend) | Live command execution against the real BlockRun API on a free-cost path (PROP-005); HTTP HEAD/GET for URL resolution (PROP-019, PROP-021) | `--json`/`--help` example runs; github.com / x402.org reachability; the 3 recovered media URLs |
-| Impure (network, **real spend**) | Live wallet-balance preflight (`wallet --action status --json`, no spend) immediately followed by fresh media re-runs that DO spend real USDC (PROP-020) | image/video/music fresh re-runs against sandbox HOME |
+| Impure (network, **real spend — CLI sandbox wallet**) | Live wallet-balance preflight (`wallet --action status --json`, no spend) immediately followed by fresh media re-runs that DO spend real USDC (PROP-020) | image/video/music fresh re-runs against sandbox HOME |
+| Impure (network, **real spend — MCP-connected wallet, separate from the CLI sandbox**) | Dual invocation of a connected `mcp__blockrun__blockrun_<name>` tool AND the equivalent CLI command for the 9 DUAL-LIVE-RUN commands; 5 are `$0`, 4 (`defi`/`markets`/`rpc`/`phone`) cost $0.001-$0.002 each on THIS wallet (PROP-023) | `blockrun_wallet`/`blockrun_chat`/`blockrun_models`/`blockrun_dex`/`blockrun_price` (already exercised, $0) plus `blockrun_defi`/`blockrun_markets`/`blockrun_rpc`/`blockrun_phone` (require funding first) |
 | Impure (filesystem, no network) | Reading repo files, `git diff` against this feature's commit range, `git log --tags` | PROP-016 |
 | Out of scope entirely | Anything under `src/`, `test/`, `dist/` — this feature reads them (to verify docs match real `--help` output) but never writes them (REQ-NG-001 / DOC-CONSTRAINT-001) | n/a |
 
-The docs-check script (Tier 1, PROP-001/002/003/006/007/008/009/010/011/012/013/015/016/017) SHALL be a
+The docs-check script (Tier 1, PROP-001/002/003/006/007/008/009/010/011/012/013/015/016/017/024/025)
+SHALL be a
 single executable (`scripts/docs-check.ts` or `.sh`, Phase 2's choice) that takes no network access and
 exits nonzero on any failing check, printing which PROP failed — this is the Red/Green artifact for
 Phase 2a/2b of THIS feature (not the CLI's own 408-test suite, which is untouched per REQ-NG-001).
@@ -115,6 +122,19 @@ Phase 2a/2b of THIS feature (not the CLI's own 408-test suite, which is untouche
   PARITY.md) is free of the forbidden-placeholder set from PROP-003, re-checked across ALL files (PROP
   -003 is README-only; this PROP covers the rest). Assert: zero matches across the file set minus
   README.md (already covered).
+- **PROP-024** (DOC-PARITY-004) — PARITY.md's per-command tier label SHALL exactly match the specified
+  partition: `wallet`, `chat`, `models`, `dex`, `price`, `defi`, `markets`, `rpc`, `phone` are each
+  labeled DUAL-LIVE-RUN; `image`, `video`, `music`, `realface`, `modal`, `speech`, `search`, `exa`,
+  `surf` are each labeled SCHEMA-ONLY. Assert: exactly 9+9, no command unlabeled or double-labeled, set
+  equality against the real 18-command list (same set PROP-002/012 already establish).
+- **PROP-025** (DOC-PARITY-006; Tier 1 — no network beyond already-loaded MCP tool definitions, no
+  spend) — for each of the 9 SCHEMA-ONLY commands, PARITY.md's parameter-mapping table SHALL be
+  cross-checked field-by-field against BOTH (a) the connected `mcp__blockrun__blockrun_<name>` tool's
+  declared JSON-schema parameters (already available in this session — no tool call needed to read a
+  schema) and (b) the CLI's `src/args/<command>.ts` schema. Assert: every MCP-declared parameter has a
+  named CLI-flag counterpart (or is explicitly flagged as a documented non-parity point per
+  DOC-PARITY-002); this PROP does NOT execute either surface — it is a static schema diff, hence Tier 1
+  despite covering "paid" commands.
 
 ### Tier 2 — live execution of README examples (real API, free-path preferred)
 
@@ -135,6 +155,41 @@ Phase 2a/2b of THIS feature (not the CLI's own 408-test suite, which is untouche
   wallet (remaining ≈$0.26 per VERIFICATION.md's End balance, insufficient headroom to justify any
   paid-path live-execution proof here; the 18/18 paid-path evidence already exists in VERIFICATION.md
   and is REUSED via PROP-012/014, not re-spent).
+- **PROP-023** (DOC-PARITY-005, -005a; Tier 2, live, MCP-side spend on a SEPARATE wallet from the CLI
+  sandbox) — for each of the 9 DUAL-LIVE-RUN-tier commands (`wallet`, `chat`, `models`, `dex`, `price`,
+  `defi`, `markets`, `rpc`, `phone`), invoke the connected `mcp__blockrun__blockrun_<name>` tool AND the
+  CLI's `<name> --json` with the same semantic input, and record both raw outputs plus a structural
+  comparison in `PARITY.md`. FIVE of these nine are genuinely `$0` (`wallet` status, `chat` mode=free,
+  `models`, `dex`, `price` crypto/fx/commodity) and were ALREADY exercised during spec-writing
+  (2026-07-08, real calls, not simulated) with these results, which THIS PROP's Phase-3/4 execution
+  SHALL reproduce/reconfirm rather than assume stale:
+  - `dex`: byte-identical output both surfaces (pure DexScreener passthrough).
+  - `price` (crypto BTC-USD): identical field set, live-value drift only (same `feedId`).
+  - `chat` (mode=free): identical field set `{model_used, response}`, `model_used` VALUE differs
+    (auto-picked free model varies) — matches `VERIFICATION.md` row #5's CLI-side shape.
+  - `wallet` (status): STRUCTURAL DIFFERENCE — MCP flattens active-chain fields to top-level + adds
+    `network`/`chainId`/`isNew`/`explorerUrl`/`explorerLabel` + nested `wallets:{base,solana}`; CLI
+    exposes `base`/`solana` as top-level keys with no extra metadata. MUST be recorded as an explicit
+    finding, not silently normalized.
+  - `models` (category=chat): STRUCTURAL DIFFERENCE (snake_case nested `pricing:{input,output}` vs
+    camelCase flat `inputPrice`/`outputPrice`, plus MCP-only `object`/`created` and CLI-only
+    `available`/`type` fields) AND a COUNT DIFFERENCE (MCP 44 vs CLI 55 for the identical category
+    filter). MUST be recorded verbatim (both counts) as a finding — this PROP does NOT require root
+    -causing or fixing it (out of scope, `src/` is read-only per REQ-NG-001); it only requires HONEST
+    recording (DOC-CONSTRAINT-002).
+  The remaining 4 (`defi`, `markets`, `rpc`, `phone` numbers/list) are PAID ($0.001-$0.002 each) on the
+  MCP-connected wallet. **Funding precondition (ALREADY CONFIRMED, 2026-07-08 live check):** this
+  session's connected wallet reported Base `0x99b3fE1Ef8Fd94AfA5FF3448B3d7f05372cFa94e` = `$0` and
+  Solana `8FpqdcCHqjqkVXR58eVJa53neXbJf9emXhvHhgeUPCV9` = `$0` (active chain: solana) via
+  `mcp__blockrun__blockrun_wallet` action `status` — INSUFFICIENT to execute any of the 4 paid
+  dual-live-run commands right now. Before attempting any of them, THIS PROP SHALL re-check that
+  wallet's live balance (same `blockrun_wallet` status call); IF still insufficient, it SHALL either (a)
+  request funding for that wallet (separate from, and NOT drawing on, the CLI sandbox's
+  `/Users/anicca/blockrun-cli-e2e-home` wallet or its `0x810f...` funding source — a DIFFERENT wallet
+  entirely), or (b) fall back to a SCHEMA-ONLY comparison for that specific command (per PROP-025's
+  method) and record that fallback explicitly in `PARITY.md` — it SHALL NOT silently skip the
+  comparison or fabricate a result. This PROP's spend is capped at ≈$0.002 × 4 = ≈$0.008 total if
+  funding is available; it is $0 if the fallback path is used for all four.
 
 ### Tier 3 — URL resolution + fresh adversary apple-to-apple comparison
 
@@ -151,6 +206,16 @@ Phase 2a/2b of THIS feature (not the CLI's own 408-test suite, which is untouche
   Produces a binary PASS/FAIL per artifact (6 artifacts: README, CHANGELOG, CONTRIBUTING, LICENSE,
   package.json, PARITY.md) with concrete findings. This is the ONE proof obligation no script fully
   automates — structural "apple-to-apple"-ness and honesty-of-claims are judgment calls, not regex.
+  **Review-process note (per Dais's direct instruction):** the SOLE required review gate for this
+  feature, at every phase, is a fresh-context Claude adversary instance (this PROP) — `codex-review`
+  is NOT a required gate for any current or future phase of this feature. Earlier iterations of this
+  spec cite `codex-review` findings (e.g. "spec-review codex it-1 FIND-001", "it-4 FIND-004-001")
+  elsewhere in this document and in `behavioral-spec.md` — those citations are RETAINED verbatim as
+  factual historical records of what was found and fixed during past spec-review rounds (removing them
+  would erase real audit trail), but none of them constitute an ONGOING requirement to re-run
+  `codex-review`. If a future phase's process happens to run `codex-review` anyway (e.g. as an
+  informal second opinion), that is neither required nor forbidden by this architecture — it simply
+  is not counted as a gate.
 - **PROP-019** (general doc quality) — every `http(s)://` URL newly introduced by this feature's docs
   (the GitHub repo URL in `repository`/`homepage`/`bugs`, `https://x402.org`, and any BlockRun artifact
   URL PARITY.md quotes from VERIFICATION.md) is resolved with an HTTP request; each SHALL return 200,
@@ -252,17 +317,33 @@ Phase 2a/2b of THIS feature (not the CLI's own 408-test suite, which is untouche
 
 ## 3. Budget guard
 
-Sandbox wallet state per `VERIFICATION.md`: end balance **$0.264748 USDC as of 2026-07-07** — this is
-a DATED figure, an approximate expectation only, NOT the authoritative input for spend decisions (see
-PROP-020 step 1's live preflight requirement, added per spec-review codex it-1 FIND-002). Budget cap
-$10 (goal), used ≈3.25% as of that same date. Of the four network-touching proof obligations (PROP-005,
-019, 020, 021 — §1's Purity boundary table), exactly ONE carries a REAL spend surface (tightened per
-spec-review codex it-2 ADV-001-SPEND-SURFACE-WORDING — PROP-005 is network-touching, not a spend risk):
+**Two separate wallets, two separate budgets — never netted against each other:**
+
+**(A) CLI sandbox wallet** (`/Users/anicca/blockrun-cli-e2e-home`, per `VERIFICATION.md`): end balance
+**$0.264748 USDC as of 2026-07-07** — this is a DATED figure, an approximate expectation only, NOT the
+authoritative input for spend decisions (see PROP-020 step 1's live preflight requirement, added per
+spec-review codex it-1 FIND-002). Budget cap $10 (goal), used ≈3.25% as of that same date.
+
+**(B) MCP-connected wallet** (this Claude Code session's own connected `mcp__blockrun__*` tools,
+entirely separate from (A)): checked live 2026-07-08 via `mcp__blockrun__blockrun_wallet` status — Base
+`0x99b3fE1Ef8Fd94AfA5FF3448B3d7f05372cFa94e` = **$0**, Solana
+`8FpqdcCHqjqkVXR58eVJa53neXbJf9emXhvHhgeUPCV9` = **$0** (active chain: solana). No funds currently
+available for PROP-023's 4 paid dual-live-run commands (defi/markets/rpc/phone, ≈$0.008 total if all
+four run) — PROP-023 itself specifies the funding-check-or-fallback behavior (DOC-PARITY-005a).
+
+Of the five network-touching proof obligations (PROP-005, 019, 020, 021, 023 — §1's Purity boundary
+table), TWO carry a REAL spend surface, each against its OWN separate wallet (tightened per spec-review
+codex it-2 ADV-001-SPEND-SURFACE-WORDING for PROP-005/020, extended here for PROP-023 per Dais's
+dual-live-run instruction):
 
 - **PROP-005** — network-touching but NOT a real-spend proof obligation: constrained to a free-path
   (`$0`) command.
-- **PROP-020** — THE ONE real-spend proof obligation in this architecture: REQUIRED to spend real USDC
-  for ALL THREE of image/video/music (full-URL recovery is
+- **PROP-023** — real spend against wallet (B), the MCP-connected wallet: up to ≈$0.008 total (4 ×
+  ≈$0.002) IF that wallet is funded before Phase 3/4 executes; $0 (schema-only fallback for the 4 paid
+  members) if it is not. This spend is entirely independent of PROP-020's sandbox budget below — do NOT
+  combine the two headroom calculations.
+- **PROP-020** — a real-spend proof obligation against wallet (A), the CLI sandbox: REQUIRED to spend
+  real USDC for ALL THREE of image/video/music (full-URL recovery is
   confirmed impossible per the §6a precheck, so this is not optional, and it is NOT partially
   satisfiable — see PROP-020's corrected assertion, spec-review codex it-1 FIND-001): estimated ≈$0.015
   (image) + ≈$0.0525 (video) + ≈$0.1575 (music) ≈ **$0.225 media total**, PLUS a possible ≈$0.002 PER
@@ -301,20 +382,22 @@ architecture.
 
 | DOC-* group | REQ count | Covering PROP(s) |
 |---|---|---|
-| README (DOC-README-001..013) | 13 | PROP-001, 002, 003, 004, 005, 006, 010 (badge/license link), 012 (contrib/license links folded into PROP-001 ordering) |
+| README (DOC-README-001..013, -003a) | 14 | PROP-001, 002, 003, 004, 005, 006, 010 (badge/license link), 012 (contrib/license links folded into PROP-001 ordering); -003a (Claude-Code-primary-reader framing) covered qualitatively by PROP-018's structural-fidelity review, no mechanical PROP |
 | CHANGELOG (DOC-CHANGELOG-001..003) | 3 | PROP-007 |
 | CONTRIBUTING (DOC-CONTRIB-001..006) | 6 | PROP-008, 009 |
 | LICENSE (DOC-LICENSE-001..002) | 2 | PROP-010 |
 | package.json (DOC-PKG-001..007) | 7 | PROP-011 |
-| PARITY.md (DOC-PARITY-001..003) | 3 | PROP-012, 013, 014 |
+| PARITY.md (DOC-PARITY-001..003, -004, -005, -005a, -006, -007) | 8 | PROP-012, 013, 014, 023, 024, 025 |
 | execution-notes.md (DOC-NOTES-001) | 1 | PROP-015 |
 | Cross-cutting (DOC-CONSTRAINT-001..003) | 3 | PROP-016, 017, 003 (reused), and PROP-004's flag-fidelity check covers DOC-CONSTRAINT-003 |
 | Media artifact full-URL evidence (DOC-EVID-001, -002, -002a, -003, -004, -005) | 6 | PROP-020, 021, 022 |
 | Whole-feature judgment | — | PROP-018, 019 |
 
-**Total: 44 unique `DOC-*` requirement IDs, 22 PROPs** (13+3+6+2+7+3+1+3+6 = 44 — mechanically
-recounted per spec-review codex it-2 FIND-NEW-002-TRACEABILITY-COUNT, which correctly found NO
-`DOC-NG-*` IDs exist anywhere in `behavioral-spec.md`). This feature's own 4 non-goals
+**Total: 50 unique `DOC-*` requirement IDs, 25 PROPs** (14+3+6+2+7+8+1+3+6 = 50 — mechanically
+recounted after adding DOC-README-003a and DOC-PARITY-004/005/005a/006/007 per Dais's Claude-Code
+-centric apple-to-apple verification instruction; confirmed NO `DOC-NG-*` IDs exist anywhere in
+`behavioral-spec.md`, per the earlier spec-review codex it-2 FIND-NEW-002-TRACEABILITY-COUNT fix, still
+holding). This feature's own 4 non-goals
 (`REQ-NG-001..004`, `behavioral-spec.md` §0 "Non-goals") are a SEPARATE clause type — constraints on
 what this feature does NOT do, distinct from this docs-feature's own `DOC-*` requirement set — and are
 NOT counted in this total; they are enforced by PROP-003's forbidden-term checks and
