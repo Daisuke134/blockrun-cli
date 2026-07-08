@@ -32,7 +32,15 @@
       "language": "typescript",
       "currentPhase": "complete",
       "updatedAt": "2026-07-08T10:41:00.431Z"
+    },
+    "blockrun-cli-pack-fix": {
+      "status": "active",
+      "createdAt": "2026-07-08T11:08:33.832Z",
+      "mode": "lean",
+      "language": "typescript",
+      "currentPhase": "init",
+      "updatedAt": "2026-07-08T11:08:33.832Z"
     }
   },
-  "activeFeature": "blockrun-cli-funding-dx"
+  "activeFeature": "blockrun-cli-pack-fix"
 }
