@@ -1,0 +1,9 @@
+{
+  "reviewType": "spec",
+  "featureName": "blockrun-cli-agent-dx",
+  "mode": "lean",
+  "iteration": 3,
+  "artifactsToReview": ["specs/behavioral-spec.md", "specs/verification-architecture.md"],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "priorFindings": "it1: 3 findings resolved (confirmed by it2). it2: single blocking SPEC-DX-4 (dex.ts catch bypasses extractErrorMessage) — fixed via REQ-DX-017 one-line normalization + PROP-DX-014 catch-pattern regression grep"
+}
