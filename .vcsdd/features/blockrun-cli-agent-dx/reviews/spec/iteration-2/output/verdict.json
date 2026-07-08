@@ -1,0 +1,35 @@
+{
+  "reviewType": "spec",
+  "iteration": 2,
+  "dimensions": {
+    "spec_fidelity": "FAIL",
+    "verification_readiness": "FAIL"
+  },
+  "overall": "FAIL",
+  "priorFindingsStatus": [
+    {
+      "id": "SPEC-DX-1",
+      "status": "RESOLVED",
+      "note": "Ground-truthed against src/core/errors.ts:6-29 (extractErrorMessage never reads err.cause/err.name today, confirmed) and src/shell/http.ts:15-25 (isTimeoutError, confirmed handles both 'AbortError' and 'TimeoutError' names plus message-substring fallback). REQ-DX-015's mechanism (check err.cause.code for the 4 named codes, else isTimeoutError(err), append a marker into the string extractErrorMessage() already returns) correctly closes the structural-unreachability gap for the 17 of 18 commands whose catch blocks route through extractErrorMessage() (verified defi.ts, chat.ts, rpc.ts, wallet.ts, models.ts, video.ts, realface.ts, music.ts, speech.ts, markets.ts, image.ts, search.ts, surf.ts, exa.ts, modal.ts, phone.ts, price.ts — all confirmed `extractErrorMessage(err)` before `fail()`). The live AbortSignal.timeout() correction (name is 'TimeoutError', not 'AbortError') was independently verified live: `node -e \"fetch('http://10.255.255.1', {signal: AbortSignal.timeout(300)}).catch(e=>console.log(e.name))\"` -> TimeoutError (Node v25.6.1). ECONNREFUSED/ENOTFOUND cause.code shapes also verified live and match the spec's claims exactly. HOWEVER see SPEC-DX-4 below: the revision's claim that 'zero of the 18 catch sites need to change' is false for one site (dex.ts), which reopens a narrower version of the same unreachability problem for that one command."
+    },
+    {
+      "id": "SPEC-DX-2",
+      "status": "RESOLVED",
+      "note": "PROP-DX-006 now specifies exercising a real command's actual run() function via a stubbed network rejection and asserting fail()'s real CommandOutcome (exitCode/code), not a direct classifier call, with an explicit RED-phase requirement against pre-fix code. Verified defi.ts (the example command PROP-DX-006 names) matches the described shape: validation -> gatePaidCall -> single `client.getWithPaymentRaw()` call -> catch -> `fail(extractErrorMessage(err), opts.json)`. This is a genuine end-to-end proof for the commands it targets."
+    },
+    {
+      "id": "SPEC-DX-3",
+      "status": "RESOLVED",
+      "note": "Verified formatError()'s real branch order in src/core/errors.ts:56-71 is exactly isModelUnavailable -> isServerError -> isPaymentError (if/else-if/else-if chain), matching REQ-DX-016's claimed order and REQ-DX-011's corrected item ordering. Verified isPaymentRejectionError (errors.ts:31-34) uses only insufficient/balance/rejected with no 402 check and no bare-'payment' check, confirming it is a genuinely narrower, different function from the new classifier REQ-DX-016 requires -- the non-conflation warning is accurate and necessary. PROP-DX-013's two assertions (extraction correctness against formatError()'s real conflict-case output; non-conflation via a bare-'payment' message) are grounded in the real code."
+    }
+  ],
+  "findings": [
+    {
+      "id": "SPEC-DX-4",
+      "severity": "CRITICAL",
+      "dimension": "spec_fidelity",
+      "description": "REQ-DX-014's revised clarification states: 'verified: every commands/<name>.ts's catch block is `const msg = extractErrorMessage(err); return fail(msg, opts.json, ...);` or the direct `fail(extractErrorMessage(err), opts.json)` equivalent — zero of the 18 catch sites need to change.' This is FALSE for `src/commands/dex.ts`, whose catch block (lines ~52-55) is: `const msg = err instanceof Error ? err.message : String(err); return fail(msg, opts.json);` — it never calls `extractErrorMessage()` at all. Grep-verified across ALL 18 pre-existing commands.ts files (chat, rpc, video, wallet, models, realface, music, speech, markets, image, search, surf, exa, modal, phone, price all call `extractErrorMessage(err)` in their catch block; dex.ts is the sole exception). dex.ts is one of the 3 free commands (per REQ-DX-001's own grep-verified `gatePaidCall` absence) but it DOES make a real network call (`fetchJson` against DexScreener, src/commands/dex.ts imports from `../shell/http.js`), so a genuine `network_error` (fetch failure) is a realistic outcome for it — not a moot edge case. Because REQ-DX-015's marker-appending fix lives inside `extractErrorMessage()`, and dex.ts's catch block never calls that function, dex's network failures can NEVER receive the `network_error` code under this design — they will always fall through to the no-code/exit-1 fallback, contradicting REQ-DX-011's claim that the 6-class taxonomy (including item 6, network_error) applies to failures reaching 'the generic post-network catch-and-classify point' for the codebase generally, and contradicting REQ-DX-014's specific factual claim that no catch site needs to change. This is structurally the same class of problem spec-review it-1's SPEC-DX-1 flagged (a claim of universal wiring across '18 catch sites' that is not actually true for every site), just narrowed to one command instead of all of them.",
+      "suggestedFix": "Add an explicit REQ (or amend REQ-DX-014) stating that dex.ts's catch block is the ONE exception to the 'zero catch sites need to change' claim and MUST be updated to route through `extractErrorMessage(err)` (a trivial one-line change: dex.ts's raw err never has a `.response` field today, so switching from the inline `err instanceof Error ? err.message : String(err)` to `extractErrorMessage(err)` is behavior-preserving for every non-network-failure case, per the same REQ-DX-NG-003 additive guarantee already claimed for the other 17). Also add or amend a PROP: PROP-DX-006/007 as currently scoped would NOT catch this gap — PROP-DX-007's 'shared classification function called from every one of the 18 commands/<name>.ts error paths' is satisfied by dex.ts already (dex.ts DOES call `fail()`, and the classifier lives inside `fail()`/`renderError()` per REQ-DX-014's design), so PROP-DX-007 passing today would give false confidence that dex is covered when in fact its message never carries the network-failure marker. Either extend PROP-DX-006 to explicitly also cover the dex.ts (or another non-extractErrorMessage-routed, if any) catch path, or add a new PROP asserting every one of the 18 catch blocks textually calls `extractErrorMessage(err)` (a grep-in-test-harness check), so a future regression re-introducing an inline `err.message` shortcut in any command is caught mechanically."
+    }
+  ]
+}
