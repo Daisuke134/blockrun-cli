@@ -14,6 +14,8 @@ export const schema = z.object({
   budget_amount: z.number().optional(),
   agent_id: z.string().optional(),
   agent_limit: z.number().optional(),
+  // REQ-FUND-008: for --action deposit only, no-op for every other action.
+  open: z.boolean().optional(),
 });
 
 export interface WalletRequest {
@@ -23,6 +25,7 @@ export interface WalletRequest {
   budgetAmount?: number;
   agentId?: string;
   agentLimit?: number;
+  open?: boolean;
 }
 
 export function buildRequest(flags: Record<string, unknown>): BuildResult<WalletRequest> {
@@ -51,5 +54,6 @@ export function buildRequest(flags: Record<string, unknown>): BuildResult<Wallet
   if (typeof flags.budgetAmount === "number") value.budgetAmount = flags.budgetAmount;
   if (typeof flags.agentId === "string") value.agentId = flags.agentId;
   if (typeof flags.agentLimit === "number") value.agentLimit = flags.agentLimit;
+  if (typeof flags.open === "boolean") value.open = flags.open;
   return { ok: true, value };
 }

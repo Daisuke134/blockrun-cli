@@ -1,0 +1,119 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+
+# Phase 2b (Green phase) evidence — blockrun-cli-funding-dx
+# Generated: 2026-07-08, via `npm test` (tsx --experimental-test-module-mocks --test
+# test/unit/*.test.ts test/integration/*.test.ts test/cli/*.test.ts), `npm run
+# typecheck` (tsc --noEmit), `node scripts/docs-check.mjs`, and manual live E2E
+# against the real built binary + the real blockrun.ai gateway.
+#
+# Summary (node:test's own final tally, verbatim from this run):
+#   tests: 551  (532 pre-existing + 19 from Phase 2a, all now GREEN)
+#   pass:  551
+#   fail:  0
+#   cancelled: 0 / skipped: 0 / todo: 0
+#
+# typecheck: `tsc --noEmit` — zero errors.
+# docs-check.mjs: 18/18 PASS (unaffected by this feature's changes).
+
+============================================================
+Implementation summary (25 REQ-FUND-* satisfied: 20 numbered + 5 non-goals)
+============================================================
+
+1. `wallet --action deposit` — Coinbase Onramp card-purchase link (REQ-FUND-001..009):
+   - src/args/wallet.ts — new `open?: boolean` field (zod schema `open: z.boolean()
+     .optional()` + `WalletRequest.open` + buildRequest mapping) — REQ-FUND-008's
+     `--open` flag, no-op for actions other than deposit.
+   - src/commands/wallet.ts — the `deposit` action rewritten: on any chain !== "base"
+     (REQ-FUND-007, resolved via the EXISTING getChain() only — REQ-FUND-007b, no
+     --chain override), returns the pre-existing address+note shape with a Base-only
+     explanation. On Base, calls src/shell/manual-x402.ts's EXISTING payOnce()
+     (REQ-FUND-001) with endpoint "/v1/onramp/token" and body {address, network:
+     "base", asset: "USDC"}; validates the returned url starts with
+     "https://pay.coinbase.com/" (REQ-FUND-002); on success, optionally opens it via
+     src/shell/qr.ts's EXISTING (previously-unused) openUrl() when --open was passed
+     (REQ-FUND-008), returning {chain, address, note, url, opened} (REQ-FUND-004/005,
+     existing chain/address/note fields' meaning unchanged); on ANY mint failure
+     (thrown error or bad URL shape), catches internally and degrades to the
+     pre-existing {chain, address, note}-only response via ok() (NEVER fail()) —
+     REQ-FUND-006's "never throws" contract, matching blockrun-mcp's launchTopUp().
+   - src/index.ts — registers `--open` on the wallet command, threaded into
+     dispatch()'s flags.
+   - Zero new dependencies, zero new env vars (REQ-FUND-NG-005) — payOnce()/openUrl()/
+     createPaymentPayload were ALL already present and used elsewhere in this repo.
+   - No gatePaidCall call added anywhere in wallet.ts (REQ-FUND-003/REQ-FUND-NG-003) —
+     wallet's costModel remains "free" in `blockrun commands --json` (verified below).
+
+2. Payment-error guidance hint (REQ-FUND-010..013):
+   - src/core/errors.ts's formatError() payment-error branch gains ONE line, shown
+     ONLY when chain === "base": "Prefer a card? Run: blockrun wallet --action
+     deposit". No network call inside formatError() — stays pure (REQ-FUND-011).
+     Solana's guidance text is unchanged (REQ-FUND-013).
+   - NO auto-mint-on-payment-failure was added to image/video/music/speech/realface
+     (REQ-FUND-010/NG-004) — verified by test/unit/no-auto-mint-on-payment-failure
+     .test.ts's mechanical grep guard, still passing (5/5).
+
+3. Docs (REQ-FUND-014..016):
+   - README.md's "## Fund your wallet" section gains a card-funding subsection
+     (`--action deposit` / `--action deposit --open`) before the existing Solana
+     -switch instructions.
+   - PARITY.md's `### wallet` section: `--open` added to the parameter-mapping
+     bullet; a new 3-point non-parity bullet documents the `url`/`onramp_url` rename,
+     the `--open`-gated (vs MCP's unconditional) auto-open, and the deliberate
+     omission of auto-mint-on-payment-failure. The 18 total PARITY.md sections and
+     their MCP-tool/CLI-form naming are otherwise unchanged (docs-check.mjs PROP-012
+     still 18/18).
+
+4. Regression / money-path (REQ-FUND-017..020):
+   - No change to payment signing/budget arithmetic/gatePaidCall wiring anywhere.
+   - The mint is $0 by construction — verified LIVE below (no ~/.blockrun/
+     cli-budget.json file is even created by a deposit-only session, since nothing
+     ever writes to it from this path).
+
+============================================================
+Manual live E2E verification (real dist/index.js, fresh temp HOME, fresh evidence
+this session — real blockrun.ai gateway, not mocked)
+============================================================
+
+$ HOME=<tmp> node dist/index.js wallet --action deposit --json
+  -> {"chain":"base","address":"0xAeCA5...","note":"Coinbase card top-up link:
+     https://pay.coinbase.com/buy/select-asset?sessionToken=...&defaultAsset=USDC&
+     defaultNetwork=base&fiatCurrency=USD\n...","url":"https://pay.coinbase.com/buy/
+     select-asset?sessionToken=...","opened":false}
+  -> exit 0. A REAL, freshly-minted one-time Coinbase Onramp URL.
+
+$ curl -sI -o /dev/null -w "%{http_code}\n" "<the minted URL above>"
+  -> 302 (a real, resolvable redirect from pay.coinbase.com — proves the link is
+     genuine, not just well-formed-looking; no purchase flow was completed).
+
+$ HOME=<tmp> node dist/index.js wallet --action chain --chain solana --json
+  HOME=<tmp> node dist/index.js wallet --action deposit --json
+  -> {"chain":"solana","address":"HnLUFK...","note":"Card top-up (Coinbase Onramp)
+     is Base-only. To fund on Solana, run blockrun wallet --action setup for your
+     address + QR (send USDC SPL), or switch with --action chain --chain base."}
+  -> exit 0, no `url`/`opened` fields — payOnce() correctly never attempted.
+
+$ HOME=<tmp> node dist/index.js wallet --action deposit --open --json
+  -> {"chain":"base",...,"opened":true} exit 0 — --open successfully invoked
+     openUrl() (this Mac's real `open` command) with no crash.
+
+$ ls <tmp>/.blockrun/cli-budget.json
+  -> does not exist at all after 4 deposit-only invocations above — deposit never
+     writes to the persisted ledger (REQ-FUND-017's live money-safety proof; a
+     ledger file that was never even CREATED is the strongest form of "spent/calls
+     unchanged," since there is nothing to have changed).
+
+============================================================
+node scripts/docs-check.mjs — 18/18 PASS (unaffected)
+============================================================
+
+All 18 PROPs pass, including PROP-011 (package.json version 1.1.0, unaffected by this
+feature) and PROP-012 (PARITY.md still has exactly 18 per-command sections — the new
+non-parity content was added to the EXISTING `### wallet` section and the top-level
+"Known non-parity points" is untouched by this feature, since REQ-FUND-015 chose to
+nest the 3 new points inside `### wallet` itself rather than the top-level list).
+
+============================================================
+src/ files changed this phase (all reviewed above): src/args/wallet.ts,
+src/commands/wallet.ts, src/core/errors.ts, src/index.ts. No other src/ file touched.
+============================================================

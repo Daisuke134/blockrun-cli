@@ -48,6 +48,17 @@ node dist/index.js wallet --action status
 Run `blockrun wallet` (defaults to `--action status`) to see your addresses on both chains. The CLI
 pays on **Base** by default. Send USDC on Base to the address it prints.
 
+No crypto yet? Buy USDC with a card, on Base:
+
+```bash
+blockrun wallet --action deposit          # prints a one-time Coinbase card-purchase link
+blockrun wallet --action deposit --open   # also opens it in your default browser
+```
+
+The link mints for free (no charge to generate it) and settles straight into your own Base wallet.
+Single-use, expires in a few minutes. Card top-up is Base-only — on Solana, `--action deposit` explains
+the limitation and points you to the address/QR flow below instead.
+
 Prefer Solana? Switch the active chain — no env vars, no restart:
 
 ```bash

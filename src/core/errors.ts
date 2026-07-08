@@ -107,6 +107,12 @@ export function formatError(message: string, opts?: { altModels?: string; chain?
     errorText += `\n\nThis error usually means your wallet needs funding.\n` +
       `Run blockrun wallet with action "setup" to get funding instructions.\n\n` +
       `Quick fix: Send USDC to your wallet on ${network} network.`;
+    // REQ-FUND-011/013: a static pointer to the card-funding path — Base only
+    // (Coinbase Onramp has no Solana support, REQ-FUND-NG-001). No network call
+    // here — formatError() stays pure, zero I/O.
+    if (chain === "base") {
+      errorText += `\n\nPrefer a card? Run: blockrun wallet --action deposit`;
+    }
   }
 
   return errorText;

@@ -43,9 +43,27 @@ Every command is assigned to exactly one of two verification tiers:
 - **Parameter mapping:** `action` (status/deposit/setup/qr/chain/budget/delegate/revoke/report) →
   `--action`; `chain` → `--chain`; `budget_action` → `--budget-action`; `budget_amount` →
   `--budget-amount`; `agent_id` → `--agent-id`; `agent_limit` → `--agent-limit`. Additive CLI-only:
-  `--budget-limit` (see non-parity points above). `report`/`delegate`/`revoke` read/write the SAME
-  persisted ledger (`~/.blockrun/cli-budget.json`) across processes — a CLI-specific adaptation of the
-  MCP server's in-memory budget state (VERIFICATION.md row #1 proves this cross-process).
+  `--budget-limit` (see non-parity points above) and `--open` (for `--action deposit` only — see below).
+  `report`/`delegate`/`revoke` read/write the SAME persisted ledger (`~/.blockrun/cli-budget.json`)
+  across processes — a CLI-specific adaptation of the MCP server's in-memory budget state
+  (VERIFICATION.md row #1 proves this cross-process).
+- **`action:"deposit"` (Coinbase Onramp card-purchase link, blockrun-cli-funding-dx) — 3 intentional
+  non-parity points:**
+  1. **Field rename**: the CLI's `--json` output uses `url` for the minted link; MCP's `structuredContent`
+     calls the SAME data `onramp_url`. Deliberate CLI-side conciseness choice, not a functional gap —
+     both carry the identical one-time `https://pay.coinbase.com/...` URL.
+  2. **`--open` is opt-in (default OFF)**: MCP's `launchTopUp()` unconditionally attempts to open the
+     link in a browser; the CLI only does so when `--open` is explicitly passed. Justified by the CLI's
+     one-shot, agent-primary-caller process model (the same class of deviation as `chain`'s
+     view-only-never-auto-creates-a-Solana-wallet rule) — an agent-driven, often headless invocation
+     should not spawn a GUI browser process as a silent side effect by default. The URL is always
+     printed/returned either way.
+  3. **No auto-mint-on-payment-failure**: MCP's `image`/`video`/`music`/`speech`/`realface` tools each
+     call `launchTopUp()` automatically inside their payment-rejection catch branch, minting AND
+     attempting to open a FRESH link on every out-of-funds failure. The CLI does NOT mirror this — it
+     adds a single static hint line to the payment-error guidance text instead (`Prefer a card? Run:
+     blockrun wallet --action deposit`), avoiding an extra live network+signature call bolted onto an
+     already-failed command's error path. See `src/core/errors.ts`'s `formatError()`.
 - **Dual-run evidence (`action:"status"`, real call, 2026-07-08):** STRUCTURAL DIFFERENCE, confirmed —
   MCP flattens the ACTIVE chain's `address`/`balance` to top-level fields and adds `network`,
   `chainId`, `isNew`, `explorerUrl`, `explorerLabel`, plus a nested `wallets:{base,solana}` object:

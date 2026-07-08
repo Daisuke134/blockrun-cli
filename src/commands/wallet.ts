@@ -3,7 +3,8 @@
 // (~/.blockrun/cli-budget.json), not the ephemeral in-memory BudgetState.
 import { buildRequest } from "../args/wallet.js";
 import { ensureBaseWallet, ensureBothWallets, getChain, getChainBalance, getWalletInfo, peekSolanaWallet, setChain } from "../shell/wallet.js";
-import { generateQrPng, openQrInViewer } from "../shell/qr.js";
+import { generateQrPng, openQrInViewer, openUrl } from "../shell/qr.js";
+import { payOnce } from "../shell/manual-x402.js";
 import { readLedger, writeLedgerAtomic } from "../shell/budget-store.js";
 import { extractErrorMessage } from "../core/errors.js";
 import { ok, fail } from "../core/render.js";
@@ -17,7 +18,7 @@ export async function run(
 ): Promise<CommandOutcome> {
   const built = buildRequest(flags);
   if (!built.ok) return fail(built.error, opts.json, { code: "usage_error" });
-  const { action, chain: targetChain, budgetAction, budgetAmount, agentId, agentLimit } = built.value;
+  const { action, chain: targetChain, budgetAction, budgetAmount, agentId, agentLimit, open } = built.value;
 
   try {
     if (action === "budget") {
@@ -130,11 +131,42 @@ export async function run(
     const chain = getChain();
 
     if (action === "deposit") {
-      return ok(
-        { chain, address: info.address, note: "Fund your wallet with USDC on the active chain." },
-        opts.json,
-        `Fund ${info.address} with USDC on ${chain === "solana" ? "Solana" : "Base"}.`,
-      );
+      // REQ-FUND-007/007b: deposit reads ONLY the currently-active chain (`chain`,
+      // resolved above via getChain()) — a --chain flag has no effect here, unlike
+      // the `chain` action's explicit-switch behavior.
+      if (chain !== "base") {
+        const note = "Card top-up (Coinbase Onramp) is Base-only. To fund on Solana, run blockrun wallet " +
+          "--action setup for your address + QR (send USDC SPL), or switch with --action chain --chain base.";
+        return ok({ chain, address: info.address, note }, opts.json, note);
+      }
+      // REQ-FUND-001/002/003: mint a one-time Coinbase Onramp URL via the SAME
+      // submit->402->sign->resubmit flow already used by image/video/music/speech/
+      // realface (src/shell/manual-x402.ts's payOnce()) — never a hand-rolled x402
+      // implementation. The endpoint's own quoted amount is $0 (wallet-ownership
+      // proof only), so this never touches gatePaidCall/the budget ledger.
+      try {
+        const result = await payOnce({
+          endpoint: "/v1/onramp/token",
+          body: { address: info.address, network: "base", asset: "USDC" },
+          resourceDescription: "Mint a Coinbase Onramp link to fund this wallet",
+        });
+        const url = result.data.url;
+        if (typeof url !== "string" || !url.startsWith("https://pay.coinbase.com/")) {
+          throw new Error("gateway returned no Coinbase Onramp URL");
+        }
+        // REQ-FUND-008: --open is opt-in — default OFF, no browser side effect.
+        const opened = open === true ? await openUrl(url) : false;
+        const note = `${opened ? "Opened a Coinbase card top-up page in your browser" : "Coinbase card top-up link"}: ${url}\n` +
+          `Buy USDC with a card — it settles into your Base wallet ${info.address}. Single-use link, expires in a few minutes.`;
+        return ok({ chain, address: info.address, note, url, opened }, opts.json, note);
+      } catch (err) {
+        // REQ-FUND-006: a mint failure NEVER fails `--action deposit` — matches
+        // blockrun-mcp's launchTopUp() documented "NEVER throws" contract. Degrades
+        // to the pre-existing address+note-only response.
+        const msg = extractErrorMessage(err);
+        const note = `Couldn't create a card top-up link (${msg}). Fund manually: send USDC on Base to ${info.address}, or run blockrun wallet --action setup.`;
+        return ok({ chain, address: info.address, note }, opts.json, note);
+      }
     }
 
     if (action === "qr" || action === "setup") {

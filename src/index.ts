@@ -109,6 +109,7 @@ withCommon(program.command("wallet"))
   .option("--budget-amount <usd>", "budget limit in USD (for --budget-action set)")
   .option("--agent-id <id>", "agent id (for delegate/revoke/report)")
   .option("--agent-limit <usd>", "budget limit in USD for --action delegate")
+  .option("--open", "for --action deposit: open the minted Coinbase Onramp link in your browser (default: printed only)")
   .action((opts) => {
     dispatch(runWallet, Boolean(opts.json), num(opts.budgetLimit), {
       action: opts.action,
@@ -117,6 +118,7 @@ withCommon(program.command("wallet"))
       budgetAmount: num(opts.budgetAmount),
       agentId: opts.agentId,
       agentLimit: num(opts.agentLimit),
+      open: opts.open ? true : undefined,
     });
   });
 
