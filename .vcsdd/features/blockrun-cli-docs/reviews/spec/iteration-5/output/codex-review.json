@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "summary": "FIND-004-001 is resolved: both DOC-EVID-002a and PROP-020 now make live preflight and the paid on-chain fallback the only actionable balance sources, and demote the ledger-derived $0.59 - global.spent figure to reference/cross-check only with explicit no-spend language. FIND-004-002 is resolved: the Base USDC address, calldata construction, and decode formula are present in src/shell/wallet.ts exactly as cited, and RPC_PRICE_USD is $0.002 in src/args/rpc.ts. The new independent-upstream claim is true at the CLI code-path level: wallet status uses getBaseUsdcBalance over the three local free Base RPC URLs, while blockrun rpc dispatches to getClient().requestWithPaymentRaw('/v1/rpc/base', body) and does not call getBaseUsdcBalance or BASE_RPC_URLS.",
+  "resolvedFromIteration4": [
+    "it-4 FIND-004-001: resolved, the ledger-derived branch is removed as a spend-authorizing path and both spec files explicitly forbid any rerun/top-up/spend from a derived estimate after live preflight and eth_call fallback fail.",
+    "it-4 FIND-004-002: resolved, the fallback command now includes the real Base USDC contract address, concrete balanceOf calldata for the sandbox wallet, and the exact BigInt/1e6 decode formula, all matching source."
+  ],
+  "blocking": [],
+  "advisory": [
+    {
+      "id": "ADV-005-001",
+      "location": ".vcsdd/features/blockrun-cli-docs/specs/behavioral-spec.md:310 and .vcsdd/features/blockrun-cli-docs/specs/verification-architecture.md:202",
+      "finding": "The unconditional $0.002 eth_call attempt is substantively safe in the implementation path because src/commands/rpc.ts only commits spend after requestWithPaymentRaw succeeds and catches errors as failures, but the cited REQ-220/REQ-221 do not literally state 'payment-rejection fails cleanly' for rpc. REQ-220 is scoped to quote-priced commands, and REQ-221 says payment signing/key handling is delegated to @blockrun/llm. For citation precision, this sentence should cite the rpc command source and/or general failure/error REQs (REQ-009/REQ-210/REQ-222) instead of presenting REQ-220/REQ-221 alone as the direct proof."
+    }
+  ]
+}

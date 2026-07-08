@@ -1,0 +1,9 @@
+{
+  "reviewType": "spec",
+  "featureName": "blockrun-cli-docs",
+  "mode": "lean",
+  "iteration": 5,
+  "artifactsToReview": ["specs/behavioral-spec.md", "specs/verification-architecture.md"],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "priorFindings": "it4: adversary PASS (0 findings); codex 2 blocking on balance-fallback path (ledger-derivation not conservative; eth_call payload underspecified) — fixed: observed-balance-only progression + fully-specified eth_call invocation transcribed from src/shell/wallet.ts"
+}
