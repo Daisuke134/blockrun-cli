@@ -575,11 +575,12 @@ function checkProp011() {
     failures.push(`bin field changed from required {"blockrun":"./dist/index.js"}: ${JSON.stringify(pkg.bin)}`);
   }
 
-  // 1.2.0 as of the funding-dx feature's release (blockrun-cli-funding-dx
-  // REQ-FUND-001..020 shipped as a semver-minor bump: the deposit onramp action,
-  // --open, and the payment-error funding hint are additive, no breaking change).
-  if (pkg.version !== "1.2.0") {
-    failures.push(`version !== "1.2.0" (got: ${JSON.stringify(pkg.version)})`);
+  // 1.2.1 as of the pack-fix HOTFIX (blockrun-cli-pack-fix REQ-PACK-001..008): a
+  // packaging-only patch bump — moves COMMAND_COST_MODEL derivation from a runtime
+  // src/ filesystem scan (broken for every npm-installed copy) to a build-time
+  // generated, bundled table. No behavior/API change.
+  if (pkg.version !== "1.2.1") {
+    failures.push(`version !== "1.2.1" (got: ${JSON.stringify(pkg.version)})`);
   }
 
   if (pkg.bugs?.url !== "https://github.com/Daisuke134/blockrun-cli/issues") {

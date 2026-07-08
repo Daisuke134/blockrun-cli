@@ -243,3 +243,29 @@ build-time-generated, git-committed module (`src/core/cost-model.generated.ts`, 
 `scripts/generate-cost-model.mjs`, auto-run via `package.json`'s new `"prebuild"` script) — a plain
 object literal with zero runtime `fs`/`import.meta.url` resolution, so the built `dist/index.js` never
 needs `src/` to exist again. See `.vcsdd/features/blockrun-cli-pack-fix/` for the full spec/evidence.
+
+## Release 1.2.1 — HOTFIX packaging release (pack-fix converge, 2026-07-08)
+
+`blockrun-cli-pack-fix` converged (adversary impl review PASS, 4/4 including mutation testing; harden
+running in parallel). Packaging-only fix, no behavior/API change → semver **patch** bump,
+`1.2.0` → `1.2.1`.
+
+Same prep pattern as prior releases (publish itself intentionally NOT done here — team-lead runs `npm
+publish`, this session stops at commit, no push):
+- `package.json` `version` → `1.2.1`; `src/index.ts`'s `.version("1.2.0")` → `"1.2.1"`.
+- `CHANGELOG.md` gains a `## 1.2.1` section (newest-first, above `## 1.2.0`) stating plainly that
+  `1.1.0`/`1.2.0` both crashed on real `npm install`, and describing the build-time fix + the new
+  packed-tarball regression test.
+- `scripts/docs-check.mjs` PROP-011's hardcoded version expectation updated `"1.2.0"` → `"1.2.1"`.
+
+Verification (this session): `npm run build` (prebuild fires, regenerates `cost-model.generated.ts`) →
+`node dist/index.js --version` = `1.2.1`. `npm run typecheck` clean. `npm test` 558/558. `node
+scripts/docs-check.mjs` 18/18 PASS. `npm pack --dry-run`: exactly 4 files (`LICENSE`, `README.md`,
+`dist/index.js`, `package.json`), tarball `blockrun-cli-1.2.1.tgz`. Confirmed the generated cost-model
+table is genuinely BUNDLED into `dist/index.js` as a plain object literal (`var COMMAND_COST_MODEL =
+{...}`, grep-verified at `dist/index.js:3358`) — no runtime file access. Independent re-verification via
+a real `npm pack` + isolated tar extract: `node dist/index.js --version` → `1.2.1`, exit 0.
+
+**State**: committed, intentionally NOT pushed (team-lead publishes first, then pushes + tags `v1.2.1`).
+See `.vcsdd/features/blockrun-cli-pack-fix/evidence/` for the pack-fix feature's own Red/Green-phase
+evidence.

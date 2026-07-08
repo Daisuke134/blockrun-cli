@@ -2,6 +2,16 @@
 
 All notable changes to blockrun-cli will be documented in this file.
 
+## 1.2.1
+
+- **Packaging fix: the CLI no longer crashes on startup when installed from npm.** `1.1.0` and `1.2.0`
+  both crashed immediately for every real `npm install -g blockrun-cli` / `npx blockrun-cli` user —
+  an internal cost-classification lookup tried to read source files that npm-installed packages never
+  ship. Fixed by moving that lookup to build time (a plain, pre-generated table bundled into
+  `dist/index.js`, no runtime file access). A new regression test now packs and extracts a real tarball
+  and runs the built binary from it on every `npm test`, so this class of bug cannot ship again
+  undetected.
+
 ## 1.2.0
 
 - **`wallet --action deposit` — buy USDC with a card, on Base.** Mints a one-time Coinbase Onramp
