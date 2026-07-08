@@ -14,9 +14,12 @@ let ensureBothCalled = false;
 // IMPL-DX-1: mutable so the activeBalanceUnavailableReason tests below (REQ-DX-023)
 // can vary getChainBalance()'s null/non-null return, same pattern as peekSolanaResult.
 let chainBalanceResult: { balance: number | null; reason?: string } = { balance: 1.23 };
+// PROP-FUND-005: mutable so the deposit "active chain is Solana with no --chain flag"
+// case can flip getChain()'s return without an explicit --chain flag on the call.
+let mockActiveChain: "base" | "solana" = "base";
 mock.module("../../src/shell/wallet.js", {
   namedExports: {
-    getChain: () => "base",
+    getChain: () => mockActiveChain,
     getWalletInfo: async () => ({ address: "0xTEST", explorerUrl: "https://basescan.org/address/0xTEST", network: "base-mainnet", chainId: 8453, isNew: false }),
     ensureBothWallets: async () => { ensureBothCalled = true; return { base: { address: "0xBASE" }, solana: { address: "SoLTEST" } }; },
     ensureBaseWallet: () => ({ address: "0xBASE", isNew: false }),
@@ -34,6 +37,42 @@ mock.module("../../src/shell/budget-store.js", {
   namedExports: {
     readLedger: () => persistedStore,
     writeLedgerAtomic: (ledger: unknown) => { persistedStore = ledger; },
+  },
+});
+
+// PROP-FUND-001..006: mutable so the deposit/onramp tests below can vary payOnce()'s
+// success/failure/URL-shape behavior and capture its call args, same
+// mutable-module-level-variable pattern already established above for wallet.js.
+type PayOnceCall = { endpoint: string; body: Record<string, unknown>; resourceDescription: string };
+let payOnceCalls: PayOnceCall[] = [];
+let payOnceImpl: (req: PayOnceCall) => Promise<{ data: Record<string, unknown>; billedUsd: number | null }> =
+  async () => ({ data: { url: "https://pay.coinbase.com/buy/default-mock" }, billedUsd: null });
+mock.module("../../src/shell/manual-x402.js", {
+  namedExports: {
+    payOnce: async (req: PayOnceCall) => {
+      payOnceCalls.push(req);
+      return payOnceImpl(req);
+    },
+  },
+});
+
+// PROP-FUND-002: mutable so the --open tests below can vary openUrl()'s outcome and
+// count calls (proving REQ-FUND-008's "openUrl is NEVER called when --open is
+// omitted", not just that the resulting `opened` field happens to be false).
+let openUrlCalls: string[] = [];
+let openUrlResult = true;
+mock.module("../../src/shell/qr.js", {
+  namedExports: {
+    // generateQrPng/openQrInViewer are ALSO imported by commands/wallet.ts (the qr/setup
+    // actions) — a mock providing ONLY openUrl would leave that import unresolved
+    // (SyntaxError: module does not provide an export). No existing test in this file
+    // exercises qr/setup, so these are unused-but-required stubs.
+    generateQrPng: async () => "/tmp/mock-qr.png",
+    openQrInViewer: async () => {},
+    openUrl: async (url: string) => {
+      openUrlCalls.push(url);
+      return openUrlResult;
+    },
   },
 });
 
@@ -147,4 +186,137 @@ test("REQ-DX-023/IMPL-DX-1: `wallet --action chain --json`'s activeBalanceUnavai
   const parsed = JSON.parse(res.stdout);
   assert.equal(parsed.activeBalance, 0);
   assert.equal("activeBalanceUnavailableReason" in parsed, false, "a real (even zero) activeBalance must not carry the reason key at all");
+});
+
+function resetDepositMocks(): void {
+  mockActiveChain = "base";
+  payOnceCalls = [];
+  payOnceImpl = async () => ({ data: { url: "https://pay.coinbase.com/buy/default-mock" }, billedUsd: null });
+  openUrlCalls = [];
+  openUrlResult = true;
+}
+
+test("PROP-FUND-001: `wallet --action deposit --json` on Base mints a Coinbase Onramp URL via payOnce() (REQ-FUND-001/002/004/009) — exact endpoint/body, url present, opened:false (no --open), existing chain/address/note preserved", async () => {
+  resetDepositMocks();
+  payOnceImpl = async () => ({ data: { url: "https://pay.coinbase.com/buy/abc123" }, billedUsd: null });
+  const res = await run({ action: "deposit" }, { json: true }, newBudget());
+  assert.equal(res.exitCode, 0);
+  const parsed = JSON.parse(res.stdout);
+  assert.equal(parsed.url, "https://pay.coinbase.com/buy/abc123");
+  assert.equal(parsed.opened, false);
+  assert.equal(parsed.chain, "base");
+  // Matches the EXISTING deposit action's address source (getWalletInfo().address,
+  // mocked as "0xTEST" above) — REQ-FUND-004 requires the address field's existing
+  // value-source semantics to stay unchanged, not switch to ensureBaseWallet().
+  assert.equal(parsed.address, "0xTEST");
+  assert.ok(typeof parsed.note === "string" && parsed.note.length > 0);
+  assert.equal(payOnceCalls.length, 1);
+  assert.equal(payOnceCalls[0].endpoint, "/v1/onramp/token");
+  assert.deepEqual(payOnceCalls[0].body, { address: "0xTEST", network: "base", asset: "USDC" });
+});
+
+test("PROP-FUND-002: `wallet --action deposit --open --json` opens the minted URL via openUrl() and reports opened:true on success", async () => {
+  resetDepositMocks();
+  payOnceImpl = async () => ({ data: { url: "https://pay.coinbase.com/buy/openme" }, billedUsd: null });
+  openUrlResult = true;
+  const res = await run({ action: "deposit", open: true }, { json: true }, newBudget());
+  assert.equal(res.exitCode, 0);
+  const parsed = JSON.parse(res.stdout);
+  assert.equal(parsed.opened, true);
+  assert.deepEqual(openUrlCalls, ["https://pay.coinbase.com/buy/openme"]);
+});
+
+test("PROP-FUND-002: `--open` with openUrl() reporting failure still exits 0 with opened:false", async () => {
+  resetDepositMocks();
+  payOnceImpl = async () => ({ data: { url: "https://pay.coinbase.com/buy/failtoopen" }, billedUsd: null });
+  openUrlResult = false;
+  const res = await run({ action: "deposit", open: true }, { json: true }, newBudget());
+  assert.equal(res.exitCode, 0);
+  const parsed = JSON.parse(res.stdout);
+  assert.equal(parsed.opened, false);
+  assert.equal(openUrlCalls.length, 1, "openUrl() was attempted, it just reported failure");
+});
+
+test("PROP-FUND-002/REQ-FUND-008: omitting `--open` (the default) NEVER calls openUrl() at all", async () => {
+  resetDepositMocks();
+  payOnceImpl = async () => ({ data: { url: "https://pay.coinbase.com/buy/noopen" }, billedUsd: null });
+  const res = await run({ action: "deposit" }, { json: true }, newBudget());
+  assert.equal(res.exitCode, 0);
+  const parsed = JSON.parse(res.stdout);
+  assert.equal(parsed.opened, false);
+  assert.equal(openUrlCalls.length, 0, "openUrl() must not be called at all when --open is omitted — not just report opened:false");
+});
+
+test("PROP-FUND-003/REQ-FUND-002/006: a payOnce() success with a non-Coinbase URL is treated as a mint failure — exit 0, url absent, existing fields preserved", async () => {
+  resetDepositMocks();
+  payOnceImpl = async () => ({ data: { url: "https://evil.example.com/not-coinbase" }, billedUsd: null });
+  const res = await run({ action: "deposit" }, { json: true }, newBudget());
+  assert.equal(res.exitCode, 0, "a malformed onramp URL must NOT fail the command");
+  const parsed = JSON.parse(res.stdout);
+  assert.equal("url" in parsed, false);
+  assert.equal(parsed.chain, "base");
+  assert.equal(parsed.address, "0xTEST");
+  assert.ok(typeof parsed.note === "string" && parsed.note.length > 0);
+});
+
+test("PROP-FUND-004/REQ-FUND-006: a payOnce() network/gateway rejection degrades gracefully — exit 0, url absent, note explains the failure", async () => {
+  resetDepositMocks();
+  payOnceImpl = async () => { throw new Error("fetch failed"); };
+  const res = await run({ action: "deposit" }, { json: true }, newBudget());
+  assert.equal(res.exitCode, 0, "a mint failure must NEVER cause `--action deposit` to fail — matches blockrun-mcp's launchTopUp() 'NEVER throws' contract");
+  const parsed = JSON.parse(res.stdout);
+  assert.equal("url" in parsed, false);
+  assert.equal(parsed.chain, "base");
+  assert.equal(parsed.address, "0xTEST");
+  assert.ok(typeof parsed.note === "string" && parsed.note.length > 0);
+});
+
+test("PROP-FUND-005/REQ-FUND-007b: a `--chain solana` flag alongside `--action deposit` has NO EFFECT when the ACTIVE chain is Base — deposit reads only getChain(), never a --chain override", async () => {
+  resetDepositMocks();
+  payOnceImpl = async () => ({ data: { url: "https://pay.coinbase.com/buy/flagignored" }, billedUsd: null });
+  const res = await run({ action: "deposit", chain: "solana" }, { json: true }, newBudget());
+  assert.equal(res.exitCode, 0);
+  assert.equal(payOnceCalls.length, 1, "the active chain is still Base (mockActiveChain), so a --chain flag on `deposit` must NOT suppress the mint");
+  const parsed = JSON.parse(res.stdout);
+  assert.equal(parsed.url, "https://pay.coinbase.com/buy/flagignored");
+  assert.equal(parsed.chain, "base");
+});
+
+test("PROP-FUND-005/REQ-FUND-007: `--action deposit` with NO --chain flag, on a wallet whose ACTIVE chain is already Solana, also never attempts a mint", async () => {
+  resetDepositMocks();
+  mockActiveChain = "solana";
+  const res = await run({ action: "deposit" }, { json: true }, newBudget());
+  assert.equal(res.exitCode, 0);
+  assert.equal(payOnceCalls.length, 0);
+  const parsed = JSON.parse(res.stdout);
+  assert.equal("url" in parsed, false);
+});
+
+test("PROP-FUND-006/REQ-FUND-003/017: a successful Base deposit mint never touches the ephemeral BudgetState (spent/calls stay 0) — the mint is $0 by construction, no gatePaidCall wiring", async () => {
+  resetDepositMocks();
+  payOnceImpl = async () => ({ data: { url: "https://pay.coinbase.com/buy/free" }, billedUsd: null });
+  const budget = newBudget();
+  const res = await run({ action: "deposit" }, { json: true }, budget);
+  assert.equal(res.exitCode, 0);
+  assert.equal(budget.spent, 0);
+  assert.equal(budget.calls, 0);
+});
+
+test("PROP-FUND-009/REQ-FUND-009: the NON-`--json` human `--action deposit` text reflects each of the 3 output classes (Base success / Base mint-failure / Solana)", async () => {
+  resetDepositMocks();
+  payOnceImpl = async () => ({ data: { url: "https://pay.coinbase.com/buy/humantext" }, billedUsd: null });
+  const success = await run({ action: "deposit" }, { json: false }, newBudget());
+  assert.equal(success.exitCode, 0);
+  assert.match(success.stdout, /https:\/\/pay\.coinbase\.com\/buy\/humantext/, "human text must contain the real minted URL");
+
+  resetDepositMocks();
+  payOnceImpl = async () => { throw new Error("boom"); };
+  const failure = await run({ action: "deposit" }, { json: false }, newBudget());
+  assert.equal(failure.exitCode, 0);
+  assert.doesNotMatch(failure.stdout, /https:\/\/pay\.coinbase\.com\//, "a failed mint's human text must not claim a URL exists");
+
+  resetDepositMocks();
+  const solana = await run({ action: "deposit", chain: "solana" }, { json: false }, newBudget());
+  assert.equal(solana.exitCode, 0);
+  assert.match(solana.stdout, /base/i, "Solana's human text must explain the Base-only limitation");
 });

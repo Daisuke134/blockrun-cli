@@ -84,10 +84,17 @@ non-goal and REQ-FUND-010's own rationale below.
 
 ## 1. `wallet --action deposit` — Coinbase Onramp card-purchase link (P1-4)
 
-- REQ-FUND-001: `wallet --action deposit`, WHEN the target chain (the `--chain` flag if given, else the
-  currently-active chain — same resolution `status`/`chain` actions already use) is `"base"`, SHALL
-  attempt to mint a one-time Coinbase Onramp URL by calling `src/shell/manual-x402.ts`'s EXISTING
+- REQ-FUND-001: `wallet --action deposit`, WHEN the CURRENTLY-ACTIVE chain (`getChain()`) is `"base"`,
+  SHALL attempt to mint a one-time Coinbase Onramp URL by calling `src/shell/manual-x402.ts`'s EXISTING
   `payOnce()` — NOT a new hand-rolled x402 implementation — with:
+  **Correction (caught live during Red-phase test-writing, not assumed)**: `deposit`, like the EXISTING
+  `status` action, does NOT accept a `--chain` override for its OWN chain resolution — `getChain()` (the
+  persisted/session-active chain) is the ONLY input. This spec's earlier draft incorrectly claimed
+  "the `--chain` flag if given, else the currently-active chain, same resolution `status`/`chain` actions
+  already use" — that is FALSE for `status` (which, read directly, never references any `--chain` flag
+  at all) and is the `chain` ACTION's own distinct, side-effecting behavior (switching the persisted
+  preference), not something `deposit` inherits. A `--chain` flag value passed alongside `--action
+  deposit` has NO EFFECT on which chain `deposit` targets (REQ-FUND-007b makes this explicit).
   - `endpoint: "/v1/onramp/token"` (resolves, via `payOnce()`'s existing `apiBase()`, to
     `https://blockrun.ai/api/v1/onramp/token` — the EXACT literal `ONRAMP_ENDPOINT` blockrun-mcp's
     `onramp.ts` uses).
@@ -124,12 +131,17 @@ non-goal and REQ-FUND-010's own rationale below.
   omitted), with `note` appended to explain the link could not be generated (the underlying error message,
   same text `extractErrorMessage()` would have produced, folded into `note` — not thrown/surfaced via
   `fail()`).
-- REQ-FUND-007: ON any OTHER target chain (`"solana"`, whether via an explicit `--chain solana` or the
-  currently-active chain being Solana), `--action deposit` SHALL NOT attempt REQ-FUND-001's mint AT ALL —
-  ground truth: `onramp.ts`'s own `if (chain !== "base") return {...}` guard, and Coinbase Onramp has no
-  Solana/SPL-USDC support. Behavior is UNCHANGED from today's existing `deposit` action (`{ chain,
-  address, note }`, no `url`/`opened` fields), except `note`'s text SHALL explain the Base-only
-  limitation (mirroring `onramp.ts`'s own guidance text: card top-up is Base-only; switch chain or use
+- REQ-FUND-007: WHEN the CURRENTLY-ACTIVE chain (`getChain()`) is `"solana"`, `--action deposit` SHALL
+  NOT attempt REQ-FUND-001's mint AT ALL — ground truth: `onramp.ts`'s own `if (chain !== "base") return
+  {...}` guard, and Coinbase Onramp has no Solana/SPL-USDC support. Behavior is UNCHANGED from today's
+  existing `deposit` action (`{ chain, address, note }`, no `url`/`opened` fields), except `note`'s text
+  SHALL explain the Base-only limitation (mirroring `onramp.ts`'s own guidance text: card top-up is
+  Base-only; switch chain with `--action chain --chain base`, or use `--action setup` for the Solana
+  address/QR flow).
+- REQ-FUND-007b: a `--chain solana` flag passed ALONGSIDE `--action deposit` SHALL HAVE NO EFFECT on
+  which chain `deposit` targets — per REQ-FUND-001's correction, `deposit` reads ONLY `getChain()` (the
+  currently-active chain), never a `--chain` override. (Switching the active chain, if desired, remains
+  a SEPARATE, explicit `--action chain --chain solana` call, unchanged by this feature.)
   `--action setup` for the Solana address/QR flow).
 - REQ-FUND-008: `wallet` SHALL gain a new `--open` boolean flag (scoped in effect to `--action deposit`;
   a no-op for every other action). WHEN passed AND a URL was successfully minted (REQ-FUND-001/002) on

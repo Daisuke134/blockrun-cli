@@ -37,11 +37,15 @@ This feature's ONE live network surface (`payOnce()` against `/v1/onramp/token`)
 - **PROP-FUND-004** (REQ-FUND-006; Tier 1, mocked) — mocks `payOnce()` to REJECT (throw), simulating a
   real network/gateway failure. Asserts the SAME "never fail" contract as PROP-FUND-003: `exitCode === 0`,
   `url` absent, `note` explains the failure, `chain`/`address` present.
-- **PROP-FUND-005** (REQ-FUND-007; Tier 1, mocked) — TWO cases: (a) explicit `--chain solana`, (b) no
-  `--chain` flag but the wallet's currently-active chain IS Solana. BOTH assert `payOnce()` is NEVER
-  called (mock call-count 0 — proving REQ-FUND-007's "SHALL NOT attempt the mint AT ALL", not merely "the
-  mint result is discarded"), `url`/`opened` are ABSENT from the output, `exitCode === 0`, and `note`
-  mentions the Base-only limitation.
+- **PROP-FUND-005** (REQ-FUND-007, -007b; Tier 1, mocked) — TWO cases: (a) the wallet's currently-active
+  chain IS Solana (`getChain()` mocked to `"solana"`) — asserts `payOnce()` is NEVER called (mock
+  call-count 0 — proving REQ-FUND-007's "SHALL NOT attempt the mint AT ALL", not merely "the mint result
+  is discarded"), `url`/`opened` ABSENT, `exitCode === 0`, `note` mentions the Base-only limitation; (b)
+  REQ-FUND-007b's correction proof — the active chain IS Base but a `--chain solana` flag is ALSO passed
+  alongside `--action deposit` — asserts the flag has NO EFFECT: `payOnce()` IS called (a Base mint still
+  happens), proving `deposit` reads only `getChain()`, never a `--chain` override (caught live during
+  Red-phase test-writing: `deposit`, unlike the `chain` action, never referenced a `--chain` flag at all
+  in the pre-existing implementation — this spec's earlier draft incorrectly assumed it did).
 - **PROP-FUND-006** (REQ-FUND-003, -017's mocked complement; Tier 1, mocked) — using PROP-FUND-001's
   successful-mint mock, asserts the `BudgetState` object passed into `run()` has `spent === 0` and
   `calls === 0` BOTH before and after the call (the SAME REQ-107 "wallet never touches the ephemeral

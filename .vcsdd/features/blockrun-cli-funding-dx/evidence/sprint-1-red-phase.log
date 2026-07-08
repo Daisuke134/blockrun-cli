@@ -1,0 +1,103 @@
+new-feature-tests: FAIL
+regression-baseline: PASS
+
+# Phase 2a (Red phase) evidence — blockrun-cli-funding-dx
+# Generated: 2026-07-08, via `npm test` (tsx --experimental-test-module-mocks --test
+# test/unit/*.test.ts test/integration/*.test.ts test/cli/*.test.ts)
+#
+# Summary (node:test's own final tally, verbatim from this run):
+#   tests: 551  (532 pre-existing + 19 new)
+#   pass:  543  (532 pre-existing all green + 11 new tests that already pass today)
+#   fail:  8    (all 8 are NEW tests — target-feature RED confirmed)
+#   cancelled: 0 / skipped: 0 / todo: 0
+
+## New test files (3)
+
+- test/integration/wallet.test.ts — EXTENDED (not new), 10 new deposit/onramp tests
+  added on top of the 10 pre-existing wallet tests. New top-level mocks added:
+  src/shell/manual-x402.js's payOnce() (mutable payOnceImpl/payOnceCalls) and
+  src/shell/qr.js's openUrl() (mutable openUrlResult/openUrlCalls; generateQrPng/
+  openQrInViewer stubbed too — REQUIRED, since commands/wallet.ts also imports those
+  for the qr/setup actions, and a partial mock() replaces the WHOLE module).
+- test/unit/deposit-hint-in-payment-error.test.ts — NEW (PROP-FUND-008). Deliberately
+  NOT an edit to test/unit/errors.test.ts, per REQ-FUND-012's "regression, not just
+  trust" requirement — that file is untouched (confirmed: `git status --short --
+  test/unit/errors.test.ts` empty this phase).
+- test/unit/no-auto-mint-on-payment-failure.test.ts — NEW (PROP-FUND-007). A
+  mechanical grep-in-test regression guard.
+
+## RED confirmed (8/19 new tests fail today, module-unaware, as expected)
+
+- wallet.test.ts, 6 of 10 new tests fail: PROP-FUND-001 (mint+url/opened fields don't
+  exist yet), PROP-FUND-002 x3 (--open flag doesn't exist, openUrl never called today
+  since deposit doesn't attempt any mint), PROP-FUND-005/REQ-FUND-007b (the
+  `--chain`-flag-has-no-effect proof — today's deposit doesn't call payOnce() at all,
+  so `payOnceCalls.length === 1` genuinely fails), PROP-FUND-009 (human text doesn't
+  contain a minted URL yet).
+- deposit-hint-in-payment-error.test.ts, 2 of 4 new tests fail: the 2 Base-chain
+  assertions that the hint text `/blockrun wallet --action deposit/` IS present
+  (genuinely absent from today's formatError()).
+
+## RED-phase exemptions (11/19 new tests already pass today — explicitly flagged,
+## same convention blockrun-cli-agent-dx's Phase 2a established)
+
+- wallet.test.ts, 4 of 10 new tests pass vacuously: PROP-FUND-003/004 (mint-failure
+  degrades gracefully — trivially true today since `deposit` NEVER attempts a mint at
+  all, so there is nothing to fail), PROP-FUND-005/REQ-FUND-007 (active-chain-is
+  -Solana never mints — same vacuous reason), PROP-FUND-006 (budget/ledger untouched —
+  trivially true, deposit never touches the ledger today either, mint or not).
+- deposit-hint-in-payment-error.test.ts, 2 of 4 pass: the Solana-no-hint and
+  non-payment-error-no-hint assertions — both are "doesNotMatch" checks against text
+  that genuinely doesn't contain the (not-yet-added) hint today.
+- no-auto-mint-on-payment-failure.test.ts, ALL 5 tests pass — explicitly documented
+  in the file's own header comment as an intentional carve-out: this is a static
+  regression GUARD against a pattern that was never introduced in the first place
+  (blockrun-mcp's launchTopUp()-on-failure was deliberately NOT ported, REQ-FUND-010),
+  so there is nothing to make RED here. It exists to catch a FUTURE regression, not
+  today's absence of a feature.
+
+## Spec corrections made live during Red-phase test-writing (not assumed, VERIFIED
+## against the actual pre-existing src/commands/wallet.ts before writing tests)
+
+REQ-FUND-001/007 originally claimed `deposit` resolves its target chain via "the
+`--chain` flag if given, else the currently-active chain — same resolution status/
+chain actions already use." Reading `src/commands/wallet.ts`'s ACTUAL `status`/
+`deposit` action code (both call `getChain()` only, no `--chain` flag ever
+referenced) proved this false. Corrected: `deposit` reads ONLY `getChain()` (the
+persisted/session-active chain); a `--chain` flag has NO EFFECT on `deposit`
+(REQ-FUND-007b, new). `.vcsdd/features/blockrun-cli-funding-dx/specs/{behavioral
+-spec,verification-architecture}.md` updated accordingly; PROP-FUND-005's test
+rewritten from "explicit --chain solana never mints" (which was testing a
+resolution rule that doesn't exist) to "a --chain solana flag alongside an
+ACTIVE-Base wallet has no effect — the mint still happens" (REQ-FUND-005/007b).
+
+## Mock-plumbing bugs caught and fixed BEFORE reaching a stable RED (same class of
+## issue blockrun-cli-agent-dx's Phase 2a already hit twice with shell/http.js)
+
+- `mock.module("../../src/shell/qr.js", { namedExports: { openUrl: ... } })`
+  initially provided ONLY `openUrl`, but `commands/wallet.ts` ALSO imports
+  `generateQrPng`/`openQrInViewer` from that same module (for the pre-existing qr/
+  setup actions) — a partial mock REPLACES the whole module, so this crashed the
+  ENTIRE wallet.test.ts file with `SyntaxError: module does not provide an export`.
+  Fixed by adding harmless stub implementations for both.
+- Initial deposit test assertions assumed `parsed.address === "0xBASE"` (the mocked
+  `ensureBaseWallet()` value) — but the EXISTING `deposit` action actually sources its
+  address from `getWalletInfo()` (mocked separately as `"0xTEST"`), a DIFFERENT mock
+  value in this test file (both route to the SAME real wallet in production; the
+  mocks just happen to diverge). Since REQ-FUND-004 requires `deposit`'s pre-existing
+  address-sourcing to stay UNCHANGED, the test assertions were corrected to
+  `"0xTEST"`, not the implementation retargeted to `ensureBaseWallet()`.
+
+## src/ verified UNTOUCHED throughout (git status --short -- src/ = empty). Only
+## specs/, test/integration/wallet.test.ts, and 2 new test/unit/ files changed.
+
+============================================================
+RAW `npm test` final summary (verbatim)
+============================================================
+ℹ tests 551
+ℹ suites 0
+ℹ pass 543
+ℹ fail 8
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
