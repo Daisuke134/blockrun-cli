@@ -22,3 +22,6 @@
 {"timestamp":"2026-07-08T04:52:16.312Z","event":"gate_recorded","featureName":"blockrun-cli-docs","phase":"1c","verdict":"FAIL","reviewedBy":"adversary"}
 {"timestamp":"2026-07-08T04:59:11.608Z","event":"gate_recorded","featureName":"blockrun-cli-docs","phase":"1c","verdict":"FAIL","reviewedBy":"adversary"}
 {"timestamp":"2026-07-08T05:28:20.413Z","event":"gate_recorded","featureName":"blockrun-cli-docs","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-07-08T05:29:20.021Z","event":"phase_transition","featureName":"blockrun-cli-docs","from":"1b","to":"1c","iteration":1,"phase":"1c"}
+{"timestamp":"2026-07-08T05:29:20.045Z","event":"phase_transition","featureName":"blockrun-cli-docs","from":"1c","to":"2a","iteration":1,"phase":"2a"}
+{"timestamp":"2026-07-08T05:29:20.046Z","event":"sprint_started","featureName":"blockrun-cli-docs","sprintNumber":1,"phase":"2a"}

@@ -2,7 +2,7 @@
   "featureName": "blockrun-cli-docs",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "1b",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -15,11 +15,26 @@
       "to": "1b",
       "timestamp": "2026-07-08T04:37:45.126Z",
       "reason": "verification-architecture.md written: PROP-001..022 incl. spend-capable PROP-020 fresh media re-run"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-07-08T05:29:20.007Z",
+      "reason": "spec-review gate PASS (iteration-6 adversary)"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-07-08T05:29:20.042Z",
+      "reason": "Red phase started: docs-check.mjs Tier-1 assertion suite",
+      "sprint": 1
     }
   ],
   "iterations": {
     "1a": 1,
-    "1b": 1
+    "1b": 1,
+    "1c": 1,
+    "2a": 1
   },
   "proofObligations": [],
   "traceability": {
@@ -35,7 +50,7 @@
       "adversaryReviewedAt": "2026-07-08T05:28:20.411Z"
     }
   },
-  "sprintCount": 0,
+  "sprintCount": 1,
   "createdAt": "2026-07-08T04:29:58.769Z",
-  "updatedAt": "2026-07-08T05:28:20.412Z"
+  "updatedAt": "2026-07-08T05:29:20.042Z"
 }
