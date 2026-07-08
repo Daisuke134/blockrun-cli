@@ -1,0 +1,21 @@
+{
+  "date": "2026-07-08",
+  "executor": "Claude Code main session (orchestrator) — DOC-PARITY-007 verifier",
+  "sandboxHome": "/Users/anicca/blockrun-cli-e2e-home",
+  "preflight": { "method": "wallet --action status --json -> .base.balance", "valueBeforeDualRuns": 0.264748, "valueBeforeMedia": 0.259748, "observedAs": "number (no fallback needed)" },
+  "spendLedgerCrossCheck": {
+    "cliBudgetSpentBefore": 0.316001,
+    "cliBudgetSpentAfter": 0.546002,
+    "delta": 0.230001,
+    "expected": "0.005 (4 paid dual-runs) + 0.015 (image) + 0.052501 (video) + 0.1575 (music) = 0.230001",
+    "match": true,
+    "callsBefore": 19,
+    "callsAfter": 28
+  },
+  "balanceAfterAll": 0.033997,
+  "balanceNote": "arithmetic balance 0.264748-0.230001=0.034747 vs observed 0.033997 — $0.00075 settlement rounding delta, same class as documented in VERIFICATION.md environment notes",
+  "mcpWalletSide": {
+    "fundingTx": "0xe41ec6c19a46f0735ee17550ebf223bfb762e21ff6a090bcefe40af1b4cd1834 ($0.005 from 0x810f, see topup-mcp-1.json)",
+    "spent": { "defi": 0.001, "markets": 0.001, "rpc": 0.002, "phone": 0.001 }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "command": "HOME=/Users/anicca/blockrun-cli-e2e-home node dist/index.js music --prompt \"chill lo-fi beats\" --json",
+  "date": "2026-07-08",
+  "response": {
+    "url": "https://blockrun.ai/api/media/media/audios/2026/07/08/47eac713-dfd8-4969-9444-175ff7b39459.mp3",
+    "duration_seconds": 92,
+    "model": "minimax/music-2.5+",
+    "cost_usd": 0.1575,
+    "txHash": "0xa00e6ef48ab067eb86da15911c98f78a1c508ac554e176a99191c7e02bea2784"
+  },
+  "fullUrl": "https://blockrun.ai/api/media/media/audios/2026/07/08/47eac713-dfd8-4969-9444-175ff7b39459.mp3",
+  "httpStatus": 200,
+  "bytes": 2936520,
+  "md5": "2fc782959ce3d0279c053c0d0720cd86",
+  "localArtifact": ".vcsdd/features/blockrun-cli-docs/evidence/music-fresh.mp3",
+  "settlementEvidence": "txHash 0xa00e6ef48ab067eb86da15911c98f78a1c508ac554e176a99191c7e02bea2784 (X-Payment-Receipt)",
+  "note": "fresh re-run per DOC-EVID-001 — original E2E URL (row #15, c8467a3b-…) was recorded truncated and is unrecoverable"
+}

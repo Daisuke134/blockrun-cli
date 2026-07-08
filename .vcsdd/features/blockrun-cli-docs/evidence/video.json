@@ -1,0 +1,19 @@
+{
+  "command": "HOME=/Users/anicca/blockrun-cli-e2e-home node dist/index.js video --model xai/grok-imagine-video --prompt \"a red cube rotating\" --duration-seconds 1 --resolution 360p --max-quote-usd 0.10 --json",
+  "date": "2026-07-08",
+  "quoteGate": "quote $0.052501 <= --max-quote-usd 0.10 -> signed",
+  "response": {
+    "url": "https://blockrun.ai/api/media/media/videos/2026/07/08/4edd85de-72c0-94e5-a443-c45a429d07d3-7f749dcc.mp4",
+    "duration_seconds": 1,
+    "model": "xai/grok-imagine-video",
+    "cost_usd": 0.052501,
+    "txHash": "0xac32089918ff53f3290c7e485f70f1d4e5929611dc28bf7f62fbd3ab080bccfe"
+  },
+  "fullUrl": "https://blockrun.ai/api/media/media/videos/2026/07/08/4edd85de-72c0-94e5-a443-c45a429d07d3-7f749dcc.mp4",
+  "httpStatus": 200,
+  "bytes": 122581,
+  "md5": "3785635d5f8140fe4eb632f9b053bc3f",
+  "localArtifact": ".vcsdd/features/blockrun-cli-docs/evidence/video-fresh.mp4",
+  "settlementEvidence": "txHash 0xac32089918ff53f3290c7e485f70f1d4e5929611dc28bf7f62fbd3ab080bccfe (X-Payment-Receipt)",
+  "note": "fresh re-run per DOC-EVID-001 — original E2E URL (row #16, b839a3fd-…) was recorded truncated and is unrecoverable"
+}

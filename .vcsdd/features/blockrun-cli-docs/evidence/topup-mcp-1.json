@@ -1,0 +1,14 @@
+{
+  "purpose": "Fund the MCP-connected wallet for the 4 paid DUAL-LIVE-RUN parity calls (DOC-PARITY-005a / PROP-023)",
+  "executor": "orchestrator (Claude Code main session), signed with founder wallet key ~/.anicca-founder/wallet.json",
+  "from": "0x810F6D61F7606dEEE2657d3083E150a222Bc29C5",
+  "to": "0x99b3fE1Ef8Fd94AfA5FF3448B3d7f05372cFa94e",
+  "token": "USDC (Base) 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "amountUsdc": 0.005,
+  "txHash": "0xe41ec6c19a46f0735ee17550ebf223bfb762e21ff6a090bcefe40af1b4cd1834",
+  "status": "success",
+  "blockNumber": 48350180,
+  "gasUsed": 62147,
+  "plannedSpend": { "defi": 0.001, "markets": 0.001, "rpc": 0.002, "phone": 0.001, "total": 0.005 },
+  "date": "2026-07-08"
+}

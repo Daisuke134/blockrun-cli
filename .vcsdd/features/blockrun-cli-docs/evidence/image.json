@@ -1,0 +1,18 @@
+{
+  "command": "HOME=/Users/anicca/blockrun-cli-e2e-home node dist/index.js image --model zai/cogview-4 --prompt \"a red cube on a white background\" --json",
+  "date": "2026-07-08",
+  "preflightBalanceBefore": 0.259748,
+  "response": {
+    "url": "https://blockrun.ai/api/media/media/images/2026/07/08/4c8b9423-36ff-4ee3-a0b9-316e8f2a0c1a.png",
+    "prompt": "a red cube on a white background",
+    "model": "zai/cogview-4",
+    "cost_usd": 0.015
+  },
+  "fullUrl": "https://blockrun.ai/api/media/media/images/2026/07/08/4c8b9423-36ff-4ee3-a0b9-316e8f2a0c1a.png",
+  "httpStatus": 200,
+  "bytes": 30149,
+  "md5": "53a632611b24c2daa96c3b006bb6a862",
+  "localArtifact": ".vcsdd/features/blockrun-cli-docs/evidence/image-fresh.png",
+  "settlementEvidence": "no txHash in image payload by design (SDK generate() path) — cost_usd 0.015 cross-checked against cli-budget.json spent delta (see media-run summary)",
+  "note": "fresh re-run per DOC-EVID-001 — original E2E URL (row #13, 83a93a29-…) was recorded truncated and is unrecoverable"
+}
