@@ -115,8 +115,10 @@ export async function run(
           base: base.address,
           solana: solana?.address ?? null,
           activeBalance,
-          // REQ-DX-023: same balanceUnavailableReason convention as `status` below,
-          // present ONLY when activeBalance is null.
+          // REQ-DX-023: activeBalanceUnavailableReason (a DIFFERENT name than
+          // `status`'s per-chain balanceUnavailableReason below — this field explains
+          // the TOP-LEVEL activeBalance, which has no chain-scoped parent object to
+          // disambiguate a bare name), present ONLY when activeBalance is null.
           ...(activeBalanceResult?.reason ? { activeBalanceUnavailableReason: activeBalanceResult.reason } : {}),
         },
         opts.json,
