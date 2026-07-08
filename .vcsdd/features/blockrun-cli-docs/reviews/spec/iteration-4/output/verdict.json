@@ -1,0 +1,41 @@
+{
+  "reviewType": "spec",
+  "iteration": 4,
+  "dimensions": {
+    "spec_fidelity": "PASS",
+    "verification_readiness": "PASS"
+  },
+  "overall": "PASS",
+  "findings": [],
+  "advisory": [
+    {
+      "id": "ADV-CARRYOVER-001-TOPUP-MECHANISM-UNNAMED (still open, still non-blocking)",
+      "location": "behavioral-spec.md:290-309 (DOC-EVID-002a top-up paragraph), verification-architecture.md:193-203 (PROP-020 step 4)",
+      "finding": "The top-up loop is now fully mechanized (exact amount formula shortfall+$0.05, exact evidence-record path topup-<n>.json, exact retry/timeout budget 3x/2min/10min, explicit STOP-on-failure), but it still does not name a specific tool/command that performs the on-chain transfer -- confirmed again this iteration that blockrun-cli's own `wallet` action set (status/deposit/setup/qr/chain/budget/delegate/revoke/report, src/args/wallet.ts:8) has no send/transfer action, so the send is necessarily an out-of-band mechanism. This is unchanged from iteration-3's assessment and remains non-blocking for the same reason: the funding route is grounded by direct precedent (VERIFICATION.md's Environment table cites the exact prior transfer, tx 0xccbaf5adeb67e2e144be9dd091b9533a951eb7c2ea5189dff0a02e0d33f4bbe3, from the same 0x810f6... source to the same sandbox address), and the executing agent has wallet-send tooling available outside the CLI. No new information changes this call."
+    },
+    {
+      "id": "ADV-004-TOPUP-BUDGET-ARITHMETIC-LOOSE",
+      "location": "verification-architecture.md:200-201",
+      "finding": "PROP-020 step 4 says the top-up-confirmation preflight retries 'up to 3x with a 2-minute wait (10-minute total budget)' -- 3 attempts with 2-minute gaps sums to 4 minutes of pure waiting, not 10. Read charitably this is a ceiling that leaves headroom for RPC/command latency per attempt, not a literal sum, so it's not a hard contradiction. Non-blocking; if tightened, either lower the stated budget to '~5 minutes' or raise retries/interval to actually total 10."
+    }
+  ],
+  "resolvedFromIteration3": [
+    "FIND-CARRYOVER-001-IMAGE-TX-ASSERT-IMPOSSIBLE -- verified resolved. Read src/commands/image.ts directly (lines 18-86): both the Base path (client.generate()/client.edit(), line 79-81) and the Solana path (solanaPaidPost, lines 60-69) end at the same `return ok({ url: imageUrl, prompt, model: selectedModel, cost_usd: billedUsd }, ...)` at lines 83-84 -- no txHash field on either path, confirmed for the WHOLE function, not just one branch. behavioral-spec.md:313-329 (DOC-EVID-004) and verification-architecture.md:204-214 (PROP-020 step 5) now correctly assert a per-command-differing settlement-proof: txHash for video/music (grep-confirmed present at src/commands/video.ts:71 and src/commands/music.ts:55, both `...(result.txHash ? { txHash: result.txHash } : {})`), and cost_usd cross-checked against cli-budget.json's global.spent delta for image, with an accurate source citation (image.ts:83-84, verified byte-for-byte against the real line numbers).",
+    "FIND-CARRYOVER-002-TRACEABILITY-COUNT -- verified resolved. `grep -oE '^- DOC-[A-Z]+-[0-9]+[a-z]?' specs/behavioral-spec.md | sort -u | wc -l` returns exactly 44, matching the table's stated total (44 = 13+3+6+2+7+3+1+3+6, recomputed and confirmed correct). `grep -n DOC-NG` finds zero DOC-NG-* IDs anywhere in behavioral-spec.md; the only remaining 'DOC-NG' string is verification-architecture.md:277's explanatory sentence correctly stating that no such IDs exist. The Cross-cutting traceability row (line 271) now cites only DOC-CONSTRAINT-001..003 (3 items) and does not fold in REQ-NG-*. PROP count independently verified at 22 (PROP-001..022, no gaps).",
+    "FIND-CARRYOVER-003-PREFLIGHT-PARSE-AMBIGUOUS -- verified resolved. behavioral-spec.md:252-258 (DOC-EVID-002) and verification-architecture.md:166-175 (PROP-020 step 1) now specify the exact invocation `HOME=/Users/anicca/blockrun-cli-e2e-home node dist/index.js wallet --action status --json` and the exact JSON path `.base.balance`. Verified directly against src/commands/wallet.ts's status branch (lines 144-160): the real output shape is exactly `{ activeChain, base: { address, balance }, solana: {...} | null }` as claimed, `balance` is `number | null` (from getChainBalance), and the human-text form does render '(unavailable)' for a null balance as the spec states. The null/non-numeric/nonzero-exit case is now handled by an explicit, ordered, mechanically-executable fallback chain (DOC-EVID-002a: 3x retry -> on-chain eth_call fallback -> ledger-derived conservative lower bound -> STOP) with no out-of-band judgment step."
+  ],
+  "newBlockingScan": {
+    "scope": "specs/behavioral-spec.md section 6a + specs/verification-architecture.md PROP-020/022 + traceability table (the sections touched since iteration-3)",
+    "checksPerformed": [
+      "Sandbox HOME/wallet address cross-checked live against VERIFICATION.md (0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804, both files agree)",
+      "Funding tx hash format validated (64 hex chars after 0x, standard EVM tx hash) and cross-checked identical across VERIFICATION.md and execution-notes.md",
+      "cli-budget.json real file read directly: shape `{version, global:{limit,spent,calls}, agents:{...}, updatedAt}` matches spec's `.global.spent` citation exactly",
+      "evidence/ directory confirmed empty -- no stale artifact that could contradict a fresh PROP-020 run",
+      "wallet action list (status/deposit/setup/qr/chain/budget/delegate/revoke/report) reconfirmed against src/args/wallet.ts:8 -- no send action, consistent with spec's 'outside the CLI process' framing",
+      "intro paragraph (verification-architecture.md:5-13) reconfirmed non-contradictory -- ADV-CARRYOVER-002's cosmetic wording issue from iteration-3 has also been incidentally fixed (no longer says 'TWO ... carry a real spend surface')",
+      "DOC-* group counts in the traceability table individually re-summed against the unique-ID grep list (all 9 groups match)"
+    ],
+    "result": "no new blocking findings"
+  },
+  "note": "Spec re-review iteration 4, fresh adversary instance, zero Builder context. All three iteration-3 blocking findings verified resolved by direct inspection of the real CLI source (src/commands/image.ts, video.ts, music.ts, src/commands/wallet.ts, src/args/wallet.ts) and the real sandbox state (VERIFICATION.md, execution-notes.md, ~/.blockrun-cli-e2e-home/.blockrun/cli-budget.json) -- not by trusting the spec's own citations. DOC-* count independently re-grepped at 44, matching the spec's claim. No new blocking contradictions found in the sections that changed since iteration-3. Two non-blocking advisories carried forward/added (top-up mechanism still names no specific send tool -- unchanged risk profile from iteration-3's downgrade; a loose 'up to 3x/2min = 10min budget' arithmetic statement). Design choices already accepted in prior iterations (lean mode, docs-only scope, top-up-from-0x810f funding policy, image's cost_usd-based settlement proof) were not re-litigated. Verdict: PASS on both dimensions -- this spec is ready to proceed to Phase 2a (TDD/RED)."
+}
