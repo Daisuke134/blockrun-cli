@@ -1,0 +1,37 @@
+new-feature-tests: FAIL
+regression-baseline: PASS
+
+=== 2026-07-08T05:33:49Z — Phase 2a Red-phase evidence log (blockrun-cli-docs) ===
+
+--- node scripts/docs-check.mjs (new-feature Tier-1 assertions) ---
+[FAIL] PROP-001: README.md does not exist
+[FAIL] PROP-002: README.md does not exist
+[FAIL] PROP-003: README.md does not exist
+[FAIL] PROP-006: README.md does not exist
+[FAIL] PROP-007: CHANGELOG.md does not exist
+[FAIL] PROP-008: CONTRIBUTING.md does not exist
+[FAIL] PROP-009: CONTRIBUTING.md does not exist
+[FAIL] PROP-010: LICENSE does not exist
+[FAIL] PROP-011: description claims MCP-server framing; repository.url invalid: ""; homepage invalid: undefined; version !== "1.0.0" (got: "0.1.0"); bugs.url invalid: undefined
+[FAIL] PROP-012: PARITY.md does not exist
+[FAIL] PROP-013: PARITY.md does not exist
+[FAIL] PROP-015: execution-notes.md missing feature name 'blockrun-cli-docs' and today's date '2026-07-08'
+[FAIL] PROP-016: path(s) outside allow-list: .vcsdd/active-feature.txt, .vcsdd/history.jsonl, .vcsdd/index.json
+[FAIL] PROP-017: CHANGELOG.md does not exist; CONTRIBUTING.md does not exist; LICENSE does not exist; PARITY.md does not exist
+[FAIL] PROP-024: PARITY.md does not exist
+[FAIL] PROP-025: PARITY.md does not exist
+
+16 checks run, 0 PASS, 16 FAIL
+docs-check exit code: 16
+
+--- npm test (regression baseline — CLI's own 408-test suite, untouched per REQ-NG-001) ---
+✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.188459ms)
+✔ schema.safeParse rejects a non-numeric agent_limit (1.849375ms)
+ℹ tests 408
+ℹ suites 0
+ℹ pass 408
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14465.438583
