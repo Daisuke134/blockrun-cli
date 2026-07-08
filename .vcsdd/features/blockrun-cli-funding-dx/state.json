@@ -2,9 +2,25 @@
   "featureName": "blockrun-cli-funding-dx",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "init",
-  "phaseHistory": [],
-  "iterations": {},
+  "currentPhase": "1b",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-07-08T09:02:04.649Z",
+      "reason": "behavioral-spec: 20 REQ-FUND + 5 NG (deposit action, static insufficient-funds hint, README/PARITY)"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-07-08T09:02:04.653Z",
+      "reason": "verification-architecture: 13 PROP (9 Tier1 mocked + 4 Tier2 live, all $0)"
+    }
+  ],
+  "iterations": {
+    "1a": 1,
+    "1b": 1
+  },
   "proofObligations": [],
   "traceability": {
     "epicId": "VCSDD-blockrun-cli-funding-dx-1783500817990",
@@ -13,5 +29,5 @@
   "gates": {},
   "sprintCount": 0,
   "createdAt": "2026-07-08T08:53:37.989Z",
-  "updatedAt": "2026-07-08T08:53:37.989Z"
+  "updatedAt": "2026-07-08T09:02:04.653Z"
 }

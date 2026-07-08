@@ -54,3 +54,5 @@
 {"timestamp":"2026-07-08T08:43:14.911Z","event":"gate_recorded","featureName":"blockrun-cli-agent-dx","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-07-08T08:43:14.915Z","event":"phase_transition","featureName":"blockrun-cli-agent-dx","from":"6","to":"complete","iteration":1,"phase":"complete"}
 {"timestamp":"2026-07-08T08:53:37.992Z","event":"feature_created","featureName":"blockrun-cli-funding-dx","mode":"lean","language":"typescript"}
+{"timestamp":"2026-07-08T09:02:04.651Z","event":"phase_transition","featureName":"blockrun-cli-funding-dx","from":"init","to":"1a","iteration":1,"phase":"1a"}
+{"timestamp":"2026-07-08T09:02:04.654Z","event":"phase_transition","featureName":"blockrun-cli-funding-dx","from":"1a","to":"1b","iteration":1,"phase":"1b"}
