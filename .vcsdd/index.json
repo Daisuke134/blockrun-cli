@@ -30,8 +30,8 @@
       "createdAt": "2026-07-08T08:53:37.989Z",
       "mode": "lean",
       "language": "typescript",
-      "currentPhase": "5",
-      "updatedAt": "2026-07-08T09:33:33.077Z"
+      "currentPhase": "complete",
+      "updatedAt": "2026-07-08T10:41:00.431Z"
     }
   },
   "activeFeature": "blockrun-cli-funding-dx"
