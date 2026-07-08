@@ -238,8 +238,10 @@ non-goal and REQ-FUND-010's own rationale below.
   UNCHANGED before/after a `wallet --action deposit` invocation (the SAME money-safety verification
   pattern `blockrun-cli-docs`/`blockrun-cli-agent-dx` already established for their own $0-by-construction
   live calls).
-- REQ-FUND-018: THE existing 532-test suite (`npm test`, per `blockrun-cli-agent-dx`'s final green count)
-  SHALL remain 100% green throughout and at the end of this feature.
+- REQ-FUND-018: THE existing test suite (`npm test`, 532 tests at THIS feature's start, per
+  `blockrun-cli-agent-dx`'s final green count — a growing floor, not a fixed target, as THIS feature's
+  own new tests are added on top of it) SHALL remain 100% green throughout and at the end of this
+  feature.
 - REQ-FUND-019: `blockrun commands --json`'s `wallet` catalog entry's `costModel` SHALL remain `"free"`
   after this feature ships (REQ-FUND-NG-003) — verified mechanically (the SAME `gatePaidCall(` source
   -grep `blockrun-cli-agent-dx`'s `src/core/cost-model.ts` already performs, re-run against the POST-this
