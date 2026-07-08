@@ -1,0 +1,62 @@
+{
+  "ok": false,
+  "summary": "FIND-001 is only partially resolved: the explicit partial/skipped media-evidence pass path is removed, but the replacement top-up loop is still not mechanically executable. FIND-002 is only partially resolved: `wallet --action status` is a real CLI action, but the spec does not define a parseable preflight invocation or failure handling for null/unavailable balances and underspecifies settled-cost extraction. FIND-003 is substantively resolved for PROP-020 being named as spend-capable/network-touching, though there is still advisory wording cleanup around PROP-005 being called a real spend surface while constrained to $0. New blocking issues remain in PROP-020 evidence assertions and the traceability count/IDs.",
+  "blocking": [
+    {
+      "id": "FIND-001-UNRESOLVED-TOPUP",
+      "location": ".vcsdd/features/blockrun-cli-docs/specs/behavioral-spec.md:259 and .vcsdd/features/blockrun-cli-docs/specs/verification-architecture.md:166",
+      "finding": "The skip loophole is closed, but DOC-EVID-002a/PROP-020 replace it with an underspecified top-up loop: 'request a wallet top-up' from 0x810f, 'sized to cover the remaining re-run(s) plus a small margin,' then resume. The spec gives no executable transaction mechanism, signer/credential assumption, exact amount formula, confirmation threshold, or what an automated verifier should do if the source wallet cannot or does not send.",
+      "why_blocking": "The required all-three media evidence path can still dead-end under low balance. Because partial pass is now forbidden, the only recovery path must be mechanically executable; as written, an implementer or check cannot literally follow it without out-of-band judgment."
+    },
+    {
+      "id": "FIND-002-UNRESOLVED-PREFLIGHT-PARSE",
+      "location": ".vcsdd/features/blockrun-cli-docs/specs/behavioral-spec.md:252 and .vcsdd/features/blockrun-cli-docs/specs/verification-architecture.md:157",
+      "finding": "`wallet --action status` is real (CLI spec REQ-101/105 and built help confirm it), but the revised preflight command omits `--json` and never specifies the exact field to parse (`base.balance`), how to set sandbox HOME in the command line, or that `null`/`unavailable` is a failing preflight. In this environment, `HOME=/Users/anicca/blockrun-cli-e2e-home node dist/index.js wallet --action status --json` exits 0 with `base.balance:null`, and the non-json command prints `Base ... (unavailable)`. The spec also says to re-check after each re-run's real settled cost without requiring the media commands to run with `--json` or naming stdout JSON, human stdout, `cli-budget.json`, or `cost_log.jsonl` as the authoritative cost source.",
+      "why_blocking": "PROP-020 is a money-safety proof. A checker must be able to distinguish a numeric live balance from an unavailable balance and must know exactly where settled costs come from before authorizing the next spend. The current wording can produce ambiguous or non-numeric inputs while still appearing to satisfy the command step."
+    },
+    {
+      "id": "FIND-NEW-001-IMAGE-TX-ASSERT-IMPOSSIBLE",
+      "location": ".vcsdd/features/blockrun-cli-docs/specs/verification-architecture.md:171",
+      "finding": "PROP-020 requires each evidence JSON, including `image`, to include 'a tx/settlement reference from that artifact's fresh run output.' The Base `image` command's actual success payload is `{ url, prompt, model, cost_usd }` and its human output has URL/model/cost only; unlike `video` and `music`, it does not emit `txHash` or another settlement reference.",
+      "why_blocking": "The asserted evidence record is impossible to produce from the specified source for at least one required artifact. PROP-020 cannot pass as written unless the spec either changes the allowed settlement source or stops requiring a tx/settlement reference from image fresh-run output."
+    },
+    {
+      "id": "FIND-NEW-002-TRACEABILITY-COUNT",
+      "location": ".vcsdd/features/blockrun-cli-docs/specs/verification-architecture.md:222",
+      "finding": "The traceability table claims '48 DOC-* requirements' and includes `DOC-NG-001..004`, but the behavioral spec defines 44 unique `DOC-*` IDs and 4 non-goals named `REQ-NG-001..004`; there are no `DOC-NG-*` requirements. The total reaches 48 only by counting the four `REQ-NG-*` clauses while labeling them as DOC requirements.",
+      "why_blocking": "This breaks the stated DOC-to-PROP mapping contract and makes the coverage summary mechanically false. A verifier looking for `DOC-NG-*` will not find those IDs, while a verifier counting actual `DOC-*` IDs will not reproduce the claimed total."
+    }
+  ],
+  "advisory": [
+    {
+      "id": "ADV-001-SPEND-SURFACE-WORDING",
+      "location": ".vcsdd/features/blockrun-cli-docs/specs/verification-architecture.md:7",
+      "finding": "FIND-003's main contradiction is fixed because PROP-020 is now explicitly listed as spend-capable and required-spend. However, the intro still says two obligations 'carry a real spend surface' while immediately describing PROP-005 as a free `$0` command with 'no actual spend'; §1 correctly places PROP-005 in network/no-spend. Tighten the wording to 'network-touching' for PROP-005 and 'real-spend' only for PROP-020."
+    },
+    {
+      "id": "ADV-002-README-ORDER-OK",
+      "location": "DOC-README-001 / PROP-001 / blockrun-mcp README headings",
+      "finding": "The reference heading grep was verified: Prerequisites → Install → Fund your wallet → Tools → Tips/Key-Use-Cases block → Multi-agent budget delegation → Troubleshooting → Environment Variables → How it works → Contributing, with no `## License` heading. DOC-README-001 and PROP-001 consistently translate this to CLI framing with Commands, usage examples, and an added CLI License section."
+    },
+    {
+      "id": "ADV-003-ENV-ROWS-OK",
+      "location": "DOC-README-009 / PROP-006",
+      "finding": "The six-row environment/file requirement is internally consistent: both DOC-README-009 and PROP-006 require separate rows for `~/.blockrun/.chain` and `~/.blockrun/payment-chain`, exactly six members, and explicit exclusion of `BLOCKRUN_API_BASE_URL`."
+    },
+    {
+      "id": "ADV-004-SKILL-BAN-ACCEPTABLE",
+      "location": "PROP-008",
+      "finding": "The revised `skill` ban is specific enough for a regex-backed check: it bans structural artifacts (`skills/<name>/`, `SKILL.md`) and imperative 'add/create a skill' instructions while allowing descriptive references explaining that the MCP repo has a skill mechanism and this CLI does not."
+    },
+    {
+      "id": "ADV-005-PACKAGE-KEYWORDS-OK",
+      "location": "DOC-PKG-002 / PROP-011",
+      "finding": "The loosened keyword requirement is consistent with DOC-PKG-001 and PROP-011: it requires CLI-appropriate minimum keywords and excludes MCP/Claude terms, without requiring parity with blockrun-mcp's MCP-oriented keyword array."
+    },
+    {
+      "id": "ADV-006-FUNDING-ROUTE-GROUNDED",
+      "location": "VERIFICATION.md:14 and execution-notes.md:27",
+      "finding": "The sandbox wallet, funding source, and tx are grounded in the reviewed artifacts: `VERIFICATION.md` records 0xa5Ce... funded by 0x810f... via tx 0xccb..., and `execution-notes.md` records the same sandbox wallet/funding tx plus 0x810f's approximately $0.2797 Base USDC balance."
+    }
+  ]
+}
