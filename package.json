@@ -12,6 +12,7 @@
     "README.md"
   ],
   "scripts": {
+    "prebuild": "node scripts/generate-cost-model.mjs",
     "build": "tsup src/index.ts --format esm --no-splitting --clean",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
