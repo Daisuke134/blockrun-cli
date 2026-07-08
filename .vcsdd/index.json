@@ -24,7 +24,15 @@
       "language": "typescript",
       "currentPhase": "complete",
       "updatedAt": "2026-07-08T08:43:14.914Z"
+    },
+    "blockrun-cli-funding-dx": {
+      "status": "active",
+      "createdAt": "2026-07-08T08:53:37.989Z",
+      "mode": "lean",
+      "language": "typescript",
+      "currentPhase": "init",
+      "updatedAt": "2026-07-08T08:53:37.989Z"
     }
   },
-  "activeFeature": "blockrun-cli-agent-dx"
+  "activeFeature": "blockrun-cli-funding-dx"
 }

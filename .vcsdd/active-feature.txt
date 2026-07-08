@@ -1,1 +1,1 @@
-blockrun-cli-agent-dx
+blockrun-cli-funding-dx

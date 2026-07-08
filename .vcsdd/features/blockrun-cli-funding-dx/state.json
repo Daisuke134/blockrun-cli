@@ -1,0 +1,17 @@
+{
+  "featureName": "blockrun-cli-funding-dx",
+  "mode": "lean",
+  "language": "typescript",
+  "currentPhase": "init",
+  "phaseHistory": [],
+  "iterations": {},
+  "proofObligations": [],
+  "traceability": {
+    "epicId": "VCSDD-blockrun-cli-funding-dx-1783500817990",
+    "beads": []
+  },
+  "gates": {},
+  "sprintCount": 0,
+  "createdAt": "2026-07-08T08:53:37.989Z",
+  "updatedAt": "2026-07-08T08:53:37.989Z"
+}
