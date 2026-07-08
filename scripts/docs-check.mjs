@@ -3,10 +3,13 @@
 //
 // Implements every Tier-1 PROP from
 // .vcsdd/features/blockrun-cli-docs/specs/verification-architecture.md:
-//   PROP-001 002 003 006 007 008 009 010 011 012 013 015 016 017 022 024 025
+//   PROP-001 002 003 006 007 008 009 010 011 012 013 015 016 016b 017 022 024 025
 // (PROP-022 — the 3-document cross-check between PARITY.md/VERIFICATION.md/
 //  evidence/*.json — was added in Phase 3/4; it is Tier 1 per the spec but was
 //  missing from this script's Phase 2a implementation, an oversight.)
+// (PROP-016b — line-level check that the ONE narrow src/ exception,
+//  DOC-CONSTRAINT-001a's `.version("...")` release literal in src/index.ts, is
+//  the ONLY change under src/ — added Phase 3/4 alongside the actual fix.)
 // (PROP-004/005/023 are Tier 2 — live execution — and are NOT run by this script;
 //  PROP-014/018/019/020/021 are Tier 2/3 and likewise out of scope here.)
 //
@@ -720,6 +723,10 @@ const ALLOWED_PATH_PATTERNS = [
   /^execution-notes\.md$/,
   /^scripts\/docs-check\..+$/,
   /^\.vcsdd\//,
+  // DOC-CONSTRAINT-001a's narrow exception (added Phase 3/4): src/index.ts MAY
+  // appear here at the FILE level; the stricter LINE-level check (that only the
+  // .version("...") literal changed, nothing else in the file) is PROP-016b.
+  /^src\/index\.ts$/,
 ];
 
 function checkProp016() {
@@ -742,26 +749,138 @@ function checkProp016() {
   }
   let changedFiles;
   try {
-    const out = execFileSync("git", ["diff", `${featureInitCommit}~1`, "HEAD", "--name-only"], {
+    // IMPORTANT: `git diff <ref>` (a SINGLE ref, not `<ref> HEAD`) diffs against the
+    // current WORKING TREE — staged AND unstaged changes to tracked files. A two-ref
+    // `git diff <ref> HEAD` only compares two COMMITS and is blind to anything not
+    // yet committed, which made this check vacuously pass on uncommitted work in
+    // earlier phases (bug found and fixed in Phase 3/4). Untracked NEW files (not
+    // yet `git add`ed) show in neither form, so they are unioned in separately below.
+    const trackedOut = execFileSync("git", ["diff", `${featureInitCommit}~1`, "--name-only"], {
       cwd: REPO_ROOT,
       encoding: "utf-8",
     }).trim();
-    changedFiles = out.length > 0 ? out.split("\n") : [];
+    const trackedChanged = trackedOut.length > 0 ? trackedOut.split("\n") : [];
+    const untrackedOut = execFileSync("git", ["ls-files", "--others", "--exclude-standard"], {
+      cwd: REPO_ROOT,
+      encoding: "utf-8",
+    }).trim();
+    const untracked = untrackedOut.length > 0 ? untrackedOut.split("\n") : [];
+    changedFiles = [...new Set([...trackedChanged, ...untracked])];
   } catch (e) {
     record("PROP-016", false, `git diff failed: ${e.message}`);
     return;
   }
   const disallowed = changedFiles.filter((f) => !ALLOWED_PATH_PATTERNS.some((re) => re.test(f)));
-  const srcTouched = changedFiles.filter((f) => /^(src|test|dist)\//.test(f));
+  const testDistTouched = changedFiles.filter((f) => /^(test|dist)\//.test(f));
+  const srcTouched = changedFiles.filter((f) => /^src\//.test(f));
+  // DOC-CONSTRAINT-001a's narrow exception: src/index.ts MAY change (one line only,
+  // checked at line-granularity by PROP-016b below) — no OTHER file under src/ may.
+  const srcTouchedOutsideException = srcTouched.filter((f) => f !== "src/index.ts");
   if (disallowed.length > 0) {
     record("PROP-016", false, `path(s) outside allow-list: ${disallowed.join(", ")}`);
     return;
   }
-  if (srcTouched.length > 0) {
-    record("PROP-016", false, `src/test/dist touched (forbidden): ${srcTouched.join(", ")}`);
+  if (testDistTouched.length > 0) {
+    record("PROP-016", false, `test/dist touched (forbidden): ${testDistTouched.join(", ")}`);
     return;
   }
-  record("PROP-016", true, `all ${changedFiles.length} changed path(s) within allow-list, zero src/test/dist touches`);
+  if (srcTouchedOutsideException.length > 0) {
+    record(
+      "PROP-016",
+      false,
+      `src/ file(s) touched outside the DOC-CONSTRAINT-001a version-literal exception: ${srcTouchedOutsideException.join(", ")}`,
+    );
+    return;
+  }
+  record(
+    "PROP-016",
+    true,
+    `all ${changedFiles.length} changed path(s) within allow-list; zero test/dist touches; src/ touch (if any) limited to index.ts (line-level checked by PROP-016b)`,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// PROP-016b — DOC-CONSTRAINT-001a's version-literal exception, LINE-level check
+// ---------------------------------------------------------------------------
+
+function checkProp016b() {
+  let featureInitCommit;
+  try {
+    const out = execFileSync(
+      "git",
+      ["log", "--diff-filter=A", "--format=%H", "--", `.vcsdd/features/${FEATURE_NAME}/state.json`],
+      { cwd: REPO_ROOT, encoding: "utf-8" },
+    ).trim();
+    const commits = out.split("\n").filter(Boolean);
+    featureInitCommit = commits[commits.length - 1];
+  } catch (e) {
+    record("PROP-016b", false, `could not determine feature-init commit: ${e.message}`);
+    return;
+  }
+  if (!featureInitCommit) {
+    record("PROP-016b", false, "could not find commit that added state.json for this feature");
+    return;
+  }
+  // Untracked NEW files under src/ are a violation on their own (DOC-CONSTRAINT-001a
+  // only permits modifying an existing line in an existing file, never adding a new
+  // file) — checked before the line-level diff below.
+  let untrackedSrc;
+  try {
+    const out = execFileSync("git", ["ls-files", "--others", "--exclude-standard", "--", "src/"], {
+      cwd: REPO_ROOT,
+      encoding: "utf-8",
+    }).trim();
+    untrackedSrc = out.length > 0 ? out.split("\n") : [];
+  } catch (e) {
+    record("PROP-016b", false, `git ls-files -- src/ failed: ${e.message}`);
+    return;
+  }
+  if (untrackedSrc.length > 0) {
+    record("PROP-016b", false, `untracked NEW file(s) under src/ (not permitted by the narrow exception): ${untrackedSrc.join(", ")}`);
+    return;
+  }
+  let diffOutput;
+  try {
+    // Single-ref `git diff <ref>` diffs against the WORKING TREE (staged + unstaged),
+    // not just the last commit — see PROP-016's comment above for why `<ref> HEAD`
+    // was wrong (blind to uncommitted work).
+    diffOutput = execFileSync(
+      "git",
+      ["diff", `${featureInitCommit}~1`, "--unified=0", "--", "src/"],
+      { cwd: REPO_ROOT, encoding: "utf-8" },
+    );
+  } catch (e) {
+    record("PROP-016b", false, `git diff -- src/ failed: ${e.message}`);
+    return;
+  }
+  if (diffOutput.trim().length === 0) {
+    record("PROP-016b", true, "no changes under src/ at all (exception not exercised — trivially satisfied)");
+    return;
+  }
+  // With --unified=0, changed-content lines are exactly the lines starting with a
+  // single '+' or '-' (not '+++'/'---' file headers, not '@@' hunk headers).
+  const contentLines = diffOutput
+    .split("\n")
+    .filter((l) => (l.startsWith("+") || l.startsWith("-")) && !l.startsWith("+++") && !l.startsWith("---"));
+  if (contentLines.length !== 2) {
+    record(
+      "PROP-016b",
+      false,
+      `expected exactly 2 diff lines under src/ (1 removed + 1 added, i.e. one changed line) — got ${contentLines.length}: ${JSON.stringify(contentLines)}`,
+    );
+    return;
+  }
+  const versionLiteralRe = /\.version\(\s*["'][\d.]+["']\s*\)/;
+  const bothMatch = contentLines.every((l) => versionLiteralRe.test(l));
+  if (!bothMatch) {
+    record(
+      "PROP-016b",
+      false,
+      `the single changed src/ line does not match the .version("...") literal pattern: ${JSON.stringify(contentLines)}`,
+    );
+    return;
+  }
+  record("PROP-016b", true, "src/ diff is exactly one line, matching the .version(\"...\") release-literal exception");
 }
 
 // ---------------------------------------------------------------------------
@@ -942,6 +1061,7 @@ function main() {
   checkProp013();
   checkProp015();
   checkProp016();
+  checkProp016b();
   checkProp017();
   checkProp022();
   checkProp024();

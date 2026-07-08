@@ -76,3 +76,33 @@ side-by-side 比較する。
   sandbox cli-budget.json: spent 0.316001→0.546002 (delta 0.230001、期待値と完全一致)、
   calls 19→28。live preflightは全てnumberを返しfallback不要だった。
   詳細: `.vcsdd/features/blockrun-cli-docs/evidence/{image,video,music,media-run-summary,topup-mcp-1}.json`
+
+### `src/index.ts` 1行例外（2026-07-08、Dais指示）
+
+**発見**: `blockrun --version` が `0.1.0` を返す一方、`package.json`は`1.0.0`。原因は
+`src/index.ts:89`の`.version("0.1.0")`ハードコード（`package.json`のversionフィールドとは独立）。
+v1.0.0タグを打つ前にこの不整合を放置すると、BlockRunチームの厳格レビューで確実に指摘される実害あり。
+
+**根拠**: このfeatureは`src/`/`test/`/`dist/`を一切変更しない、という原則（REQ-NG-001/
+DOC-CONSTRAINT-001）を開始以来ずっと守ってきた。しかし今回のケースは「docsを実体に合わせて直す」の
+逆で、実体（バイナリの`--version`出力）側に明確なバグがあり、それをdocs側で取り繕うことができない
+（`--version`はドキュメントではなく実行結果そのもの）。Daisの直接指示により、`.version(...)`の
+literal 1行のみに限定した狭い例外として認めることにした。
+
+**対応**:
+- `src/index.ts:89`の`.version("0.1.0")`を`.version("1.0.0")`に変更（1行のみ）
+- `npm run build`で`dist/`を再生成、`blockrun --version`が`1.0.0`を返すことを確認
+- behavioral-spec.mdにDOC-CONSTRAINT-001a、verification-architecture.mdにPROP-016b（新規）を追加
+  し、この例外の境界を明文化
+- docs-check.mjsにPROP-016bを実装: `git diff <feature-start> -- src/`の変更が**行レベルで**
+  ちょうど1行（`.version("...")`パターンに一致）であることを機械検証。未追跡の新規ファイルが
+  `src/`配下に増えていないかも別途チェック
+- 実装中に発見した副次バグ: PROP-016/PROP-016bは元々`git diff <ref> HEAD`という2-ref比較を
+  使っており、これは**未コミットの変更を一切検知できない**（HEADはコミット済み状態のみを指す）。
+  実際に`src/index.ts`を編集した直後に検証したところ「src/に変更なし」と誤ってPASSしたため発覚。
+  `git diff <ref>`（working treeとの比較、未コミット変更を含む）+
+  `git ls-files --others --exclude-standard`（未追跡の新規ファイル）に修正し、意図的に別の行を
+  `src/index.ts`に追加してPROP-016bが正しくFAILすることを確認した上で元に戻した（検証ロジック自体
+  の実効性を証明）。
+- 結果: `node scripts/docs-check.mjs` 18/18 PASS、`npm test` 408/408 green維持、
+  `dist/`はgitignore対象（差分チェック対象外）。

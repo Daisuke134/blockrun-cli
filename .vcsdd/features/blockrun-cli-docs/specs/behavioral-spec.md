@@ -486,6 +486,17 @@ for any of the three; a fresh re-run is REQUIRED for all three artifacts.
   feature (REQ-NG-001). If any README/CONTRIBUTING example command does not actually work against the
   real built binary, the DOCUMENT SHALL be corrected to match real behavior — the source SHALL NOT be
   changed to match an aspirational doc.
+- DOC-CONSTRAINT-001a (narrow exception, added Phase 3/4 per Dais's direct instruction): THE ONE
+  exception to DOC-CONSTRAINT-001 is the release version literal at `src/index.ts`'s
+  `.version("…")` call (Commander's own `--version` flag value) — this feature MAY change ONLY that
+  one string literal, from `"0.1.0"` to `"1.0.0"`, to resolve a real, user-visible inconsistency: the
+  built binary's `blockrun --version` output (hardcoded, independent of `package.json`) must match
+  `package.json`'s `version` field (DOC-PKG-006 requires `"1.0.0"`) before a `v1.0.0` git tag is cut,
+  or an external reviewer running `blockrun --version` would see `0.1.0` against a `package.json`
+  claiming `1.0.0` — a real, easily-caught inconsistency, not a hypothetical one. NO OTHER LINE in
+  `src/`/`test/`/`dist/` may change under this exception. THE FEATURE SHALL mechanically verify this
+  exception's boundary is respected (PROP-016b, verification-architecture.md) — `git diff` against
+  `src/` SHALL show EXACTLY one changed line, and that line SHALL be the `.version(...)` literal.
 - DOC-CONSTRAINT-002: No produced document SHALL contain the words "coming soon", "TBD", "planned", or
   an equivalent placeholder for an unimplemented feature (REQ-NG-004).
 - DOC-CONSTRAINT-003: Every numeric cost, flag name, enum value, and environment variable named in any

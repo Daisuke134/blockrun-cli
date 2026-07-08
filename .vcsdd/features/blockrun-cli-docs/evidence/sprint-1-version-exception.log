@@ -1,0 +1,63 @@
+new-feature-tests: PASS
+regression-baseline: PASS
+
+=== 2026-07-08T06:09:30Z — --version narrow src/ exception evidence log (blockrun-cli-docs) ===
+Fixed src/index.ts:89 .version("0.1.0") -> .version("1.0.0") (1-line narrow exception, DOC-CONSTRAINT-001a / PROP-016b).
+Also fixed a pre-existing bug in PROP-016/016b: git diff <ref> HEAD is blind to uncommitted work; switched to git diff <ref> (working tree) + git ls-files --others for untracked files.
+
+--- git diff -- src/ (exactly one line) ---
+diff --git a/src/index.ts b/src/index.ts
+index 14b2ee3..402ec23 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -86,7 +86,7 @@ const program = new Command();
+ program
+   .name("blockrun")
+   .description("CLI for the 18 blockrun-mcp tools, backed by @blockrun/llm (x402 micropayments on Base/Solana).")
+-  .version("0.1.0");
++  .version("1.0.0");
+ 
+ function withCommon(cmd: Command): Command {
+   return cmd
+
+--- blockrun --version before/after ---
+before: 0.1.0 (dist built from pre-fix src/index.ts)
+after:
+1.0.0
+
+--- adversarial self-test: a 2nd unrelated line was temporarily added to src/index.ts and reverted; PROP-016b correctly FAILed during that window (see execution-notes.md for the exact output) ---
+
+--- node scripts/docs-check.mjs (now 18 assertions incl. PROP-016b) ---
+[PASS] PROP-001: heading order matches required sequence
+[PASS] PROP-002: 18/18 command rows present and match real subcommand set
+[PASS] PROP-003: README.md free of forbidden placeholder/MCP-framing terms
+[PASS] PROP-006: Environment Variables table has exactly 6 rows with the required member set, .chain/payment-chain separate
+[PASS] PROP-007: CHANGELOG.md preamble/1.0.0-heading/bullet-format all correct
+[PASS] PROP-008: CONTRIBUTING.md has all required script invocations, no banned skill-mechanism claims
+[PASS] PROP-009: PR checklist contains all 6 required items
+[PASS] PROP-010: LICENSE body matches blockrun-mcp/LICENSE; package.json.license === MIT
+[PASS] PROP-011: all package.json fields correct
+[PASS] PROP-012: PARITY.md has 18/18 sections, each naming both MCP tool and CLI form
+[PASS] PROP-013: all 3 known intentional non-parity points called out
+[PASS] PROP-015: execution-notes.md references 'blockrun-cli-docs' and today's date 2026-07-08
+[PASS] PROP-016: all 44 changed path(s) within allow-list; zero test/dist touches; src/ touch (if any) limited to index.ts (line-level checked by PROP-016b)
+[PASS] PROP-016b: src/ diff is exactly one line, matching the .version("...") release-literal exception
+[PASS] PROP-017: CHANGELOG/CONTRIBUTING/LICENSE/PARITY.md free of forbidden placeholders
+[PASS] PROP-022: PARITY.md, VERIFICATION.md, and evidence/*.json agree on full URL + MD5 for image/video/music
+[PASS] PROP-024: 9 DUAL-LIVE-RUN + 9 SCHEMA-ONLY partition exactly matches spec
+[PASS] PROP-025: every MCP-declared parameter for all 9 SCHEMA-ONLY commands is referenced in PARITY.md
+
+18 checks run, 18 PASS, 0 FAIL
+docs-check exit code: 0
+
+--- npm test (regression baseline — CLI's own 408-test suite) ---
+✔ REQ-103: budget action accepts set/check/clear with budget_amount (0.18625ms)
+✔ schema.safeParse rejects a non-numeric agent_limit (1.708833ms)
+ℹ tests 408
+ℹ suites 0
+ℹ pass 408
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12711.6915

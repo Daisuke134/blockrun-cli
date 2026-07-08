@@ -126,8 +126,19 @@ Phase 2a/2b of THIS feature (not the CLI's own 408-test suite, which is untouche
   PROP-016's actual protective INTENT is `src/`/`test`/`dist`-untouched (REQ-NG-001), not literal
   isolation from the orchestrator's own cross-feature state files, which this feature cannot avoid
   touching by using `vcsdd` tooling at all. Assert: every changed path matches the allow-list; zero
-  paths under `src/`, `test/`, `dist/` (this second assertion is UNCHANGED and remains the actual
-  protective check).
+  paths under `test/`, `dist/`; zero paths under `src/` EXCEPT `src/index.ts`, which — if changed at
+  all — is checked by the separate, stricter PROP-016b below (a bare "no src/ changes" assertion would
+  now be too strict, since DOC-CONSTRAINT-001a authorizes exactly one line in `src/index.ts`; a bare
+  "any src/ change is fine" assertion would be too loose — PROP-016b is the precise boundary check).
+- **PROP-016b** (DOC-CONSTRAINT-001a; Tier 1, filesystem, no network — added Phase 3/4 per Dais's
+  direct instruction) — THE version-literal exception's boundary, verified line-by-line, not just
+  file-by-file: `git diff <feature-start-commit>..HEAD -- src/` SHALL show EXACTLY ONE changed line
+  across the ENTIRE `src/` tree, and that line SHALL match the pattern `.version("<semver>")` (a
+  Commander `.version(...)` call). ANY other change under `src/` (a second line in `index.ts`, or any
+  change to any other file under `src/`) FAILS this PROP. This is INTENTIONALLY stricter than a
+  file-level check — DOC-CONSTRAINT-001a authorizes one LINE, not one FILE, so the mechanical check
+  must operate at line granularity to actually enforce the narrow exception rather than silently
+  widening it to "the whole of `src/index.ts` is now fair game."
 - **PROP-017** (DOC-CONSTRAINT-002) — every produced doc file (README/CHANGELOG/CONTRIBUTING/LICENSE/
   PARITY.md) is free of the forbidden-placeholder set from PROP-003, re-checked across ALL files (PROP
   -003 is README-only; this PROP covers the rest). Assert: zero matches across the file set minus
@@ -399,15 +410,17 @@ architecture.
 | package.json (DOC-PKG-001..007) | 7 | PROP-011 |
 | PARITY.md (DOC-PARITY-001..003, -004, -005, -005a, -006, -007) | 8 | PROP-012, 013, 014, 023, 024, 025 |
 | execution-notes.md (DOC-NOTES-001) | 1 | PROP-015 |
-| Cross-cutting (DOC-CONSTRAINT-001..003) | 3 | PROP-016, 017, 003 (reused), and PROP-004's flag-fidelity check covers DOC-CONSTRAINT-003 |
+| Cross-cutting (DOC-CONSTRAINT-001..003, -001a) | 4 | PROP-016, 016b, 017, 003 (reused), and PROP-004's flag-fidelity check covers DOC-CONSTRAINT-003 |
 | Media artifact full-URL evidence (DOC-EVID-001, -002, -002a, -003, -004, -005) | 6 | PROP-020, 021, 022 |
 | Whole-feature judgment | — | PROP-018, 019 |
 
-**Total: 50 unique `DOC-*` requirement IDs, 25 PROPs** (14+3+6+2+7+8+1+3+6 = 50 — mechanically
-recounted after adding DOC-README-003a and DOC-PARITY-004/005/005a/006/007 per Dais's Claude-Code
--centric apple-to-apple verification instruction; confirmed NO `DOC-NG-*` IDs exist anywhere in
-`behavioral-spec.md`, per the earlier spec-review codex it-2 FIND-NEW-002-TRACEABILITY-COUNT fix, still
-holding). This feature's own 4 non-goals
+**Total: 51 unique `DOC-*` requirement IDs, 26 PROPs** (14+3+6+2+7+8+1+4+6 = 51 — mechanically
+recounted after adding DOC-README-003a, DOC-PARITY-004/005/005a/006/007 per Dais's Claude-Code-centric
+apple-to-apple verification instruction, and DOC-CONSTRAINT-001a (the version-literal narrow
+exception, with its PROP-016b line-level check) per Dais's Phase 3/4 `--version` mismatch fix
+instruction; confirmed NO `DOC-NG-*` IDs exist anywhere in `behavioral-spec.md`, per the earlier
+spec-review codex it-2 FIND-NEW-002-TRACEABILITY-COUNT fix, still holding). This feature's own 4
+non-goals
 (`REQ-NG-001..004`, `behavioral-spec.md` §0 "Non-goals") are a SEPARATE clause type — constraints on
 what this feature does NOT do, distinct from this docs-feature's own `DOC-*` requirement set — and are
 NOT counted in this total; they are enforced by PROP-003's forbidden-term checks and
