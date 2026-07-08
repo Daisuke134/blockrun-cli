@@ -31,3 +31,6 @@
 {"timestamp":"2026-07-08T06:18:11.833Z","event":"gate_recorded","featureName":"blockrun-cli-docs","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-07-08T06:18:11.835Z","event":"phase_transition","featureName":"blockrun-cli-docs","from":"3","to":"5","iteration":1,"phase":"5"}
 {"timestamp":"2026-07-08T06:24:08.888Z","event":"phase_transition","featureName":"blockrun-cli-docs","from":"5","to":"6","iteration":1,"phase":"6"}
+{"timestamp":"2026-07-08T06:24:28.615Z","event":"gate_recorded","featureName":"blockrun-cli-docs","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-07-08T06:24:36.515Z","event":"gate_recorded","featureName":"blockrun-cli-docs","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-07-08T06:26:23.267Z","event":"phase_transition","featureName":"blockrun-cli-docs","from":"6","to":"complete","iteration":1,"phase":"complete"}
