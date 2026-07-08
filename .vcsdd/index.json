@@ -22,8 +22,8 @@
       "createdAt": "2026-07-08T06:45:53.835Z",
       "mode": "lean",
       "language": "typescript",
-      "currentPhase": "5",
-      "updatedAt": "2026-07-08T08:37:42.445Z"
+      "currentPhase": "complete",
+      "updatedAt": "2026-07-08T08:43:14.914Z"
     }
   },
   "activeFeature": "blockrun-cli-agent-dx"

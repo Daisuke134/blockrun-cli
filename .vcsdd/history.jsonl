@@ -50,3 +50,6 @@
 {"timestamp":"2026-07-08T08:30:39.493Z","event":"gate_recorded","featureName":"blockrun-cli-agent-dx","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
 {"timestamp":"2026-07-08T08:37:42.444Z","event":"gate_recorded","featureName":"blockrun-cli-agent-dx","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-07-08T08:37:42.448Z","event":"phase_transition","featureName":"blockrun-cli-agent-dx","from":"3","to":"5","iteration":1,"phase":"5"}
+{"timestamp":"2026-07-08T08:43:14.788Z","event":"phase_transition","featureName":"blockrun-cli-agent-dx","from":"5","to":"6","iteration":1,"phase":"6"}
+{"timestamp":"2026-07-08T08:43:14.911Z","event":"gate_recorded","featureName":"blockrun-cli-agent-dx","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-07-08T08:43:14.915Z","event":"phase_transition","featureName":"blockrun-cli-agent-dx","from":"6","to":"complete","iteration":1,"phase":"complete"}
