@@ -1,0 +1,32 @@
+{
+  "reviewType": "spec",
+  "iteration": 1,
+  "dimensions": {
+    "spec_fidelity": "FAIL",
+    "verification_readiness": "FAIL"
+  },
+  "overall": "FAIL",
+  "findings": [
+    {
+      "id": "SPEC-DX-1",
+      "severity": "CRITICAL",
+      "dimension": "spec_fidelity",
+      "description": "REQ-DX-011 item 6 (\"network_error\") requires classifying on `err.cause.code` (ECONNREFUSED/ENOTFOUND/ETIMEDOUT/EAI_AGAIN) or an AbortError name from the RAW error object. But every one of the 18 existing command catch-blocks (verified: src/commands/chat.ts:240-241, src/commands/rpc.ts:32-35, src/commands/video.ts:75-78, and the same pattern in every other commands/*.ts) does `const msg = extractErrorMessage(err); return fail(msg, opts.json, ...)` — the raw Error is stringified BEFORE it ever reaches `fail()`/`renderError()`. `extractErrorMessage()` (src/core/errors.ts:5-27) reads only `err.message` and `err.response`; it never reads or forwards `err.cause`. So by the time any code following REQ-DX-014's design (\"extending src/core/render.ts's fail()/renderError()\", both of which take a plain `rawMessage: string`) sees the error, a `new TypeError(\"fetch failed\", { cause: { code: \"ENOTFOUND\" } })` has already collapsed to the bare string \"fetch failed\" with the cause discarded. As scoped, `network_error` classification is structurally unreachable from the real 18 call sites — even though the spec itself calls this \"the ONE genuinely NEW classification this feature introduces.\" This is a REQ that the current architecture cannot support without a change beyond what REQ-DX-014 describes.",
+      "suggestedFix": "Either (a) require extractErrorMessage() (or a new sibling function) to preserve/append cause detail (e.g. err.cause?.code) into what it returns to fail(), so the string-only classifier can still detect it, or (b) explicitly require classification to happen on the RAW `err` at each catch site (before extractErrorMessage runs), with fail()'s signature changed to accept a pre-computed `code`, and add a REQ that says so instead of leaving REQ-DX-014's 'extend fail()/renderError()' to imply a string-only touch point at one shared location."
+    },
+    {
+      "id": "SPEC-DX-2",
+      "severity": "HIGH",
+      "dimension": "verification_readiness",
+      "description": "PROP-DX-006 (Tier 1, MOCKED) describes feeding a raw `TypeError('fetch failed', {cause})` 'through the classifier' but does not specify whether the test exercises the SAME data path a live command uses (catch -> extractErrorMessage -> fail) or calls the classifier directly with the raw error object. Given SPEC-DX-1, if the unit test constructs the raw error and calls the classifier function directly (the natural, minimal way to write this test), it will pass green while the real 18-command flow can never deliver that raw error to the classifier at all — a false-positive Tier-1 result that does not prove the feature works end-to-end for its one genuinely new classification.",
+      "suggestedFix": "Add an explicit PROP that exercises the REAL catch-block path for at least one command (e.g. a Tier-1 test that stubs the network call a specific command makes so it throws the real fetch-failed shape, then asserts the command's actual `fail()` output — not a direct classifier call — carries `code: \"network_error\"`), so the test would fail today given SPEC-DX-1's gap and only pass once the real wiring is fixed."
+    },
+    {
+      "id": "SPEC-DX-3",
+      "severity": "MEDIUM",
+      "dimension": "spec_fidelity",
+      "description": "REQ-DX-011 lists `insufficient_funds` (item 4) before `upstream_error` (item 5) but states no priority/precedence rule for a message matching more than one pattern. formatError()'s EXISTING behavior (src/core/errors.ts:40-63) checks `isModelUnavailable` first, then `isServerError`, and only falls into the `isPaymentError` branch in the final `else` — i.e. its real priority is upstream-before-payment, the OPPOSITE of the REQ list's ordering. Since `message` (unchanged per REQ-DX-NG-003) is still produced by formatError()'s priority, an independently-ordered classifier risks a `code`/`message` pair that disagree about what happened (message says 'temporarily unavailable upstream', code says `insufficient_funds`). Compounding this: `isPaymentError`/`isModelUnavailable`/`isServerError` are inline, non-exported consts inside `formatError()` — the only EXPORTED payment-ish helper is `isPaymentRejectionError` (errors.ts:29-32), which uses a DIFFERENT, narrower pattern set (no 402 check, no bare 'payment' check) and is already used by video.ts:77 for an unrelated purpose (choosing whether to add an altModels hint). REQ-DX-011 item 4 cites 'formatError()'s EXISTING isPaymentError classification' — the correct-but-unexported one — creating a real risk that Phase 2 grabs the wrong already-importable function.",
+      "suggestedFix": "Add a REQ requiring the new classifier to reuse formatError()'s EXACT branch order (extract isModelUnavailable/isServerError/isPaymentError into one exported, order-preserving function that both formatError() and the new classifier call), rather than independently re-deriving the 6-way taxonomy, and explicitly note it must NOT be confused with the differently-scoped exported `isPaymentRejectionError`."
+    }
+  ]
+}

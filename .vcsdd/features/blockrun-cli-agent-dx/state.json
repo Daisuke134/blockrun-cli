@@ -26,8 +26,16 @@
     "epicId": "VCSDD-blockrun-cli-agent-dx-1783493153836",
     "beads": []
   },
-  "gates": {},
+  "gates": {
+    "1c": {
+      "verdict": "FAIL",
+      "timestamp": "2026-07-08T07:01:40.392Z",
+      "reviewedBy": "adversary",
+      "adversaryVerdict": "FAIL",
+      "adversaryReviewedAt": "2026-07-08T07:01:40.392Z"
+    }
+  },
   "sprintCount": 0,
   "createdAt": "2026-07-08T06:45:53.835Z",
-  "updatedAt": "2026-07-08T06:56:10.259Z"
+  "updatedAt": "2026-07-08T07:01:40.392Z"
 }
