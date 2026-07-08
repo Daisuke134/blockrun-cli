@@ -1,0 +1,8 @@
+{
+  "reviewType": "implementation",
+  "featureName": "blockrun-cli-agent-dx",
+  "mode": "lean",
+  "iteration": 1,
+  "artifactsToReview": ["src/", "test/", "README.md", "PARITY.md", "scripts/docs-check.mjs", "execution-notes.md"],
+  "reviewDimensions": ["spec_coverage", "money_path_invariance", "backward_compatibility", "real_binary_behavior"]
+}
