@@ -1,0 +1,41 @@
+{
+  "ok": false,
+  "summary": "it-2 FIND-001-UNRESOLVED-TOPUP is resolved: the revised top-up loop names the external signer/orchestrator, amount formula, evidence record, confirmation retries, and terminal failure behavior. it-2 FIND-002-UNRESOLVED-PREFLIGHT-PARSE is not fully resolved: the wallet status command and .base.balance parse are now real, but the null fallback still relies on a non-conservative ledger-derived balance and an underspecified eth_call payload. it-2 FIND-NEW-001-IMAGE-TX-ASSERT-IMPOSSIBLE is resolved: src/commands/image.ts:83-84 returns only { url, prompt, model, cost_usd }, while video/music conditionally include txHash from manual x402 receipt handling. it-2 FIND-NEW-002-TRACEABILITY-COUNT is resolved: the arithmetic 13+3+6+2+7+3+1+3+6 equals 44, and a unique DOC-* recount of behavioral-spec.md also returns 44; REQ-NG-* is now defensibly treated as a separate non-goal clause type.",
+  "resolvedFromIteration2": [
+    "it-2 FIND-001-UNRESOLVED-TOPUP: resolved, DOC-EVID-002a/PROP-020 now provide an executable top-up stop/send/record/confirm/resume/fail loop with signer identity, shortfall + $0.05 formula, tx-hash evidence, retry budget, and terminal failure states.",
+    "it-2 FIND-002-UNRESOLVED-PREFLIGHT-PARSE: unresolved, the primary --json preflight parse is fixed but the fallback state machine is still not mechanically safe because its ledger-derived 'lower bound' is not actually conservative and the eth_call payload is not fully specified.",
+    "it-2 FIND-NEW-001-IMAGE-TX-ASSERT-IMPOSSIBLE: resolved, image success output at src/commands/image.ts:83-84 has no txHash field, while src/commands/video.ts:70-72 and src/commands/music.ts:54-56 conditionally include txHash sourced from src/shell/manual-x402.ts X-Payment-Receipt handling.",
+    "it-2 FIND-NEW-002-TRACEABILITY-COUNT: resolved, behavioral-spec.md contains 44 unique DOC-* IDs and the traceability table's 13+3+6+2+7+3+1+3+6 recount is correct; REQ-NG-* clauses are separate non-goal constraints rather than DOC requirements."
+  ],
+  "blocking": [
+    {
+      "id": "FIND-004-001-LEDGER-FALLBACK-NOT-CONSERVATIVE",
+      "location": ".vcsdd/features/blockrun-cli-docs/specs/behavioral-spec.md:282",
+      "finding": "DOC-EVID-002a says to derive a CONSERVATIVE lower-bound balance as $0.59 funding minus ~/.blockrun/cli-budget.json global.spent, but the ground truth disproves that this is a lower bound. VERIFICATION.md records end balance $0.264748 and global.spent $0.316001, while the actual ledger file currently has global.spent 0.31600100000000003, so $0.59 - global.spent = about $0.273999, which is higher than the recorded wallet end balance. VERIFICATION.md:19 explicitly explains the on-chain settlement delta not represented in the ledger.",
+      "why_blocking": "When wallet status returns null, this fallback can overestimate available USDC and authorize a paid media re-run that the live wallet cannot fund. That leaves the preflight/null-handling fix still unsound and means the procedure is not a terminating, money-safe state machine."
+    },
+    {
+      "id": "FIND-004-002-ETH-CALL-FALLBACK-PAYLOAD-UNDERSPECIFIED",
+      "location": ".vcsdd/features/blockrun-cli-docs/specs/verification-architecture.md:179",
+      "finding": "The rpc fallback command is not mechanically executable as written: it contains a placeholder '<Base-USDC balanceOf(...) call payload>' rather than specifying the Base USDC contract address, the exact eth_call object shape ({to,data}), the encoded balanceOf calldata for 0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804, and how to parse/decimal-scale the hex result. The CLI does support rpc --network base --method eth_call --params '<json>' via src/args/rpc.ts and src/commands/rpc.ts, and VERIFICATION.md row #9 proves the generic rpc method path with eth_blockNumber, but the spec's fallback itself is still a template, not an executable command.",
+      "why_blocking": "The prior preflight finding required a no-judgment fallback for null balances. In the observed environment, wallet status currently returns base.balance:null, so this path is not hypothetical; an implementer still has to fill in protocol details before the fallback can be run."
+    }
+  ],
+  "advisory": [
+    {
+      "id": "ADV-004-001-BUDGET-GUARD-OMITS-RPC-FALLBACK-SPEND",
+      "location": ".vcsdd/features/blockrun-cli-docs/specs/verification-architecture.md:237",
+      "finding": "The budget guard still presents PROP-020 as approximately $0.225 for image/video/music and estimates about $0.04 headroom, but DOC-EVID-002a/PROP-020 add a $0.002 paid rpc eth_call fallback that may run when status is unavailable. This is inside the same spend-capable PROP rather than a second proof obligation, but the headroom math should include the contingency spend explicitly."
+    },
+    {
+      "id": "ADV-004-002-PROP-BEHAVIORAL-FALLBACK-DRIFT",
+      "location": ".vcsdd/features/blockrun-cli-docs/specs/behavioral-spec.md:280 and .vcsdd/features/blockrun-cli-docs/specs/verification-architecture.md:178",
+      "finding": "behavioral-spec.md adds a guard that the $0.002 rpc fallback is only attempted if a prior numeric balance or funding-derived floor covers it; PROP-020's restatement omits that guard and simply says to fall back to the paid rpc command. The two mirrored procedures should be made identical."
+    },
+    {
+      "id": "ADV-004-003-STATUS-RUN-OBSERVED-NULL",
+      "location": "dist/index.js wallet --action status --json",
+      "finding": "The built dist exists and the requested command returned the documented JSON shape, but base.balance was null during this review: {\"activeChain\":\"base\",\"base\":{\"address\":\"0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804\",\"balance\":null},\"solana\":{\"address\":\"HxeDzzgrMjZFnqqrEj6iZyiqx3XbeQ2Ke4ZcgdSshLZm\",\"balance\":0}}."
+    }
+  ]
+}
