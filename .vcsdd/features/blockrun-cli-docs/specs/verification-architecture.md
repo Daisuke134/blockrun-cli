@@ -3,13 +3,15 @@
 Feature: `blockrun-cli-docs` · Mode: lean · Phase 1b
 
 Maps `specs/behavioral-spec.md`'s DOC-* requirements to proof obligations (PROP-*). Docs are static
-artifacts — most checks are Tier-1 (mechanical, no network, no spend). PROP-005, PROP-019, PROP-020,
-and PROP-021 touch the network (see §1's Purity boundary table for the exact split). TWO proof
-obligations carry a real spend surface: **PROP-005** (scoped to a free-path, `$0`, command — no actual
-spend) and **PROP-020** (REQUIRED real spend, ≈$0.225 across image/video/music re-runs, gated by a live
-wallet-balance preflight — see §3, Budget guard, corrected per spec-review codex FIND-002/003).
+artifacts — most checks are Tier-1 (mechanical, no network, no spend). FOUR proof obligations are
+network-touching: **PROP-005** (a free-path, `$0` command — network-touching, NOT a real spend
+surface), **PROP-019** and **PROP-021** (HTTP resolution checks — network-touching, no spend), and
+**PROP-020** (image/video/music fresh re-runs — network-touching AND the ONLY real-spend proof
+obligation in this architecture, ≈$0.225 total, gated by a live wallet-balance preflight — see §3,
+Budget guard, corrected per spec-review codex it-1 FIND-002/FIND-003 and it-2 ADV-001-SPEND-SURFACE
+-WORDING).
 
-Kept intentionally lean: 22 PROPs covering the 48 DOC-* requirements in behavioral-spec.md by grouping
+Kept intentionally lean: 22 PROPs covering the 44 DOC-* requirements in behavioral-spec.md by grouping
 requirements that share one mechanical check (e.g. "18 rows present," "these 6 env vars and no others")
 into a single PROP rather than one PROP per REQ — no padding.
 
@@ -21,7 +23,7 @@ into a single PROP rather than one PROP per REQ — no padding.
 |---|---|---|
 | Pure | Docs-check script's parsing/comparison logic (markdown section extraction, JSON field diff, table-row counting, forbidden-term grep) | `scripts/docs-check.*` internals |
 | Impure (network, no spend) | Live command execution against the real BlockRun API on a free-cost path (PROP-005); HTTP HEAD/GET for URL resolution (PROP-019, PROP-021) | `--json`/`--help` example runs; github.com / x402.org reachability; the 3 recovered media URLs |
-| Impure (network, **real spend**) | Live wallet-balance preflight (`wallet --action status`, no spend) immediately followed by fresh media re-runs that DO spend real USDC (PROP-020) | image/video/music fresh re-runs against sandbox HOME |
+| Impure (network, **real spend**) | Live wallet-balance preflight (`wallet --action status --json`, no spend) immediately followed by fresh media re-runs that DO spend real USDC (PROP-020) | image/video/music fresh re-runs against sandbox HOME |
 | Impure (filesystem, no network) | Reading repo files, `git diff` against this feature's commit range, `git log --tags` | PROP-016 |
 | Out of scope entirely | Anything under `src/`, `test/`, `dist/` — this feature reads them (to verify docs match real `--help` output) but never writes them (REQ-NG-001 / DOC-CONSTRAINT-001) | n/a |
 
@@ -49,7 +51,8 @@ Phase 2a/2b of THIS feature (not the CLI's own 408-test suite, which is untouche
   command names in column 1 equals the set of 18 real subcommand names parsed from `node dist/index.js
   --help`'s `Commands:` block (excluding the auto-generated `help [command]` row). Assert: set equality,
   count === 18.
-- **PROP-003** (DOC-README-002, -009, -010, -011; DOC-NG-002, -004) — README.md does NOT contain (case
+- **PROP-003** (DOC-README-002, -009, -010, -011; also enforces REQ-NG-002/-004, this docs-feature's
+  own non-goals, which have no dedicated PROP of their own) — README.md does NOT contain (case
   -insensitive): `"model-context-protocol"`, `"claude mcp add"`, `"tool profiles"`, `"spawn npx enoent"`,
   `"coming soon"`, `"tbd"`, `"planned"`. Assert: zero matches for each forbidden string.
 - **PROP-006** (DOC-README-009) — README's Environment Variables table has exactly 6 data rows, and
@@ -99,7 +102,8 @@ Phase 2a/2b of THIS feature (not the CLI's own 408-test suite, which is untouche
 - **PROP-015** (DOC-NOTES-001) — `execution-notes.md` contains a section whose heading or body
   references `blockrun-cli-docs` AND a date matching today's date (`YYYY-MM-DD`, UTC) at time of the
   Tier-1 run. Assert: substring + date-pattern match, run at Phase 3 (not a stale historical mention).
-- **PROP-016** (DOC-CONSTRAINT-001, DOC-NG-001) — `git diff <feature-start-commit>..HEAD --name-only`
+- **PROP-016** (DOC-CONSTRAINT-001; also enforces REQ-NG-001, this docs-feature's own non-goal, which
+  has no dedicated PROP of its own) — `git diff <feature-start-commit>..HEAD --name-only`
   contains ONLY paths matching one of: `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`,
   `package.json`, `PARITY.md`, `VERIFICATION.md`, `execution-notes.md`, `scripts/docs-check.*`,
   `.vcsdd/features/blockrun-cli-docs/**`. `VERIFICATION.md` is explicitly in the allow-list because
@@ -153,30 +157,61 @@ Phase 2a/2b of THIS feature (not the CLI's own 408-test suite, which is untouche
   OR (for the GitHub repo URL specifically, if the repo has not yet been pushed/made public at doc-check
   time) the check SHALL record the non-200 status explicitly in the check output as a KNOWN, documented
   gap rather than silently passing — never a silent false-positive PASS on a dead link.
-- **PROP-020** (DOC-EVID-001, -002, -002a; Tier 2, live, **spend-capable, required — no partial-pass**)
-  — MUST produce full non-truncated URLs for **ALL THREE** of `image`/`video`/`music`; this PROP is
-  NOT satisfied by obtaining fewer than three (spec-review codex FIND-001: an earlier draft let a
-  "skip music, log a gap" path count as compliant — that path is REMOVED). Procedure:
-  1. **Live balance preflight** (DOC-EVID-002): run `node dist/index.js wallet --action status`
-     against sandbox HOME `/Users/anicca/blockrun-cli-e2e-home` and read the LIVE Base USDC balance.
-     Do NOT trust `VERIFICATION.md`'s $0.264748 figure directly — that was recorded 2026-07-07 and is
-     read here only as an approximate expectation, superseded by this live read (spec-review codex
-     FIND-002: the static ledger value is not a sound money-safety proof on its own).
-  2. Execute a FRESH re-run of each command's cheapest real path against the same sandbox HOME, in
-     cost order **image (≈$0.015) → video (`--duration-seconds 1 --resolution 360p`, ≈$0.0525) →
-     music (≈$0.1575)**, re-checking the live balance (not just the running estimate) before each
-     step.
-  3. **Top-up loop** (DOC-EVID-002a): WHEN the live balance before a step is insufficient for that
-     step's real 402 quote, STOP before attempting it, request a top-up to the sandbox Base wallet
-     (`0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804`) from `0x810f6d61f7606deee2657d3083e150a222bc29c5`
-     (the same funding route documented in `execution-notes.md`'s "E2E 資金" section), re-run step 1's
-     preflight to confirm the top-up landed, then RESUME from the stopped step. Repeat as needed.
-  4. Assert (this PROP FAILS if any of these three is false): a full non-truncated URL is captured for
-     `image` AND `video` AND `music` (all three, not "each obtained" — no silent partial result); the
-     downloaded bytes' MD5 + byte size for all three are computed and written to
-     `.vcsdd/features/blockrun-cli-docs/evidence/{image,video,music}.json` (one file per artifact),
-     each record including the full URL, MD5, byte size, real settled cost, and a tx/settlement
-     reference from that artifact's fresh run output.
+- **PROP-020** (DOC-EVID-001, -002, -002a, -004; Tier 2, live, **spend-capable, required — no
+  partial-pass**) — MUST produce full non-truncated URLs for **ALL THREE** of `image`/`video`/`music`;
+  this PROP is NOT satisfied by obtaining fewer than three (spec-review codex it-1 FIND-001: an
+  earlier draft let a "skip music, log a gap" path count as compliant — that path is REMOVED).
+  Procedure (mechanically executable end-to-end — no out-of-band judgment, per spec-review codex it-2
+  FIND-001-UNRESOLVED-TOPUP / FIND-002-UNRESOLVED-PREFLIGHT-PARSE):
+  1. **Live balance preflight** (DOC-EVID-002): run the EXACT command `HOME=/Users/anicca/
+     blockrun-cli-e2e-home node dist/index.js wallet --action status --json` and parse `.base.balance`
+     from stdout (verified real shape:
+     `{"activeChain":"base","base":{"address":"0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804","balance":<number|null>},"solana":{...}}`).
+     A DIRECT run of this exact command on 2026-07-08 returned a numeric `0.264748`; a separate run
+     during spec-review returned `null` — both are real, observed outcomes (consistent with
+     `blockrun-mcp/README.md`'s documented Base-RPC-transient-outage behavior), so this step's output
+     is EITHER a number OR `null`/nonzero-exit, never assumed to be a number. Do NOT trust
+     `VERIFICATION.md`'s $0.264748 figure directly — it is a dated (2026-07-07) reference only,
+     superseded by this live read.
+  2. **Null/unavailable handling** (DOC-EVID-002a resolution order — assert this exact chain, not an
+     ad hoc one): IF `.base.balance` is `null`/non-numeric/the process exits nonzero → (a) retry step 1
+     up to 3× with a 30s wait between attempts; (b) STILL non-numeric → fall back to
+     `HOME=/Users/anicca/blockrun-cli-e2e-home node dist/index.js rpc --network base --method eth_call
+     --params '[<Base-USDC balanceOf(0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804) call payload>,
+     "latest"]' --json` (a real, already-exercised path per `VERIFICATION.md` row #9's precedent,
+     $0.002); (c) STILL fails → derive a conservative LOWER-BOUND from `~/.blockrun/cli-budget.json`'s
+     `global.spent` subtracted from the $0.59 funding amount (tx
+     `0xccbaf5adeb67e2e144be9dd091b9533a951eb7c2ea5189dff0a02e0d33f4bbe3`, per `VERIFICATION.md`); (d)
+     STILL no usable number → STOP the entire PROP-020 run and report failure (assert: no re-run is
+     ever attempted against an unresolved balance).
+  3. Execute a FRESH re-run of each command WITH `--json` (required so `cost_usd` can be read from
+     stdout, cross-checked against the `~/.blockrun/cli-budget.json` `global.spent` delta before/after
+     — a mismatch between the two is itself treated as an indeterminate-balance case, re-entering step
+     2) against the same sandbox HOME, in cost order **image (≈$0.015) → video
+     (`--duration-seconds 1 --resolution 360p`, ≈$0.0525) → music (≈$0.1575)**, re-running step 1's
+     preflight before each step.
+  4. **Top-up loop** (DOC-EVID-002a, mechanically executable): WHEN the resolved balance before a step
+     is insufficient for that step's real cost, STOP before attempting it; the ORCHESTRATOR (whoever
+     holds the `0x810f6d61f7606deee2657d3083e150a222bc29c5` signing key — this send is OUTSIDE the CLI
+     process, which has no send-funds command) sends `shortfall + $0.05` (where `shortfall =
+     next-step-cost − resolved-balance`) to the sandbox Base wallet
+     (`0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804`) via the same funding route documented in
+     `execution-notes.md`'s "E2E 資金" section; the tx hash is recorded to
+     `.vcsdd/features/blockrun-cli-docs/evidence/topup-<n>.json`; step 1's preflight is re-run up to 3×
+     with a 2-minute wait (10-minute total budget) to confirm the top-up landed; on confirmation, RESUME
+     from the stopped step; on send failure OR non-confirmation within the 10-minute budget, STOP and
+     report failure (never fabricate a result). Repeat the whole top-up cycle as many times as needed.
+  5. Assert (this PROP FAILS if any of these is false): a full non-truncated URL is captured for
+     `image` AND `video` AND `music` (all three, not "each obtained" — no silent partial result); for
+     each artifact, an evidence record at `.vcsdd/features/blockrun-cli-docs/evidence/
+     {image,video,music}.json` contains the full URL, MD5, byte size, and real settled `cost_usd` — PLUS
+     a settlement-proof field that DIFFERS BY COMMAND (verified against real source, DOC-EVID-004): for
+     `video`/`music`, the `txHash` field from their `--json` output (populated from the
+     `X-Payment-Receipt` header via `src/shell/manual-x402.ts`) MUST be present; for `image` (whose
+     verified real success payload is `{ url, prompt, model, cost_usd }` with NO `txHash` field ANYWHERE
+     — confirmed at `src/commands/image.ts:83-84` — this PROP does NOT require one), the settlement
+     proof is `cost_usd` from `image`'s own `--json` output CROSS-CHECKED against the
+     `cli-budget.json` `global.spent` delta recorded around that re-run.
 - **PROP-021** (DOC-EVID-003; Tier 3, live network) — for each full URL PROP-020 obtained, issue an
   HTTP request and assert a 200 (or equivalent successful) status. Depends on PROP-020's output; SHALL
   NOT run against the OLD truncated URLs (those are unresolvable by construction).
@@ -192,15 +227,17 @@ Phase 2a/2b of THIS feature (not the CLI's own 408-test suite, which is untouche
 
 Sandbox wallet state per `VERIFICATION.md`: end balance **$0.264748 USDC as of 2026-07-07** — this is
 a DATED figure, an approximate expectation only, NOT the authoritative input for spend decisions (see
-PROP-020 step 1's live preflight requirement, added per spec-review codex FIND-002). Budget cap $10
-(goal), used ≈3.25% as of that same date. TWO proof obligations in this architecture are spend-capable
-(corrected per spec-review codex FIND-003 — §1's Purity boundary table and intro paragraph now state
-this explicitly instead of claiming PROP-005 is the only spend surface):
+PROP-020 step 1's live preflight requirement, added per spec-review codex it-1 FIND-002). Budget cap
+$10 (goal), used ≈3.25% as of that same date. Of the four network-touching proof obligations (PROP-005,
+019, 020, 021 — §1's Purity boundary table), exactly ONE carries a REAL spend surface (tightened per
+spec-review codex it-2 ADV-001-SPEND-SURFACE-WORDING — PROP-005 is network-touching, not a spend risk):
 
-- **PROP-005** — constrained to a free-path (`$0`) command; no real spend.
-- **PROP-020** — REQUIRED to spend real USDC for ALL THREE of image/video/music (full-URL recovery is
+- **PROP-005** — network-touching but NOT a real-spend proof obligation: constrained to a free-path
+  (`$0`) command.
+- **PROP-020** — THE ONE real-spend proof obligation in this architecture: REQUIRED to spend real USDC
+  for ALL THREE of image/video/music (full-URL recovery is
   confirmed impossible per the §6a precheck, so this is not optional, and it is NOT partially
-  satisfiable — see PROP-020's corrected assertion, spec-review codex FIND-001): estimated ≈$0.015
+  satisfiable — see PROP-020's corrected assertion, spec-review codex it-1 FIND-001): estimated ≈$0.015
   (image) + ≈$0.0525 (video) + ≈$0.1575 (music) ≈ **$0.225 total**, against a balance LAST OBSERVED at
   ≈$0.2647 (2026-07-07) — **≈$0.04 estimated headroom**, to be reconfirmed by PROP-020's own live
   preflight before any spend. THE MONEY-SAFETY MECHANISM IS THE TOP-UP LOOP, NOT A SKIP: if the live
@@ -231,10 +268,19 @@ architecture.
 | package.json (DOC-PKG-001..007) | 7 | PROP-011 |
 | PARITY.md (DOC-PARITY-001..003) | 3 | PROP-012, 013, 014 |
 | execution-notes.md (DOC-NOTES-001) | 1 | PROP-015 |
-| Cross-cutting (DOC-CONSTRAINT-001..003, DOC-NG-001..004) | 7 | PROP-016, 017, 003 (reused), and PROP-004's flag-fidelity check covers DOC-CONSTRAINT-003 |
+| Cross-cutting (DOC-CONSTRAINT-001..003) | 3 | PROP-016, 017, 003 (reused), and PROP-004's flag-fidelity check covers DOC-CONSTRAINT-003 |
 | Media artifact full-URL evidence (DOC-EVID-001, -002, -002a, -003, -004, -005) | 6 | PROP-020, 021, 022 |
 | Whole-feature judgment | — | PROP-018, 019 |
 
-**Total: 48 DOC-* requirements, 22 PROPs.** No REQ is uncovered; several REQs share a PROP where one
-mechanical check proves multiple requirements at once (e.g. PROP-001's heading-order check proves
-DOC-README-001/002/013 together).
+**Total: 44 unique `DOC-*` requirement IDs, 22 PROPs** (13+3+6+2+7+3+1+3+6 = 44 — mechanically
+recounted per spec-review codex it-2 FIND-NEW-002-TRACEABILITY-COUNT, which correctly found NO
+`DOC-NG-*` IDs exist anywhere in `behavioral-spec.md`). This feature's own 4 non-goals
+(`REQ-NG-001..004`, `behavioral-spec.md` §0 "Non-goals") are a SEPARATE clause type — constraints on
+what this feature does NOT do, distinct from this docs-feature's own `DOC-*` requirement set — and are
+NOT counted in this total; they are enforced by PROP-003's forbidden-term checks and
+DOC-CONSTRAINT-001's src/test/dist-untouched guarantee rather than by a dedicated PROP each. (One of
+those non-goals, REQ-NG-002, itself cross-references a DIFFERENT document's `REQ-NG-006` — the CLI
+feature's own `behavioral-spec.md`, at `.vcsdd/features/blockrun-cli/specs/`, a separate file with its
+own separate REQ-NG numbering — not this docs-feature's.) No `DOC-*` REQ is uncovered; several REQs
+share a PROP where one mechanical check proves multiple requirements at once (e.g. PROP-001's
+heading-order check proves DOC-README-001/002/013 together).

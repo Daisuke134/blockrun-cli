@@ -249,33 +249,84 @@ for any of the three; a fresh re-run is REQUIRED for all three artifacts.
   recovery from existing evidence is confirmed impossible (see precheck finding above): `image` (same
   model class, ≈$0.015), `video` (`--duration-seconds 1 --resolution 360p`, ≈$0.0525, mirroring
   `VERIFICATION.md` row #16's exact invocation), `music` (default model, ≈$0.1575).
-- DOC-EVID-002: IMMEDIATELY BEFORE executing the fresh re-run sequence in DOC-EVID-001, THE FEATURE
-  SHALL run a LIVE balance preflight — `node dist/index.js wallet --action status` against sandbox
-  HOME `/Users/anicca/blockrun-cli-e2e-home` — and use THAT live-read Base USDC balance (not
-  `VERIFICATION.md`'s dated $0.264748 figure, which was recorded 2026-07-07 and may be stale by the
-  time this feature executes) as the actual remaining-balance input for every subsequent check in this
-  section. Re-runs SHALL proceed cheapest-first (image → video → music), checking cumulative spend
-  against the live balance before each step.
-- DOC-EVID-002a: WHEN the live balance from DOC-EVID-002's preflight (or the running balance mid
-  -sequence, re-checked after each re-run's real settled cost) is insufficient to safely attempt the
-  next re-run in the cheapest-first order, THE FEATURE SHALL: (1) STOP the sequence before attempting
-  that re-run (no blind overspend attempt), (2) request a wallet top-up to the sandbox Base wallet
-  (`0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804`) from `0x810f6d61f7606deee2657d3083e150a222bc29c5` —
-  the SAME funding route used to originally fund the sandbox for `VERIFICATION.md` (see
-  `execution-notes.md`'s "E2E 資金" section) — sized to cover the remaining re-run(s) plus a small
-  margin, (3) re-run DOC-EVID-002's live preflight to confirm the top-up landed, and (4) RESUME the
-  re-run sequence from where it stopped. DOC-EVID-001 remains UNSATISFIED (the feature is NOT done)
-  until all three full URLs have been obtained by this process — a top-up-then-resume cycle SHALL be
-  repeated as many times as needed; skipping `music` (or any artifact) and recording it as "skipped" is
-  NOT an acceptable terminal state for this REQ.
+- DOC-EVID-002: IMMEDIATELY BEFORE executing the fresh re-run sequence in DOC-EVID-001 (and again
+  before EACH subsequent step in that sequence), THE FEATURE SHALL run a LIVE balance preflight using
+  the EXACT invocation `HOME=/Users/anicca/blockrun-cli-e2e-home node dist/index.js wallet --action
+  status --json`, and parse the numeric field at JSON path `.base.balance` from stdout (the verified
+  real output shape is `{"activeChain":"base","base":{"address":"0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804","balance":<number|null>},"solana":{...}}`
+  — confirmed by direct execution of this exact command: on 2026-07-08 it returned a numeric
+  `base.balance:0.264748`; a separate execution during spec-review returned `base.balance:null` with
+  the non-`--json` form printing `(unavailable)` — BOTH outcomes are real and possible, consistent with
+  `blockrun-mcp/README.md`'s own documented "Base RPC transient outage" troubleshooting entry — so this
+  REQ and DOC-EVID-002a below MUST handle both. THAT live-read numeric value (never
+  `VERIFICATION.md`'s dated $0.264748 figure, which was recorded 2026-07-07 and is a stale reference
+  only) is the actual remaining-balance input for every subsequent check in this section. Re-runs
+  SHALL proceed cheapest-first (image → video → music). For the settled-cost side of each check (the
+  amount actually spent by the PRECEDING re-run in the sequence, needed to compute the running total),
+  THE FEATURE SHALL invoke each media command with `--json` and read its `cost_usd` field from stdout,
+  cross-checked against the delta in `~/.blockrun/cli-budget.json`'s `global.spent` (read before and
+  after that re-run) — these two SHALL agree; a mismatch is treated as an indeterminate balance (see
+  DOC-EVID-002a's fallback chain).
+- DOC-EVID-002a (balance-unknown / low-balance handling — mechanically executable, no out-of-band
+  judgment): WHEN DOC-EVID-002's preflight returns `base.balance` as `null`, non-numeric, or the
+  process exits nonzero, THE FEATURE SHALL treat the balance as UNKNOWN and SHALL NOT start or continue
+  any paid re-run against an unknown balance. Resolution order: (1) retry the EXACT DOC-EVID-002
+  preflight command up to 3 times with a 30-second wait between attempts (mirrors
+  `blockrun-mcp/README.md`'s own "retry after 30s" RPC-outage guidance); (2) IF still non-numeric after
+  3 retries, fall back to an on-chain read via `HOME=/Users/anicca/blockrun-cli-e2e-home node
+  dist/index.js rpc --network base --method eth_call --params '["<Base USDC contract
+  balanceOf(0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804) call>", "latest"]' --json` (a real, already
+  -exercised path — mirrors `VERIFICATION.md` row #9's `eth_blockNumber` invocation — $0.002 real
+  cost, itself checked against balance-unknown risk: only attempted if step (1)'s LAST successful
+  numeric balance, if any, or the funding-tx-derived floor from step (3) covers the $0.002); (3) IF
+  step (2) also fails (RPC down / malformed response), derive a CONSERVATIVE lower-bound balance
+  from `~/.blockrun/cli-budget.json`'s `global.spent` subtracted from the known funding amount
+  ($0.59 USDC, tx `0xccbaf5adeb67e2e144be9dd091b9533a951eb7c2ea5189dff0a02e0d33f4bbe3`, per
+  `VERIFICATION.md`'s Environment table) — this lower bound MAY be used ONLY to decide whether to
+  attempt the NEXT cheapest step, never to justify skipping a top-up; (4) IF all three resolution
+  methods fail to produce ANY usable number, THE FEATURE SHALL STOP the entire sequence and report the
+  failure — fabricating a balance or proceeding blind is NOT permitted.
+
+  WHEN a resolved (live, on-chain, or ledger-derived) balance is insufficient for the next cheapest
+  -first step's real cost (its 402 quote if already known from a prior attempt, else its cost estimate
+  from DOC-EVID-001), THE FEATURE SHALL: (1) STOP before attempting that step; (2) the ORCHESTRATOR
+  (a human operator or the agent session driving this feature — this transfer is OUTSIDE the CLI
+  process itself, since the CLI has no send-funds command; whoever holds the
+  `0x810f6d61f7606deee2657d3083e150a222bc29c5` signing key performs it) sends a top-up to the sandbox
+  Base wallet `0xa5CeF4943c3F8f34e5138b5BcdE6B88746a5c804`, sized as `shortfall + $0.05 margin` where
+  `shortfall = next-step-cost − resolved-balance` — the SAME funding route used to originally fund the
+  sandbox for `VERIFICATION.md` (see `execution-notes.md`'s "E2E 資金" section); (3) record the
+  transfer's tx hash in `.vcsdd/features/blockrun-cli-docs/evidence/` (a `topup-<n>.json` record: from
+  address, to address, amount, tx hash, timestamp); (4) re-run DOC-EVID-002's preflight to confirm the
+  top-up landed, retrying up to 3 times with a 2-minute wait between attempts (10-minute total budget);
+  IF the top-up has NOT reflected in the live balance after 3 retries / 10 minutes, THE FEATURE SHALL
+  STOP and report this as a failure (do NOT assume the transfer succeeded, do NOT fabricate a result);
+  (5) IF confirmed, RESUME the re-run sequence from the stopped step. WHEN the orchestrator cannot send
+  the top-up (no signing access, insufficient source-wallet funds, or any send failure), THE FEATURE
+  SHALL STOP and report this immediately — this is a terminal failure state for this run, not silently
+  worked around. DOC-EVID-001 remains UNSATISFIED (the feature is NOT done) until all three full URLs
+  have been obtained via this process; a top-up-then-resume cycle SHALL be repeated as many times as
+  needed, but recording any artifact as "skipped" is NEVER an acceptable terminal state for this REQ.
 - DOC-EVID-003: EVERY full URL obtained per DOC-EVID-001 SHALL be verified to resolve with an HTTP
   200 (or equivalent successful) status — a live network check (Tier 3, see
   verification-architecture.md).
-- DOC-EVID-004: THE downloaded artifact bytes (or, at minimum, its MD5 checksum and byte size) SHALL
-  be saved under `.vcsdd/features/blockrun-cli-docs/evidence/` — one evidence record per artifact
-  (`image`, `music`, `video`) — and `PARITY.md`'s rows for these three commands SHALL reference these
-  evidence files (path + MD5) as their evidence pointer, extending (not replacing) DOC-PARITY-001's
-  general VERIFICATION.md-row reference for those three commands specifically.
+- DOC-EVID-004: THE evidence record saved under `.vcsdd/features/blockrun-cli-docs/evidence/` for each
+  of the three artifacts SHALL contain, at minimum, the full URL and the downloaded bytes' MD5
+  checksum + byte size — but the SETTLEMENT-PROOF field differs by command, because their real JSON
+  output shapes differ (verified directly from `src/commands/{image,video,music}.ts`): for `video` and
+  `music`, whose `--json` output conditionally includes a `txHash` field (populated from the
+  `X-Payment-Receipt` response header when present, per `src/shell/manual-x402.ts`), the evidence
+  record SHALL include that `txHash` as its settlement proof. For `image`, whose real success payload
+  is `{ url, prompt, model, cost_usd }` with NO `txHash`/settlement-header field anywhere in its output
+  (the SDK's `client.generate()`/`client.edit()` path used by `image`, unlike video/music's manual x402
+  probe-poll flow, never surfaces one) — this is NOT a doc-writing gap, it is a real absence in the
+  underlying command output — the evidence record's settlement proof SHALL instead be: the `cost_usd`
+  value from `image`'s own `--json` response, CROSS-CHECKED against the delta in
+  `~/.blockrun/cli-budget.json`'s `global.spent` recorded immediately before and after the `image`
+  re-run (per DOC-EVID-002's ledger cross-check). `PARITY.md`'s rows for these three commands SHALL
+  reference these evidence files (path + MD5 + the applicable settlement-proof field) as their evidence
+  pointer, extending (not replacing) DOC-PARITY-001's general VERIFICATION.md-row reference for those
+  three commands specifically.
 - DOC-EVID-005: `VERIFICATION.md` SHALL be updated (rows #13/#15/#16, or a dated appendix) to record
   the full non-truncated URL obtained per DOC-EVID-001, so its evidence column and
   `PARITY.md`/`evidence/`'s records for these three artifacts state the SAME full URL — the documents

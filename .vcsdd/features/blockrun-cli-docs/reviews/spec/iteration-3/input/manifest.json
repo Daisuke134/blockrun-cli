@@ -1,0 +1,9 @@
+{
+  "reviewType": "spec",
+  "featureName": "blockrun-cli-docs",
+  "mode": "lean",
+  "iteration": 3,
+  "artifactsToReview": ["specs/behavioral-spec.md", "specs/verification-architecture.md"],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "priorFindings": "iteration-2: spec_fidelity PASS; verification_readiness FAIL on single blocking FIND-001 (PROP-016 allow-list missing VERIFICATION.md) — fixed by adding VERIFICATION.md to allow-list"
+}

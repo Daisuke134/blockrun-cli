@@ -1,0 +1,54 @@
+{
+  "reviewType": "spec",
+  "iteration": 3,
+  "dimensions": {
+    "spec_fidelity": "PASS",
+    "verification_readiness": "FAIL"
+  },
+  "overall": "FAIL",
+  "findings": [
+    {
+      "id": "FIND-CARRYOVER-001-IMAGE-TX-ASSERT-IMPOSSIBLE",
+      "severity": "blocking",
+      "dimension": "verification_readiness",
+      "description": "PROP-020 (verification-architecture.md lines 174-179) asserts this PROP FAILS unless every one of the three media artifacts' evidence records include 'a tx/settlement reference from that artifact's fresh run output' -- explicitly for image AND video AND music. Verified directly against the real CLI source: `src/commands/image.ts`'s success return (`ok({ url: imageUrl, prompt, model: selectedModel, cost_usd: billedUsd }, ...)`, lines 83-87) has NO tx/settlement field on either the Base or Solana code path -- unlike `src/commands/video.ts:71` and `src/commands/music.ts:55`, which both conditionally spread `...(result.txHash ? { txHash: result.txHash } : {})` into their output. `image`'s fresh-run output structurally cannot produce a tx/settlement reference; PROP-020's step-4 assertion is therefore impossible to satisfy for the `image` artifact as written, regardless of implementer diligence. This is not a new issue -- it was raised by codex-review iteration-2 as FIND-NEW-001-IMAGE-TX-ASSERT-IMPOSSIBLE and remains unaddressed in the current spec text (verification-architecture.md lines 174-179 are unchanged since iteration-2's reviewed draft, confirmed via `git diff 9c08123 HEAD -- specs/`).",
+      "suggestedFix": "Either (a) drop the tx/settlement-reference requirement for `image` specifically in PROP-020 step 4 (state that `image`'s evidence record has no tx/settlement field by design, matching its real command output), or (b) if a settlement reference is genuinely required for money-safety purposes, name an alternate real source for it (e.g. `cost_log.jsonl`'s entry for that call) instead of asserting it must come from the artifact's own JSON/text output."
+    },
+    {
+      "id": "FIND-CARRYOVER-002-TRACEABILITY-COUNT",
+      "severity": "blocking",
+      "dimension": "verification_readiness",
+      "description": "verification-architecture.md's traceability table (lines 225-238) lists a 'Cross-cutting' row citing 'DOC-CONSTRAINT-001..003, DOC-NG-001..004' (7 items) and a final line claiming 'Total: 48 DOC-* requirements, 22 PROPs.' Re-counted directly: `grep -oE '^- DOC-[A-Z]+-[0-9]+[a-z]?:' behavioral-spec.md | sort -u` returns exactly 44 unique DOC-* IDs; there is no `DOC-NG-*` requirement anywhere in behavioral-spec.md -- the four non-goal clauses are labeled `REQ-NG-001..004` (behavioral-spec.md lines 28-38), a distinct ID namespace. The claimed total of 48 is reached only by miscounting the four REQ-NG-* items as DOC-* items. This is the same defect codex-review iteration-2 raised as FIND-NEW-002-TRACEABILITY-COUNT and it is unresolved in the current text (verification-architecture.md lines 234 and 238 unchanged since iteration-2's reviewed draft).",
+      "suggestedFix": "Change the Cross-cutting row to read 'DOC-CONSTRAINT-001..003 (3 items); REQ-NG-001..004 tracked separately (non-goals, not DOC requirements)' and correct the total line to 'Total: 44 DOC-* requirements (+ 4 REQ-NG-* non-goals), 22 PROPs.'"
+    },
+    {
+      "id": "FIND-CARRYOVER-003-PREFLIGHT-PARSE-AMBIGUOUS",
+      "severity": "blocking",
+      "dimension": "verification_readiness",
+      "description": "DOC-EVID-002 (behavioral-spec.md lines 252-258) and PROP-020 step 1 (verification-architecture.md lines 160-164) both instruct running `node dist/index.js wallet --action status` against the sandbox HOME and reading 'the LIVE Base USDC balance', but neither specifies the `--json` flag nor which field to parse. Verified directly against `src/commands/wallet.ts` (status branch, ~lines 144-160): the JSON payload shape is `{ activeChain, base: { address, balance }, solana: {...} | null }` (so the field is `base.balance`, a number or `null`), while the non-JSON human-text form renders the same value as e.g. `Base:   0x... ($0.264748 USDC)` or `Base:   0x... (unavailable)` -- not a bare parseable number. As written, an implementer following DOC-EVID-002/PROP-020 literally could invoke the command without `--json`, obtain human text, and have no defined rule for extracting a numeric balance or for treating `(unavailable)`/`null` as a failing preflight (money-safety-critical: PROP-020 is explicitly the one REQUIRED-spend proof obligation in this architecture). Same defect as codex-review iteration-2's FIND-002-UNRESOLVED-PREFLIGHT-PARSE; unresolved in the current text (behavioral-spec.md:252-258 and verification-architecture.md:160-164 unchanged since iteration-2's reviewed draft).",
+      "suggestedFix": "Specify the exact invocation and field: `node dist/index.js wallet --action status --json` against sandbox HOME, parse `base.balance` from stdout JSON, and treat `null`/a JSON-parse failure/non-zero exit as a failing preflight that halts the sequence (same STOP behavior as an insufficient numeric balance)."
+    }
+  ],
+  "advisory": [
+    {
+      "id": "ADV-CARRYOVER-001-TOPUP-MECHANISM-UNNAMED",
+      "location": "behavioral-spec.md:259-270 (DOC-EVID-002a), verification-architecture.md:169-173/206-212 (PROP-020 step 3)",
+      "finding": "The top-up loop names the sandbox wallet address, the funding-source address, and points to the same funding route used for the original E2E setup (execution-notes.md's 'E2E 資金' section), but does not name a specific tool/command that performs the transfer -- `blockrun-cli`'s own `wallet` action set (`status, deposit, setup, qr, chain, budget, delegate, revoke, report`, verified via `src/args/wallet.ts:8`) has no send/transfer action, so the top-up is necessarily performed by an external mechanism the spec does not name. Not rated blocking (downgraded from codex iteration-2's blocking FIND-001-UNRESOLVED-TOPUP) because the funding route is already grounded by precedent (the same 0x810f -> sandbox transfer already happened once for VERIFICATION.md's original E2E pass, execution-notes.md), and the executing environment has out-of-band wallet-send tooling available outside the CLI itself -- this is underspecification an implementer can resolve by precedent, not a logical impossibility like FIND-CARRYOVER-001."
+    },
+    {
+      "id": "ADV-CARRYOVER-002-SPEND-SURFACE-WORDING",
+      "location": "verification-architecture.md:6-10",
+      "finding": "Repeats iteration-2 codex ADV-001 (non-blocking): the intro still says 'TWO proof obligations carry a real spend surface' immediately before describing PROP-005 as 'no actual spend.' Cosmetic only; §3's Budget guard table correctly separates the two. No change needed to pass verification_readiness, but tightening 'network-touching' vs 'real-spend' wording would remove the residual internal tension."
+    }
+  ],
+  "resolvedFromIteration2": [
+    "FIND-001 (adversary, PROP-016 allow-list omitted VERIFICATION.md, contradicting DOC-EVID-005/PROP-022(b)) — verified resolved: verification-architecture.md:104-109 now includes `VERIFICATION.md` in PROP-016's allow-list with explicit justification referencing DOC-EVID-005/PROP-022(b) and this exact prior finding. No other file-set enumeration in either artifact contradicts DOC-EVID-005 (checked DOC-CONSTRAINT-001, which is a src/test/dist SHALL-NOT-modify clause, not an allow-list, and does not conflict)."
+  ],
+  "regressionCheck": {
+    "readmeSectionOrder": "NOT REGRESSED — DOC-README-001/PROP-001 still encode the verified real blockrun-mcp order (Prerequisites -> Install -> Fund your wallet -> Tools/Commands -> Tips/usage examples -> Multi-agent budget delegation -> Troubleshooting -> Environment Variables -> How it works -> Contributing -> License).",
+    "mediaEvidenceAllThreeRequired": "NOT REGRESSED — DOC-EVID-001/PROP-020 still explicitly forbid partial completion; no skip-music loophole reintroduced.",
+    "livePreflight": "NOT REGRESSED (structurally still present, though its parseability remains unresolved per FIND-CARRYOVER-003 above) — DOC-EVID-002/PROP-020 step 1 still require a live wallet-balance read superseding VERIFICATION.md's dated figure.",
+    "section1SpendModel": "NOT REGRESSED — intro paragraph and §3 Budget guard consistently name PROP-005 as free/no-spend and PROP-020 as the sole required-spend obligation."
+  },
+  "note": "This iteration's task scope (per team-lead) was framed around the adversary's own iteration-2 finding (PROP-016) plus a regression check and a diff scan. During that work this reviewer independently re-verified codex-review iteration-2's four blocking findings against the actual CLI source code (src/commands/image.ts, video.ts, music.ts, wallet.ts, args/wallet.ts) since they concern the same verification_readiness dimension and the same two artifacts under review. Three of codex's four findings are confirmed still present and unaddressed by any commit since iteration-2 (git diff 9c08123 HEAD -- specs/ shows only the 6-line PROP-016 fix) and are recorded above as blocking; the fourth (topup mechanism) is downgraded to advisory for the reasons given. These are reported for completeness/honesty, not as new adversary-track findings invented this iteration -- they are pre-existing, verified defects that the fix commit did not touch."
+}
