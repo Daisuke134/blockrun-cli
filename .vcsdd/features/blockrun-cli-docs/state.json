@@ -26,8 +26,16 @@
     "epicId": "VCSDD-blockrun-cli-docs-1783484998770",
     "beads": []
   },
-  "gates": {},
+  "gates": {
+    "1c": {
+      "verdict": "FAIL",
+      "timestamp": "2026-07-08T04:42:16.803Z",
+      "reviewedBy": "adversary",
+      "adversaryVerdict": "FAIL",
+      "adversaryReviewedAt": "2026-07-08T04:42:16.803Z"
+    }
+  },
   "sprintCount": 0,
   "createdAt": "2026-07-08T04:29:58.769Z",
-  "updatedAt": "2026-07-08T04:37:45.126Z"
+  "updatedAt": "2026-07-08T04:42:16.803Z"
 }

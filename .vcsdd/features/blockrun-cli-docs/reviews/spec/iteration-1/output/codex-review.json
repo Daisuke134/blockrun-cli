@@ -1,0 +1,51 @@
+{
+  "ok": false,
+  "summary": "The docs/packaging spec is mostly well grounded in the CLI artifacts: VERIFICATION.md records the cited $0.264748 end balance and the $0.015 image, $0.0525 video, and $0.1575 music costs; the CLI spec and decisions support --budget-limit, ~/.blockrun/cli-budget.json, wallet delegate/revoke/report, video --max-quote-usd, and payOnce/payAndPoll. However, the spec is not verification-ready because the required fresh media evidence has internally inconsistent pass/fallback semantics and an underspecified live balance guard. The architecture can skip required evidence as a logged gap while still phrasing PROP-020 as an assertion over artifacts actually obtained, and it relies on a dated static balance without an explicit live balance preflight before spending.",
+  "blocking": [
+    {
+      "id": "FIND-001",
+      "location": "behavioral-spec.md:DOC-EVID-001/DOC-EVID-004 and verification-architecture.md:PROP-020/§3",
+      "finding": "DOC-EVID-001 requires obtaining full non-truncated URLs for image, music, and video via fresh re-runs, but §3 explicitly permits skipping music when balance headroom is insufficient and recording a gap. PROP-020 then asserts only that a full URL is captured for every artifact actually obtained, not for all three required artifacts.",
+      "why_blocking": "This makes the proof obligation weaker than the requirement: an implementation can fail to produce one of the required media evidence artifacts under the documented low-headroom path and still satisfy the written PROP-020 semantics. The spec must either require a wallet top-up/precondition and fail if all three URLs are not obtained, or formally weaken DOC-EVID-001/PARITY expectations to allow a known incomplete evidence state."
+    },
+    {
+      "id": "FIND-002",
+      "location": "verification-architecture.md:135-148 and 160-180; VERIFICATION.md:17-21",
+      "finding": "The budget guard uses VERIFICATION.md's dated 2026-07-07 end balance of $0.264748 as the remaining-balance input but does not explicitly require a live wallet balance check immediately before the fresh spend sequence. The current date is 2026-07-08, and the sandbox wallet could have changed after the ledger was written.",
+      "why_blocking": "The planned spend is about $0.225, leaving only about $0.04 headroom. With real 402 quote variance and a stale balance risk, trusting the static ledger is not a sound money-safety proof. PROP-020 needs an explicit preflight such as `blockrun wallet --action status` against `/Users/anicca/blockrun-cli-e2e-home`, with the live spendable Base balance used for the stop-before-spend calculations."
+    },
+    {
+      "id": "FIND-003",
+      "location": "verification-architecture.md:6-8 versus 135-148 and 162-168",
+      "finding": "The architecture introduction says only PROP-005 touches spend and is scoped to free-path commands, but later defines PROP-020 as a required spend-capable proof obligation for image/video/music.",
+      "why_blocking": "This is an internal contradiction in the verification architecture's risk model. A verifier or implementer following the top-level statement could incorrectly treat the feature as no-spend except PROP-005, bypassing the special controls needed for PROP-020."
+    }
+  ],
+  "advisory": [
+    {
+      "id": "ADV-001",
+      "location": "DOC-README-003 and DOC-PKG-006",
+      "finding": "Bumping package.json to 1.0.0 while explicitly not claiming npm publication is not inherently contradictory, but README/install wording should be especially precise that 1.0.0 is the local package/release version and not evidence of a published registry package."
+    },
+    {
+      "id": "ADV-002",
+      "location": "DOC-CONTRIB-003 and PROP-008",
+      "finding": "The ban on the standalone word \"skill\" is consistent with the CLI having no skill mechanism, but it is a brittle proxy. It may false-fail a legitimate sentence explaining that MCP skills are intentionally not part of the CLI, even though DOC-CONTRIB-003 asks the design rule to be translated from the reference repo's Tool vs Skill rule."
+    },
+    {
+      "id": "ADV-003",
+      "location": "DOC-README-009 and PROP-006",
+      "finding": "The environment/file set is consistent with the CLI spec: BLOCKRUN_BUDGET_LIMIT, ~/.blockrun/.session, ~/.blockrun/.chain, ~/.blockrun/payment-chain, ~/.blockrun/.solana-session, and SOLANA_WALLET_KEY are grounded, and BLOCKRUN_API_BASE_URL is correctly excluded as test-only."
+    },
+    {
+      "id": "ADV-004",
+      "location": "DOC-LICENSE-001 and package.json:29",
+      "finding": "The license requirement is coherent with package.json: the current author field is \"BlockRun\", so a copyright holder consistent with that field would not conflict with DOC-PARITY or the packaging requirements."
+    },
+    {
+      "id": "ADV-005",
+      "location": "PROP-018",
+      "finding": "Assigning the later fresh adversarial apple-to-apple review to claude-opus-4-8 is a reasonable downstream verification design, assuming the pipeline has that model available; no action is needed in this Phase 1c review."
+    }
+  ]
+}

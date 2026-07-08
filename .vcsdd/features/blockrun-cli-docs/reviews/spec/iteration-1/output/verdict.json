@@ -1,0 +1,39 @@
+{
+  "reviewType": "spec",
+  "iteration": 1,
+  "dimensions": {
+    "spec_fidelity": "FAIL",
+    "verification_readiness": "FAIL"
+  },
+  "overall": "FAIL",
+  "findings": [
+    {
+      "id": "FIND-001",
+      "severity": "blocking",
+      "dimension": "spec_fidelity",
+      "description": "DOC-README-001 (behavioral-spec.md lines 44-48) claims the README SHALL follow 'the same top-level section order as blockrun-mcp/README.md' and then states that order as: install -> prerequisites -> fund-your-wallet -> Commands table -> usage examples -> environment variables -> multi-agent budget delegation -> troubleshooting -> how-it-works -> contributing -> license. This contradicts the actual order in the grounding source. Verified directly via `grep -n '^#' blockrun-mcp/README.md`: the real order is Prerequisites (line 78) -> Install (line 86) -> Fund your wallet (154) -> Tools (185) -> Tips/Key-Use-Cases/Why-not/When-not (210-269) -> Multi-agent budget delegation (282) -> Troubleshooting (288) -> Environment Variables (306) -> How it works (339) -> Contributing (345). Two concrete mismatches: (1) the spec puts 'install' before 'prerequisites'; the real file puts Prerequisites first. (2) the spec puts 'environment variables' before 'multi-agent budget delegation' and 'troubleshooting'; the real file puts Multi-agent budget delegation and Troubleshooting BEFORE Environment Variables. This second mismatch is further corroborated by the real README's own internal anchor link: its Troubleshooting section links forward to '[Environment Variables](#environment-variables)', which only makes sense if Environment Variables appears later in the document -- exactly the opposite of what DOC-README-001 specifies. Since the feature's stated goal is 'apple-to-apple' structural parity with blockrun-mcp, a README built to satisfy DOC-README-001 as literally written will NOT actually match blockrun-mcp's structure, directly undermining the goal DOC-README-001 itself claims to serve.",
+      "suggestedFix": "Rewrite DOC-README-001's ordered section list to match the verified real order: title+badges -> one-line pitch -> Prerequisites -> Install -> Fund your wallet -> Commands table -> usage examples -> Multi-agent budget delegation -> Troubleshooting -> Environment Variables -> How it works -> Contributing -> License. Re-derive PROP-001 in verification-architecture.md from the corrected order."
+    },
+    {
+      "id": "FIND-002",
+      "severity": "blocking",
+      "dimension": "verification_readiness",
+      "description": "PROP-001 in verification-architecture.md (lines 36-39) mechanically encodes DOC-README-001's incorrect section order ('Install -> Prerequisites -> Fund your wallet -> Commands -> ... -> Environment Variables -> Multi-agent budget delegation -> Troubleshooting -> How it works -> ...') as its Tier-1 'ordered substring match' assertion. Because this order is factually wrong per FIND-001, the Tier-1 docs-check script as specified would give a false-positive PASS on a README that is actually NOT apple-to-apple with blockrun-mcp's structure (or would force Phase 2b to write a README that intentionally diverges from the reference repo's real order to satisfy the mechanical check) -- the automated proof obligation would be verifying the wrong invariant, which is precisely the failure mode a mechanical Tier-1 check exists to prevent.",
+      "suggestedFix": "Once DOC-README-001 is corrected (FIND-001's fix), regenerate PROP-001's required heading sequence to match, so the Tier-1 check enforces the true blockrun-mcp order."
+    },
+    {
+      "id": "FIND-003",
+      "severity": "minor",
+      "dimension": "spec_fidelity",
+      "description": "DOC-PKG-002 (behavioral-spec.md lines 170-174) says the CLI's keywords should include entries 'paralleling blockrun-mcp's keyword set adapted to CLI framing (e.g. crypto, wallet)'. Checked blockrun-mcp/package.json's actual keywords array: [\"mcp\",\"claude\",\"llm\",\"ai\",\"x402\",\"micropayments\",\"openai\",\"anthropic\",\"gemini\",\"blockrun\",\"model-context-protocol\"] -- neither \"crypto\" nor \"wallet\" appears in it, so the cited example does not actually 'parallel' anything in the named source; it is an invented suggestion presented as if drawn from blockrun-mcp's own list. Low impact since the AT-MINIMUM required keyword set (cli, blockrun, x402, micropayments, ai) is itself accurate and the parenthetical is only an example, not a hard requirement.",
+      "suggestedFix": "Either drop the '(e.g. crypto, wallet)' parenthetical or reword it to say these are CLI-appropriate additions of the author's choosing rather than implying they parallel blockrun-mcp's actual keyword list."
+    },
+    {
+      "id": "FIND-004",
+      "severity": "minor",
+      "dimension": "verification_readiness",
+      "description": "DOC-README-009 (behavioral-spec.md lines 78-86) prose groups '~/.blockrun/.chain / ~/.blockrun/payment-chain' together as what reads like a single table entry, while PROP-006 (verification-architecture.md lines 47-50) defines the Tier-1 set-equality check against 6 DISTINCT string members including both '~/.blockrun/.chain' and '~/.blockrun/payment-chain' as separate set elements. If Phase 2b renders DOC-README-009's grouping as one combined table row/cell (a natural reading of the '/' separator), PROP-006's exact set-equality assertion (expecting two independent members) could false-fail a doc that is otherwise fully compliant with DOC-README-009 as written.",
+      "suggestedFix": "Clarify in DOC-README-009 (or a PROP-006 note) whether the two chain-preference files must be rendered as two separate table rows or may be combined into one cell, so the Tier-1 check's expected representation is unambiguous."
+    }
+  ]
+}
