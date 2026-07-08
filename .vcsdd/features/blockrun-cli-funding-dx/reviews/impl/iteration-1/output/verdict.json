@@ -1,0 +1,39 @@
+{
+  "reviewType": "implementation",
+  "iteration": 1,
+  "dimensions": {
+    "spec_coverage": "PASS",
+    "money_path_invariance": "FAIL",
+    "backward_compatibility": "PASS",
+    "real_binary_behavior": "PASS"
+  },
+  "overall": "FAIL",
+  "findings": [
+    {
+      "id": "IMPL-FUND-1",
+      "dimension": "money_path_invariance",
+      "severity": "blocking",
+      "requirement": "REQ-FUND-003, REQ-FUND-017",
+      "location": "src/commands/wallet.ts (deposit branch, payOnce({ endpoint: \"/v1/onramp/token\", ... }) call) and src/shell/manual-x402.ts (payOnce/probeAndSign)",
+      "description": "The deposit mint's $0-by-construction claim (REQ-FUND-003/017) is asserted but never enforced client-side. `probeAndSign()` in src/shell/manual-x402.ts signs `createPaymentPayload(...)` using WHATEVER `details.amount` the server's 402 `PAYMENT-REQUIRED` header quotes, with no built-in cap. The ONLY client-side circuit breaker against a higher-than-expected quote is the caller-supplied `onQuote` callback, which every OTHER paid command in this repo wires up before calling payOnce()/payAndPoll() specifically to re-validate the real quote against a budget cap BEFORE any signature is produced: grep confirms `onQuote:` in src/commands/image.ts:64, music.ts:43, realface.ts:97, speech.ts:81, video.ts:49 (each calling `gated.paid.reverify(quotedUsd)` from src/commands/shared.ts, throwing to abort before `createPaymentPayload`/`createSolanaPaymentPayload` runs if the quote would exceed the reserved/persisted budget). `wallet.ts`'s deposit call to `payOnce({ endpoint: \"/v1/onramp/token\", body: {...}, resourceDescription: ... })` passes NO `onQuote`. Consequently, if `/v1/onramp/token` ever returns a non-zero 402 quote (server misconfiguration, pricing bug, or a compromised/MITM'd gateway response), the CLI will sign and submit a REAL payment for that amount with zero local verification -- neither `gatePaidCall` (deliberately absent per REQ-FUND-003/NG-003, which is correct) NOR an `onQuote` sanity check (present in every other payOnce/payAndPoll call site in this codebase, silently absent here) stands in the way. The spec's own money-safety argument (verification-architecture.md \"$0 by construction... verified live during spec-writing\") is a claim about today's observed server behavior, not an invariant the shipped client code actually holds -- unlike the analogous paid commands, which hold the invariant even if the server's real-time quote misbehaves.",
+      "reproduction": "grep -n \"onQuote\" src/commands/wallet.ts -> 0 matches (only src/commands/{image,music,realface,speech,video}.ts wire onQuote before payOnce/payAndPoll). Read src/shell/manual-x402.ts:64-82: `probeAndSign()` calls `createPaymentPayload` with `details.amount` straight from the 402 response, gated only by the optional `req.onQuote` hook which wallet.ts's deposit call never supplies. No test in test/integration/wallet.test.ts exercises a non-zero `quotedUsd`/`details.amount` for the deposit path (PROP-FUND-001..006 only mock payOnce()'s already-settled `{ data, billedUsd }` result, never probeAndSign()'s pre-signature quote step, so this gap is untested at every tier).",
+      "remediation": "Wire an `onQuote` callback into the deposit's `payOnce({...})` call that throws (aborting before `createPaymentPayload` ever signs) unless the quoted USD amount is `null`/`0` -- mirroring the `reverify()` pattern already established in src/commands/shared.ts for every other paid command, but simpler here since deposit expects to hold no budget reservation at all (e.g. `onQuote: (quotedUsd) => { if (quotedUsd) throw new Error('Unexpected non-zero quote for a card top-up link (\\$' + quotedUsd + '); refusing to sign.'); }`). This makes REQ-FUND-003/017's '$0 by construction' claim an enforced client-side invariant rather than an assumption about the server's current behavior, consistent with how every other money-signing path in this codebase defends itself against an unexpected quote. Add a Tier-1 mocked test (extending PROP-FUND-006's family) asserting `payOnce()`'s captured call does NOT proceed to a signed submission when `onQuote` receives a non-zero value."
+    }
+  ],
+  "advisory": [],
+  "verifiedIndependently": [
+    "npm test (fresh run, this review): 551/551 pass, 0 fail -- matches the Green-phase claim exactly.",
+    "npm run typecheck (tsc --noEmit): zero errors.",
+    "node scripts/docs-check.mjs: 18/18 PASS, including PROP-012 (18 PARITY.md sections, unaffected count) and PROP-016/016b (src/ diff outside index.ts's version-literal exception limited to the feature's own files).",
+    "git diff eeee0e3..HEAD -- test/unit/errors.test.ts is empty -- REQ-FUND-012's 'this file itself is not edited' claim is exactly true, byte for byte.",
+    "git diff eeee0e3..HEAD -- src/ shows exactly one pre-existing block replaced (the deposit branch in src/commands/wallet.ts) plus two additive one-line touches (an import, a destructure) and additive-only changes to src/args/wallet.ts/src/core/errors.ts/src/index.ts -- no other wallet action or unrelated command touched (REQ-FUND-NG-002).",
+    "grep -c gatePaidCall src/commands/wallet.ts -> 0 (unchanged) and test/unit/cost-model.test.ts's FREE_COMMANDS list still includes \"wallet\" and is part of the green 551-suite -- REQ-FUND-019/NG-003's costModel:\"free\" invariant holds, transitively enforced by the existing regression gate.",
+    "REAL live binary run (throwaway HOME=/tmp/fundingdx-adv-<pid>, rebuilt dist/ first, fresh evidence this session, not reusing the Builder's Green-phase log): `wallet --action deposit --json` on a fresh Base wallet returned exit 0 and a genuine `https://pay.coinbase.com/buy/select-asset?sessionToken=...` URL; `curl -sI` against that exact URL returned `HTTP_CODE=302` (a real Coinbase redirect, not a well-formed-looking fake).",
+    "Same throwaway HOME: after `wallet --action chain --chain solana`, `wallet --action deposit --json` returned exit 0 with NO `url`/`opened` fields and a Base-only note -- payOnce() correctly never attempted on Solana (REQ-FUND-007).",
+    "Same throwaway HOME: `wallet --action deposit --open --json` on Base returned `opened:true` and visibly opened a real browser tab via openUrl(), exit 0 -- REQ-FUND-008 confirmed live, not just mocked.",
+    "Money-safety, live: across all 4 deposit invocations above (2 chains, with and without --open), `find $HOME -iname '*budget*'` found NO `cli-budget.json` file anywhere under the throwaway HOME at any point -- the strongest form of REQ-FUND-017's before/after-unchanged proof, matching the Builder's own Green-phase observation, independently reproduced.",
+    "`blockrun commands --json`'s wallet entry, queried live in the same throwaway HOME: costModel is \"free\" and the `flags` array includes a `{\"flag\":\"--open\",\"type\":\"boolean\",\"required\":false}` entry -- confirms src/args/wallet.ts's zod schema addition correctly flows into the commands-catalog introspection (resolves the prior spec-review advisory ADV-FUND-4 about catalog-visibility risk; no defect found here).",
+    "REQ-FUND-007b's `--chain` no-op-on-deposit correction is verified in code (src/commands/wallet.ts's deposit branch reads only the `chain` variable resolved earlier via getChain(), never `targetChain`/the deposit-scoped built.value.chain) and by PROP-FUND-005's test cases -- an honest, correct record of a live-caught spec error, not a retroactively-hidden mistake.",
+    "PARITY.md's REQ-FUND-015 content was nested inside the existing `### wallet` per-command section (not the global 'Known non-parity points' list) -- consistent with REQ-FUND-015's own literal header clause ('PARITY.md's `wallet` section SHALL be updated'); the prior spec-review's ADV-FUND-2 advisory (recommending the global section instead) was non-blocking and the chosen placement is a defensible, spec-consistent reading, not a defect."
+  ]
+}
